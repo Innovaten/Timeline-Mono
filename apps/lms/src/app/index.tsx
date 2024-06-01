@@ -4,8 +4,7 @@ import "./styles.css";
 function App(): JSX.Element {
   return (
     <div className="container">
-      <p>Hi Ya
-      </p>
+     <p>Hi ya from LMS</p>
     </div>
   );
 }

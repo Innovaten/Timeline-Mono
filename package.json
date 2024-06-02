@@ -1,9 +1,10 @@
 {
+  "name": "@repo/utils",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
-    "dev": "turbo run dev",
+    "dev": "dotenv -- turbo run dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "test": "turbo run test",
@@ -11,9 +12,9 @@
   },
   "devDependencies": {
     "prettier": "^3.2.5",
-    "turbo": "latest",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "turbo": "latest"
   },
   "engines": {
     "node": ">=18"
@@ -22,5 +23,12 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "dotenv-cli": "^7.4.2",
+    "mongoose": "^8.4.1",
+    "tailwind-merge": "^2.3.0",
+    "yup": "^1.4.0"
+  }
 }

@@ -2,10 +2,14 @@
   "name": "config",
   "version": "0.0.0",
   "private": true,
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "tsup",
     "build": "echo 'Add build script here'",
     "test": "echo 'Add test script here'",
     "lint": "echo 'Add lint script here'"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
   }
 }

@@ -1,6 +1,6 @@
 import { Types, Document } from "mongoose";
 
-interface IUser {
+export interface IUser {
   code: string;
   role: Types.ObjectId;
 
@@ -23,12 +23,16 @@ interface IUser {
 
   auth: {
     password: string;
+    otp: string;
+    otp_expiry: string;
   };
 
   locker: {
     numTries: number;
     expiry: Date;
   };
+  createdAt: Date,
+  updatedAt: Date,
 }
 
 export interface IUserDoc extends Document, IUser {}

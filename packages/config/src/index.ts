@@ -1,12 +1,12 @@
 import { config as DotenvConfig } from "dotenv";
 
-DotenvConfig();
+//DotenvConfig();
 
 export const config = {
-  port: {
-    admin: parseInt(process.env.PORT || "3000", 10),
-    LMS: parseInt(process.env.PORT || "3001", 10),
-    core: parseInt(process.env.PORT || "3002", 10),
+  applications: {
+    admin: process.env.ADMIN_URL || 'http://localhost:3000',
+    LMS: process.env.LMS_URL || 'http://localhost:3001',
+    core: process.env.CORE_URL || 'http://localhost:3002',
   },
   redis: {
     port: parseInt(process.env.REDIS_PORT || "6379", 10),

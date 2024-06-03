@@ -39,6 +39,7 @@ export default function IndexPage(){
                                     <h1 className='text-blue-950 my-3'>Login</h1>
                                     <Input id='e' name='email' label='Email Address' placeholder="kwabena@example.com" hasValidation />
                                     <Input id='p' name='password' label='Password' placeholder="********" hasValidation />
+                                    <a className='text-blue-700 underline-offset-2 underline mx-auto mt-4 sm:mt-0'>Forgot your password?</a>
                                     <Button
                                         variant='primary'
                                         isLoading={isLoading}
@@ -47,7 +48,6 @@ export default function IndexPage(){
                                     >Login</Button>
                                 </Form>
                             </Formik>
-                            <a className='text-blue-700 underline-offset-2 underline mx-auto mt-4 sm:mt-0'>Forgot your password?</a>
                             
                             
                             <div className='absolute flex sm:hidden bottom-10 flex-col items-center w-[calc(100vw-4rem)] #m-auto text-blue-600'>

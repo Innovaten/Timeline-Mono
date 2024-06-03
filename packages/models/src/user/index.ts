@@ -79,6 +79,14 @@ export const UserSchema = new Schema<IUserDoc>({
       trim: true,
       required: true,
     },
+    otp: {
+      type: SchemaTypes.String,
+      required: false,
+    },
+    otp_expiry: {
+      type: SchemaTypes.Date,
+      required: false,
+    }
   },
 
   locker: {

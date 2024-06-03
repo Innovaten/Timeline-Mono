@@ -1,20 +1,27 @@
-import { _getToken, _setToken, _clearToken } from './auth-token'
-import { cn } from './cn'
-import useLoading from './hooks/common/loading.hook'
+import { _getToken, _setToken, _clearToken } from "./auth-token";
+import { cn } from "./cn";
+import useLoading from "./hooks/common/loading.hook";
+import { fadeParent, fadeParentAndReplacePage } from "./frontend-shenanigans";
+import { makeUnauthenticatedRequest } from "./axios";
 
 export {
-    // Auth Tokens
-    _getToken,
-    _setToken,
-    _clearToken,
+  // Auth Tokens
+  _getToken,
+  _setToken,
+  _clearToken,
 
-    // Tailwind Classname util
-    cn,
-    
+  // Tailwind Classname util
+  cn,
 
-    // Custom Hooks
+  //Frontend Shenanigans
+  fadeParent,
+  fadeParentAndReplacePage,
 
-    // Common
-    useLoading,
+  // Custom Hooks
 
-}
+  // Common
+  useLoading,
+
+  // Fetch Requests 
+  makeUnauthenticatedRequest,
+};

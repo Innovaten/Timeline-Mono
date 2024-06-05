@@ -1,16 +1,17 @@
 import { HtmlHTMLAttributes } from "react";
-import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/solid";
+import { EnvelopeIcon, LockClosedIcon, PhoneIcon } from "@heroicons/react/24/solid";
 import { ErrorMessage, Field } from "formik";
 
 const inputTypeIcons = {
   email: EnvelopeIcon,
   password:  LockClosedIcon,
+  phone: PhoneIcon
 };
 
 type InputProps = {
   label?: string;
   className?: string;
-  iconType?: "email" | "password";
+  iconType?: "email" | "password" | "phone";
   hasValidation?: boolean;
   name?: string;
   placeholder?: string, 
@@ -26,7 +27,7 @@ export default function Input(props: InputProps) {
     : null;
 
   return (
-    <span className="relative flex flex-col gap-2 relative">
+    <span className="relative w-full flex flex-col gap-2">
       {label && <label className="text-base text-blue-700">{label}</label>}
       <Field
         className={`${className ? className : ''} text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[45px] px-2 ${iconType && "pl-9"}`}

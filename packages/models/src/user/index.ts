@@ -47,6 +47,31 @@ export const UserSchema = new Schema<IUserDoc>({
     required: true,
   },
 
+
+  hasGhanaCard: {
+    type: SchemaTypes.Boolean,
+    required: true,
+  },
+  ghanaCardFrontImageUrl: {
+    type: SchemaTypes.String,
+    required: false,
+  },
+  ghanaCardBackImageUrl: {
+    type: SchemaTypes.String,
+    required: false,
+  },
+
+  courses: {
+    types: [SchemaTypes.ObjectId],
+    ref: 'courses'
+  },
+
+  modeOfClass: {
+    type: SchemaTypes.String,
+    enum: ["In-Person", "Online"],
+    required: true,
+  },
+
   meta: {
     isVerified: {
       type: SchemaTypes.Boolean,

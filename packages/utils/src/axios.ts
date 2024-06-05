@@ -5,7 +5,7 @@ import { backOff } from "exponential-backoff";
 export async function makeUnauthenticatedRequest(
   method: "get" | "post" | "put" | "patch" | "delete",
   url: string,
-  body?: Record<string, string>,
+  body?: Record<string, any>,
   headers?: Record<string, string>
 ) {
   return backOff(

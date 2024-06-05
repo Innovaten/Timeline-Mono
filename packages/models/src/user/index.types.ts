@@ -7,10 +7,18 @@ export interface IUser {
   firstName: string;
   lastName: string;
   otherNames: string;
+  
   gender: "Male" | "Female";
 
   email: string;
   phone: string;
+  
+  hasGhanaCard: boolean,
+  ghanaCardFrontImageUrl?: string;
+  ghanaCardBackImageUrl?: string;
+
+  courses: Types.ObjectId[]
+  modeOfClass: "In-Person" | "Online"
 
   meta: {
     isVerified: boolean;

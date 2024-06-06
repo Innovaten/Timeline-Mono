@@ -1,4 +1,4 @@
-import { UserModel } from "./user";
+import { UserModel, UserSchema } from "./user";
 
 
 import { IUserDoc } from "./user/index.types";
@@ -10,8 +10,9 @@ export {
     type IUserDoc,
 
     //Models
-
-    // Users
     UserModel,
+
+    // Schema
+    UserSchema
 
 }

@@ -101,7 +101,7 @@ function Login({ componentRef, pages }: LoginProps){
                 
                 const user: HydratedDocument<IUserDoc> = res.data.user;
                 setUser(user);
-                router.navigate({ to: '/home' });
+                router.navigate({ to: "/home" });
                 toggleLoading()
             } else {
                 toast.error(res.data.error.message)

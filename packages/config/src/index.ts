@@ -15,7 +15,10 @@ export const config = {
     password: process.env.REDIS_PASS || "",
   },
   db: {
-    uri: process.env.MONGODB_URI || "mongodb://localhost:27017/test",
-    database: process.env.MONGODB_DATABASE || ""
+    uri: process.env.MONGODB_URI || "mongodb://localhost:27017",
+    database: process.env.MONGODB_DATABASE || "timeline-test"
+  },
+  secrets : {
+    core: process.env.CORE_SECRET_KEY || ""
   }
 };

@@ -14,6 +14,7 @@ import { useRouter } from '@tanstack/react-router'
 import OtpInput from 'react-otp-input';
 import { constants } from '@repo/config'
 import { SelectInput } from '../../../../packages/ui/src/components/forms';
+import SidebarComponent from '../components/Sidebar.component';
 
 YupPassword(Yup);
 
@@ -25,15 +26,34 @@ export const Route = createLazyFileRoute('/')({
 function IndexRoute({}){
   const authToken = _getToken();
 
-  if(authToken){
-      Navigate({ to: "/", search: { register: false, destination: ''} });
-  } else {
+  if(!authToken){
     return <IndexPage />
+  } else {
+    return <LoginPage />
   }
 }
 
+function IndexPage() {
 
-export default function IndexPage(){
+    const user = useLMSContext((state) => state.user);
+    
+
+    return (
+        <>
+            <main className='bg-blue-50 w-screen min-h-screen sm:overflow-hidden p-10'>
+                <div>
+                    <SidebarComponent />
+                </div>
+            </main>
+        </>
+    )
+}
+
+
+// LOGIN & REGISTRATION
+
+
+function LoginPage(){
 
     const parentRef = useRef<HTMLDivElement>(null)
     const loginRef = useRef<HTMLDivElement>(null)

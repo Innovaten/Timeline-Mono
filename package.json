@@ -25,8 +25,10 @@
     "packages/*"
   ],
   "dependencies": {
+    "@types/lodash": "^4.17.4",
     "clsx": "^2.1.1",
     "dotenv-cli": "^7.4.2",
+    "lodash": "^4.17.21",
     "mongoose": "^8.4.1",
     "tailwind-merge": "^2.3.0",
     "yup": "^1.4.0"

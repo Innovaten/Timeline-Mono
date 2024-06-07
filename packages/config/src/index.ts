@@ -9,10 +9,8 @@ export const config = {
     core: process.env.CORE_URL || 'http://localhost:3002',
   },
   redis: {
-    port: parseInt(process.env.REDIS_PORT || "6379", 10),
-    host: process.env.REDIS_HOST || "127.0.0.1",
-    username: process.env.REDIS_USER || "default",
-    password: process.env.REDIS_PASS || "",
+    url: process.env.REDIS_URL || "redis://localhost:6379",
+    notifications: process.env.NOTIFICATIONS_APP_NAME || 'timeline-services'
   },
   db: {
     uri: process.env.MONGODB_URI || "mongodb://localhost:27017/test",

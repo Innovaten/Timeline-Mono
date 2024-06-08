@@ -1,4 +1,6 @@
-import { AdjustmentsVerticalIcon, BookOpenIcon, CalendarIcon, FolderIcon, HomeIcon, MegaphoneIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
+import { AdjustmentsVerticalIcon, CalendarIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
+import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, FolderIcon, HomeIcon } from '@heroicons/react/24/outline'
+
 import { useLMSContext } from "../main";
 import { Link } from "@tanstack/react-router";
 
@@ -74,8 +76,8 @@ export default function SidebarComponent(){
 
     return (
         <>
-            <div className="h-full flex flex-col justify-between w-1/4 min-w-[150px] max-w-[250px]">
-                <div>
+            <div className="h-full flex flex-col gap-2 justify-between w-1/4 min-w-[150px] max-w-[250px]">
+                <div className="flex-1">
                     <img className="h-[50px] m-auto" src="/img/timeline-logo.png" />
                     <div className="mt-8">
                         <small className="text-blue-600">MENU</small>
@@ -85,7 +87,7 @@ export default function SidebarComponent(){
                                     const MenuIcon = icon;
 
                                     return (
-                                        <Link to={path} key={idx} className="flex gap-4 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
+                                        <Link to={path} key={idx} className="flex gap-4 items-center bg-white hover:bg-blue-100/10 duration-150 pl-4 py-4 rounded shadow-sm text-blue-600">
                                             <MenuIcon className="w-5" />
                                             <p>{label}</p>
                                         </Link>
@@ -107,7 +109,7 @@ export default function SidebarComponent(){
                                                 <BookOpenIcon className="w-5" />
                                                 <p>{title}</p>
                                             </Link>
-                                            <div className="hidden group-hover:flex bg-white/50 gap-2 flex-col duration 150">
+                                            <div className="h-0 overflow-hidden group-hover:h-fit bg-white/50 gap-2 flex flex-col duration-150">
                                                 { classesTabs.map(({ title: tabTitle, path, icon }, idx) => {
                                                     const TabIcon = icon;
 
@@ -126,8 +128,20 @@ export default function SidebarComponent(){
                         </div>
                     </div>
                 </div>
-                <div>
-
+                <div className="flex flex-col gap-4">
+                    <Link to='/' className="flex gap-4 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
+                        <InformationCircleIcon className="w-5" />
+                        <p>SUPPORT</p>
+                    </Link>
+                    <Link to='/' className="flex gap-4 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
+                        <div className="w-10 aspect-square rounded-full border-[1px] border-blue-600 grid place-items-center">
+                            { ( user?.firstName[0] || "N") + (user?.lastName[0] || "A" ) }
+                        </div>
+                        <div className="truncate">
+                            <p>{(user?.firstName || "Test") + " " + (user?.lastName || "User")}</p>
+                            <small>{user?.email || "kwabena@kodditor.co"}</small>
+                        </div>
+                    </Link>
                 </div>
             </div>
         </>

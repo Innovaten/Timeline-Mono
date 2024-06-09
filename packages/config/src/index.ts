@@ -15,6 +15,13 @@ export const config = {
   db: {
     uri: process.env.MONGODB_URI || "mongodb://localhost:27017/test",
     database: process.env.MONGODB_DATABASE || ""
+  },
+  kafka: {
+    brokers: []
+  },
+  mail: {
+    mailgun_key: process.env.MAILGUN_KEY || "",
+    mailgun_domain: process.env.MAILGUN_DOMAIN || "",
   }
 };
 

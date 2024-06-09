@@ -1,9 +1,14 @@
 import { config } from "@repo/config";
 import { emailHandler } from "./handlers/notifications/send-email";
-import { createClient } from "redis";
 import os from 'os';
 import cluster from 'cluster'
-import async from 'neo-async';
+import { Kafka } from "kafkajs";
+
+const kafka = new Kafka({
+  clientId: 'timeline-services',
+  brokers: config.kafka.brokers,
+})
+
 
 const streamHandlers = [
     {
@@ -14,68 +19,18 @@ const streamHandlers = [
 
 
 export async function start(){
-
-     // Connect Redis
-     const redis = await createClient({
-        url: config.redis.url,
-        socket: {
-            reconnectStrategy: function(retries) {
-                if (retries > 20) {
-                    console.log("--- Services Error ---")
-                    console.log("Too many attempts to reconnect. Redis connection was terminated");
-                    return new Error("Too many retries.");
-                } else {
-                    return retries * 500;
-                }
-            }
-        }
-    }).connect();
+    const consumer = kafka.consumer({ 
+        groupId: 'timeline-services:' + os.hostname + ":" + (cluster.worker?.id ?? process.pid ) 
+    })
 
     streamHandlers.forEach( async ({ streamKey, handler}) => {
         try{
-            await redis.xGroupCreate(
-                streamKey,
-                config.redis.notifications,
-                '$',
-                {
-                    MKSTREAM: true,
-                }
-            )
-            console.log(`Redis stream ${streamKey} created`)
-
-            async.forever(
-                async (next) => {
-                    const response = await redis.xReadGroup(
-                        streamKey,
-                        os.hostname() + ":" + ( cluster?.worker?.id || process.pid.toString()),
-                        {
-                            key: ">",
-                            id: "0-0"
-                        },
-                        {
-                            COUNT: 1,
-                            BLOCK: 5000,
-                        }
-                    )
-                    for (let res in response){
-                        console.log(res);
-                    }
-
-                },
-
-                (err) => {
-                    console.log('Async Error: ', err)
-                }
-
-            )
-
-
+            await consumer.subscribe({ topic: streamKey, fromBeginning: true})
+            consumer.run({
+                eachMessage: handler
+            })            
         } catch(err) { 
             console.log(err)
-
         }
-
     })
-
-
 }

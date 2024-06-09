@@ -17,15 +17,43 @@ import { Route as LoginImport } from './routes/login'
 
 // Create Virtual Routes
 
+const SupportLazyImport = createFileRoute('/support')()
 const RegisterLazyImport = createFileRoute('/register')()
+const ClassesLazyImport = createFileRoute('/classes')()
+const CalendarLazyImport = createFileRoute('/calendar')()
+const AnnouncementsLazyImport = createFileRoute('/announcements')()
 const IndexLazyImport = createFileRoute('/')()
+const ClassesclassCodeLazyImport = createFileRoute('/classes/${classCode}')()
+const ClassesclassCodeLessonsLazyImport = createFileRoute(
+  '/classes/${classCode}/lessons',
+)()
 
 // Create/Update Routes
+
+const SupportLazyRoute = SupportLazyImport.update({
+  path: '/support',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/support.lazy').then((d) => d.Route))
 
 const RegisterLazyRoute = RegisterLazyImport.update({
   path: '/register',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/register.lazy').then((d) => d.Route))
+
+const ClassesLazyRoute = ClassesLazyImport.update({
+  path: '/classes',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/classes.lazy').then((d) => d.Route))
+
+const CalendarLazyRoute = CalendarLazyImport.update({
+  path: '/calendar',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/calendar.lazy').then((d) => d.Route))
+
+const AnnouncementsLazyRoute = AnnouncementsLazyImport.update({
+  path: '/announcements',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/announcements.lazy').then((d) => d.Route))
 
 const LoginRoute = LoginImport.update({
   path: '/login',
@@ -36,6 +64,21 @@ const IndexLazyRoute = IndexLazyImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+
+const ClassesclassCodeLazyRoute = ClassesclassCodeLazyImport.update({
+  path: '/${classCode}',
+  getParentRoute: () => ClassesLazyRoute,
+} as any).lazy(() =>
+  import('./routes/classes.${classCode}.lazy').then((d) => d.Route),
+)
+
+const ClassesclassCodeLessonsLazyRoute =
+  ClassesclassCodeLessonsLazyImport.update({
+    path: '/lessons',
+    getParentRoute: () => ClassesclassCodeLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/classes.${classCode}.lessons.lazy').then((d) => d.Route),
+  )
 
 // Populate the FileRoutesByPath interface
 
@@ -55,12 +98,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
+    '/announcements': {
+      id: '/announcements'
+      path: '/announcements'
+      fullPath: '/announcements'
+      preLoaderRoute: typeof AnnouncementsLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/classes': {
+      id: '/classes'
+      path: '/classes'
+      fullPath: '/classes'
+      preLoaderRoute: typeof ClassesLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/register': {
       id: '/register'
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterLazyImport
       parentRoute: typeof rootRoute
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/classes/${classCode}': {
+      id: '/classes/${classCode}'
+      path: '/${classCode}'
+      fullPath: '/classes/${classCode}'
+      preLoaderRoute: typeof ClassesclassCodeLazyImport
+      parentRoute: typeof ClassesLazyImport
+    }
+    '/classes/${classCode}/lessons': {
+      id: '/classes/${classCode}/lessons'
+      path: '/lessons'
+      fullPath: '/classes/${classCode}/lessons'
+      preLoaderRoute: typeof ClassesclassCodeLessonsLazyImport
+      parentRoute: typeof ClassesclassCodeLazyImport
     }
   }
 }
@@ -70,7 +155,15 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   LoginRoute,
+  AnnouncementsLazyRoute,
+  CalendarLazyRoute,
+  ClassesLazyRoute: ClassesLazyRoute.addChildren({
+    ClassesclassCodeLazyRoute: ClassesclassCodeLazyRoute.addChildren({
+      ClassesclassCodeLessonsLazyRoute,
+    }),
+  }),
   RegisterLazyRoute,
+  SupportLazyRoute,
 })
 
 /* prettier-ignore-end */
@@ -83,7 +176,11 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/",
         "/login",
-        "/register"
+        "/announcements",
+        "/calendar",
+        "/classes",
+        "/register",
+        "/support"
       ]
     },
     "/": {
@@ -92,8 +189,34 @@ export const routeTree = rootRoute.addChildren({
     "/login": {
       "filePath": "login.tsx"
     },
+    "/announcements": {
+      "filePath": "announcements.lazy.tsx"
+    },
+    "/calendar": {
+      "filePath": "calendar.lazy.tsx"
+    },
+    "/classes": {
+      "filePath": "classes.lazy.tsx",
+      "children": [
+        "/classes/${classCode}"
+      ]
+    },
     "/register": {
       "filePath": "register.lazy.tsx"
+    },
+    "/support": {
+      "filePath": "support.lazy.tsx"
+    },
+    "/classes/${classCode}": {
+      "filePath": "classes.${classCode}.lazy.tsx",
+      "parent": "/classes",
+      "children": [
+        "/classes/${classCode}/lessons"
+      ]
+    },
+    "/classes/${classCode}/lessons": {
+      "filePath": "classes.${classCode}.lessons.lazy.tsx",
+      "parent": "/classes/${classCode}"
     }
   }
 }

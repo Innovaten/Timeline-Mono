@@ -1,4 +1,4 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { Link, createLazyFileRoute } from '@tanstack/react-router'
 import { _getToken } from '@repo/utils';
 
 import { useLMSContext } from '../main'
@@ -16,9 +16,48 @@ function IndexPage() {
     const greeting = currentHour < 12 ? "Morning" :
         currentHour < 17 ? "Afternoon" : "Evening"
 
+    const events = [
+      {
+        title: 'Assignment Update',
+        date: '4 Jun', // Of course we won't be using this in the final implementation
+        url: 'LMS/classes/SAT0001/assignments/ghg3-ja3r-lkn43-4934'
+      },
+      {
+        title: 'SAT Trial Quiz',
+        date: '2 Jun',
+        url: 'LMS/classes/SAT0001/quizzes/ghg3-ja3r-lkn43-4934'
+      },
+      {
+        title: 'New Assignment',
+        date: '4 Jun',
+        url: 'LMS/classes/SAT0001/assignments/ghg3-ja3r-lkn43-4934'
+      },
+    ]
+
+    const resources = [
+      {
+        title: 'Lecture Notes',
+        class: 'SAT SEPT 2024',
+        date: '18:45 - 3 Jun',
+        url: 'LMS/classes/SAT0001/resources/9340-akjh-82hg-894u'
+      },
+      {
+        title: 'Recommended Text',
+        class: 'SAT SEPT 2024',
+        date: '12:06 - 1 Jun',
+        url: 'LMS/classes/SAT0001/resources/9340-akjh-82hg-894u'
+      },
+      {
+        title: 'Quiz Questions & Answers',
+        class: 'SAT AUG 2024',
+        date: '07:23 - 21 May',
+        url: 'LMS/classes/SAT0002/resources/9340-akjh-82hg-894u'
+      },
+    ]
+
     const stats = [
       {
-        label: 'Active Classes',
+        label: 'Classes',
         value: 3,
         icon: BookOpenIcon,
       },
@@ -28,31 +67,80 @@ function IndexPage() {
         icon: MegaphoneIcon,
       },
       {
-        label: 'Pending Quizzes',
+        label: 'Quizzes',
         value: 4,
         icon: PencilSquareIcon,
       },
       {
-        label: 'Pending Assignments',
+        label: 'Assignments',
         value: 11,
         icon: NewspaperIcon,
       },
-
     ]
     return (
        <>
           <div className='text-blue-900'>
-            <h2 className='mt-7'>Good {greeting}, {user?.firstName || "Kwabena"}</h2>
-            <div className='mt-8 flex gap-5 w-full justify-evenly'>
+            <h2 className='mt-2'>Good {greeting}, {user?.firstName || "Kwabena"}</h2>
+            <div className='mt-4 flex gap-5 w-full justify-evenly'>
               {
                 stats.map(({ label, icon, value}, idx) => (
                   <StatCard
+                    key={idx}
                     label={label}
                     icon={icon}
                     value={value}
                   />
                 ))
               }
+            </div>
+            <div className='mt-4 flex flex-col sm:flex-row gap-4 w-full justify-evenly '>
+              <div className='w-full'>
+                <h3>Calendar</h3>
+                <div className='w-full aspect-[18/9] bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
+                  <div className='bg-white w-full h-full rounded p-3'>
+                    KOD has to implement this. <br />
+                    Or you can try it and create a PR
+                  </div>
+                </div>
+              </div>
+              <div className='w-full'>
+                <h3>Events</h3>
+                <div className='w-full aspect-[18/9] bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
+                  <div className='bg-white w-full h-full flex flex-col gap-2 rounded p-1'>
+                    {
+                      events.map(({title, date, url}, idx) => {
+                        return (
+                          <Link key={idx} to={url.replace("LMS", "http://localhost:3001")} className = 'w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10'>
+                            <h5 className='flex-1 truncate'>{title}</h5>
+                            <span>{date}</span>
+                          </Link>
+                        )
+                      })
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className='mt-4 w-full flex flex-col gap-2'>
+              <h3>Latest Resources</h3>
+              <div className='w-full min-h-[100px] bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
+                  <div className='bg-white w-full h-full flex flex-col gap-2 rounded p-1'>
+                    {
+                      resources.map(({title, date, class: timelineClass, url }, idx) => {
+                        return (
+                          <Link key={idx} to={url.replace("LMS", "http://localhost:3001")} className = 'w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10'>
+                            <h5 className='flex-1 truncate'>{title}</h5>
+                            
+                            <div className='flex gap-4 items-center'>
+                              <span>{timelineClass}</span>
+                              <span>{date}</span>
+                            </div>
+                          </Link>
+                        )
+                      })
+                    }
+                  </div>
+                </div>
             </div>
           </div> 
        </>

@@ -1,24 +1,35 @@
 import { Injectable } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from 'bcrypt'
-import { UserModel, IUserDoc } from '../../../../packages/models/src/index';
+import { JwtService } from "./jwt.service";
+import { UserService } from "../common/services/user.service";
+import { ServerErrorResponse, ServerSuccessResponse } from "../common/entities/responses.entity";
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly jwtService: JwtService) {}
+    constructor(
+        private jwt: JwtService,
+        private users: UserService ,
+    ) {}
 
-    async validateUser(email: string, password: string): Promise<IUserDoc | null> {
-        const user = await UserModel.findOne({ email });
-        if(user && await bcrypt.compare(password, user.auth.password)) {
-            return user;
+    async login(email: string, password: string) {
+        try {
+            const user = await this.users.verifyPassword(email, password)
+            if(!user){
+                return ServerErrorResponse(new Error(`Invalid email or password`), 401)
+            }
+            const token = this.jwt.signToken(user)
+            return ServerSuccessResponse({
+                user: user,
+                access_token: token,
+            })
+        } catch (err) {
+            return ServerErrorResponse(err, 500)
         }
-        return null;
+    }
 
-    }
-    async login(user: IUserDoc) {
-        const payload = { username: user.email, sub: user._id }
-        return {
-            access_token: this.jwtService.sign(payload),
-        }
-    }
+    // forgot-password
+    // verify-otp?email=${email}otp=${otp}
+    // update-password
+
+
+    // register
 }

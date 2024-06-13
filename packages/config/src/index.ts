@@ -22,6 +22,9 @@ export const config = {
   mail: {
     mailgun_key: process.env.MAILGUN_KEY || "",
     mailgun_domain: process.env.MAILGUN_DOMAIN || "",
+  },
+  arkesel: {
+    arkesel_api_key: process.env.ARKESEL_API_KEY || "",
   }
 };
 

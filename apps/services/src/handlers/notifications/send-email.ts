@@ -1,6 +1,6 @@
 import { EachMessagePayload } from "kafkajs";
 import { emailSubjectTemplates, emailBodyTemplates } from "../templates/email-templates";
-import * as configModule from "@repo/config";
+import { config } from "@repo/config/src";
 import Mailgun from 'mailgun.js'
 import FormData from 'form-data'; // Hmmmm
 

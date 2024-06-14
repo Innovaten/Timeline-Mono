@@ -8,17 +8,16 @@ type LMSKafkaMessage = {
     purpose: string,
     data: Record<string, any>
 }
-const mg = new Mailgun(FormData).client({ username: 'api', key: config.mail.mailgun_key})
+//const mg = new Mailgun(FormData).client({ username: 'api', key: configModule.config.mail.mailgun_key})
 
 export async function emailHandler(KafkaArgs: EachMessagePayload){
     try {
         const { purpose, data }: LMSKafkaMessage = JSON.parse(KafkaArgs.message.value!.toString())
     
-        const { email, ...templateData} = data;
         const emailSubject = emailSubjectTemplates[purpose]({ ...data})
         const emailBody = emailBodyTemplates[purpose]({ ...data})
-        sendRequestToMG({ email, subject: emailSubject, body:emailBody })
-        console.log(`Sent ${purpose} email to ${email}`)
+        sendRequestToMG({ email: data.email, subject: emailSubject, body: emailBody })
+        console.log(`Sent ${purpose} email to ${data.email}`)
     } catch (err) {
         console.log('--- Kafka Email Handler Error ---\n', err)
     }
@@ -31,7 +30,8 @@ type RequestToMGArgs = {
 }
 
 async function sendRequestToMG(args: RequestToMGArgs) {
-    mg.messages.create(config.mail.mailgun_domain, { // Change to real account when in prod
+    /*
+    mg.messages.create(configModule.config.mail.mailgun_domain, { // Change to real account when in prod
         to: [args.email],
         from: 'Timeline Trust Support <noreply-timeline-support@mg.kodditor.co>',
         bcc: ['kobbyowusudarko@gmail.com'],
@@ -41,4 +41,5 @@ async function sendRequestToMG(args: RequestToMGArgs) {
           ${args.body}
         </html>
         `})
+    */
 }

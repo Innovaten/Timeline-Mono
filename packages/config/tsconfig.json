@@ -3,6 +3,8 @@
   "compilerOptions": {
     "lib": ["ES2015"],
     "outDir": "./dist",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "types": ["jest", "node"]
   },
   "include": ["."],

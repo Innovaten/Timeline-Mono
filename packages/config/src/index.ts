@@ -1,8 +1,9 @@
-import { config as DotenvConfig } from "dotenv";
+const dotenv = require("dotenv");
 
-//DotenvConfig();
+//dotenv.config({path: './.env'});
 
-export const config = {
+
+const config = {
   applications: {
     admin: process.env.ADMIN_URL || 'http://localhost:3000',
     LMS: process.env.LMS_URL || 'http://localhost:3001',
@@ -13,8 +14,11 @@ export const config = {
     notifications: process.env.NOTIFICATIONS_APP_NAME || 'timeline-services'
   },
   db: {
-    uri: process.env.MONGODB_URI || "mongodb://localhost:27017/test",
-    database: process.env.MONGODB_DATABASE || ""
+    uri: process.env.MONGODB_URI || "mongodb://localhost:27017",
+    database: process.env.MONGODB_DATABASE || "timeline-test"
+  },
+  secrets : {
+    core: process.env.CORE_SECRET_KEY || ""
   },
   kafka: {
     brokers: []
@@ -28,7 +32,7 @@ export const config = {
   }
 };
 
-export const constants = {
+const constants = {
   courses: {
     "SAT": {
       displayName: 'Scholastic Assessment Test',   
@@ -52,4 +56,9 @@ export const constants = {
       displayName: "Law School Admission Test",
     }
   }
+}
+
+module.exports = {
+  config,
+  constants
 }

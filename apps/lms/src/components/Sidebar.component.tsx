@@ -28,17 +28,17 @@ const classes = [
     {
         id: 'clasnaksd39jf90j',
         code: "SAT00001",
-        title: "SAT AUG 2024"
+        title: "SAT"
     },
     {
         id: 'kalsdfkalskdn',
-        code: "SAT00002",
-        title: "SAT SEPT 2024"
+        code: "GMAT00002",
+        title: "GMAT"
     },
     {
         id: 'woijoi3j09jjfvio',
-        code: "SAT00003",
-        title: "ACT JAN 2025"
+        code: "ACT00003",
+        title: "ACT"
     },
     
 ]
@@ -101,21 +101,21 @@ export default function SidebarComponent(){
                         <small className="text-blue-600">CLASSES</small>
                         <div className="mt-2 flex flex-col gap-2">
                             {
-                                classes.map(({title, code }, idx) => {
+                                classes.map(({title, code }, index) => {
                                     
                                     return (
-                                        <div className="group duration-150">
-                                            <Link to={`/classes/${code}`} key={idx} className={`flex gap-4 items-center ${ routePathIsEqual(`/class/${code}`) ? 'bg-blue-700 text-white hover:bg-blue-600' : 'bg-white hover:bg-blue-400/10 text-blue-600' } duration-150 pl-4 py-4 rounded shadow-sm`}>
+                                        <div className="group duration-150" key={index}>
+                                            <Link to={`/classes/${code}`} className={`flex gap-4 items-center ${ routePathIsEqual(`/classes/${code}`) ? 'bg-blue-700 text-white hover:bg-blue-600' : 'bg-white hover:bg-blue-400/10 text-blue-600' } duration-150 pl-4 py-4 rounded shadow-sm`}>
                                                 <BookOpenIcon className="w-5" />
                                                 <p>{title}</p>
                                             </Link>
-                                            <div className="h-0 rounded-b shadow-sm overflow-hidden group-hover:h-fit bg-white/50 gap-2 flex flex-col duration-150">
+                                            <div className="h-0 rounded-b shadow-sm overflow-hidden group-hover:h-fit bg-white/50 flex flex-col duration-150">
                                                 { classesTabs.map(({ title: tabTitle, path, icon }, idx) => {
                                                     const TabIcon = icon;
 
                                                     return (
-                                                        <Link to={`/classes/${code}/${path}`} key={idx} className={`flex pl-4 py-4 ${ routePathIsEqual(`/class/${code}/${path}`) ? 'bg-blue-700 text-white hover:bg-blue-600' : 'bg-white hover:bg-blue-400/10 text-blue-600' } duration-150 items-center gap-4 truncate`}>
-                                                            <TabIcon className="w-5" />
+                                                        <Link to={`/classes/${code}/${path}`} key={idx} className={`flex pl-4 py-2 ${ routePathIsEqual(`/classes/${code}/${path}`) ? 'bg-blue-700 text-white border-b-[1px] border-bg-blue-600 hover:bg-blue-600' : 'bg-white border-b-[1px] border-b-blue-400/10 hover:bg-blue-400/10 text-blue-600' } duration-150 items-center gap-4 truncate`}>
+                                                            <TabIcon className="w-4" />
                                                             {tabTitle}
                                                         </Link>
                                                     )

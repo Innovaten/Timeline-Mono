@@ -11,7 +11,7 @@ export const UserSchema = new Schema<IUserDoc>({
   },
   role: {
     type: SchemaTypes.ObjectId,
-    ref: "Role",
+    //ref: "Role",
     required: true,
   },
 
@@ -63,7 +63,7 @@ export const UserSchema = new Schema<IUserDoc>({
 
   courses: {
     types: [SchemaTypes.ObjectId],
-    ref: 'courses'
+    //ref: 'courses'
   },
 
   modeOfClass: {

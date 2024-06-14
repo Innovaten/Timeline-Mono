@@ -1,4 +1,4 @@
-import { config } from "@repo/config";
+import * as configModule from "@repo/config";
 import { emailHandler } from "./handlers/notifications/send-email";
 import os from 'os';
 import cluster from 'cluster'
@@ -6,7 +6,7 @@ import { Kafka } from "kafkajs";
 
 const kafka = new Kafka({
   clientId: 'timeline-services',
-  brokers: config.kafka.brokers,
+  brokers: configModule.config.kafka.brokers,
 })
 
 

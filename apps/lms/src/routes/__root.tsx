@@ -26,7 +26,7 @@ function RootPage(){
                   <SidebarComponent />
                   <div className='flex-1 overflow-y-auto overflow-x-hidden bg-white shadow-sm rounded p-4 sm:p-8'>
                     <span className='flex gap-2 mb-2'>
-                      <Link to={"/"}  className='flex gap-2 items-center'>
+                      <Link to={"/"}  className='flex gap-2 items-center text-blue-900 '>
                         <span>Home</span>
                         <span>{">"}</span>
                       </Link>

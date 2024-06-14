@@ -1,5 +1,5 @@
 import axios from "axios";
-import { config } from "@repo/config";
+const configModule = require("@repo/config");
 import { backOff } from "exponential-backoff";
 
 export async function makeUnauthenticatedRequest(
@@ -10,7 +10,7 @@ export async function makeUnauthenticatedRequest(
 ) {
   return backOff(
     () =>
-      axios[method](config.applications.core + url, {
+      axios[method](configModule.config.applications.core + url, {
         ...(headers
           ? {
               headers: {

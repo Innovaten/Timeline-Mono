@@ -1,5 +1,5 @@
 import { createClient } from "redis"
-import { config } from "@repo/config"
+import * as configModule from "@repo/config";
 import mongoose from "mongoose"
 import { start } from "./start";
 
@@ -9,8 +9,8 @@ import { start } from "./start";
        
 
         // Connect Mongoose
-        await mongoose.connect(config.db.uri, {
-            dbName: config.db.database || 'test'
+        await mongoose.connect(configModule.config.db.uri, {
+            dbName: configModule.config.db.database || 'test'
         })
 
         start();

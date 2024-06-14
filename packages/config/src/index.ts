@@ -1,8 +1,9 @@
-import { config as DotenvConfig } from "dotenv";
+const dotenv = require("dotenv");
 
-//DotenvConfig();
+//dotenv.config({path: './.env'});
 
-export const config = {
+
+const config = {
   applications: {
     admin: process.env.ADMIN_URL || 'http://localhost:3000',
     LMS: process.env.LMS_URL || 'http://localhost:3001',
@@ -28,7 +29,7 @@ export const config = {
   }
 };
 
-export const constants = {
+const constants = {
   courses: {
     "SAT": {
       displayName: 'Scholastic Assessment Test',   
@@ -52,4 +53,9 @@ export const constants = {
       displayName: "Law School Admission Test",
     }
   }
+}
+
+module.exports = {
+  config,
+  constants
 }

@@ -17,6 +17,7 @@
     "formik": "^2.4.6",
     "react-otp-input": "^3.1.1",
     "sonner": "^1.4.41",
+    "vite-plugin-commonjs": "^0.10.1",
     "yup-password": "^0.4.0",
     "zod": "^3.23.8",
     "zustand": "^4.5.2"

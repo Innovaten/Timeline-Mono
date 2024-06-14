@@ -1,5 +1,5 @@
 import { smsBodyTemplates } from "../templates/sms-templates";
-import { config } from "@repo/config/src";
+import * as configModule from '@repo/config';
 
 export async function sendOTP(phoneNumber:String, firstName: String) {
     const data = {
@@ -13,7 +13,7 @@ export async function sendOTP(phoneNumber:String, firstName: String) {
     };
     const headers = {
     'Content-Type': 'application/json',
-    'api-key':  config.arkesel.arkesel_api_key,
+    'api-key':  configModule.config.arkesel.arkesel_api_key,
     }
 
     fetch('https://sms.arkesel.com/api/otp/generate', {
@@ -30,7 +30,7 @@ export async function sendOTP(phoneNumber:String, firstName: String) {
 
 export async function verifyOTP(phoneNumber:String, otp: String) {
     const data = {
-    api_key: config.arkesel.arkesel_api_key,
+    api_key: configModule.config.arkesel.arkesel_api_key,
     code: `${otp}`,
     number: `${phoneNumber}`,
     };

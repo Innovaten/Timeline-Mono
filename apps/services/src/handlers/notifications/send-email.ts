@@ -1,14 +1,12 @@
 import { EachMessagePayload } from "kafkajs";
 import { emailSubjectTemplates, emailBodyTemplates } from "../templates/email-templates";
-import * as configModule from '@repo/config'
+import { ServicesConfig } from "../../../config";
 import Mailgun from 'mailgun.js'
 import FormData from 'form-data'; // Hmmmm
+import { LMSKafkaMessage } from "../..";
 
-type LMSKafkaMessage = {
-    purpose: string,
-    data: Record<string, any>
-}
-//const mg = new Mailgun(FormData).client({ username: 'api', key: configModule.config.mail.mailgun_key})
+
+//const mg = new Mailgun(FormData).client({ username: 'api', key: ServiceConfig.mail.api_key})
 
 export async function emailHandler(KafkaArgs: EachMessagePayload){
     try {
@@ -31,7 +29,7 @@ type RequestToMGArgs = {
 
 async function sendRequestToMG(args: RequestToMGArgs) {
     /*
-    mg.messages.create(configModule.config.mail.mailgun_domain, { // Change to real account when in prod
+    mg.messages.create(ServicesConfig.mail.domain, { // Change to real account when in prod
         to: [args.email],
         from: 'Timeline Trust Support <noreply-timeline-support@mg.kodditor.co>',
         bcc: ['kobbyowusudarko@gmail.com'],

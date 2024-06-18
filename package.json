@@ -4,7 +4,7 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
-    "dev": "turbo run dev",
+    "dev": "dotenv -- turbo run dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "test": "turbo run test",
@@ -27,6 +27,8 @@
   "dependencies": {
     "@types/lodash": "^4.17.4",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.11",
+    "dotenv": "^16.4.5",
     "dotenv-cli": "^7.4.2",
     "lodash": "^4.17.21",
     "mongoose": "^8.4.1",

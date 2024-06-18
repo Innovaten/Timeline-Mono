@@ -1,7 +1,18 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
-  "globalEnv": ["PORT"],
+  "globalDependencies": ["**/.env.*local", ".env"],
+  "globalEnv": [
+      "PORT",
+      "ADMIN_URL",
+      "LMS_URL",
+      "CORE_URL",
+      "MONGODB_URI",
+      "MONGODB_DATABASE",
+      "CORE_SECRET_KEY",
+      "KAFKA_BROKER_1",
+      "KAFKA_BROKER_2",
+      "KAFKA_BROKER_3"
+    ],
   "globalDotEnv": [".env"],
   "pipeline": {
     "build": {

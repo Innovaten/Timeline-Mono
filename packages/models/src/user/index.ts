@@ -10,11 +10,10 @@ export const UserSchema = new Schema<IUserDoc>({
     required: true,
   },
   role: {
-    type: SchemaTypes.ObjectId,
-    //ref: "Role",
+    type: SchemaTypes.String,
+    enum: ["SUDO", "ADMIN", "STUDENT"],
     required: true,
   },
-
   firstName: {
     type: SchemaTypes.String,
     trim: true,
@@ -48,14 +47,15 @@ export const UserSchema = new Schema<IUserDoc>({
   },
 
   courses: {
-    types: [SchemaTypes.ObjectId],
+    type: [SchemaTypes.ObjectId],
+    required: false
     //ref: 'courses'
   },
 
   modeOfClass: {
     type: SchemaTypes.String,
     enum: ["In-Person", "Online"],
-    required: true,
+    required: false,
   },
 
   meta: {

@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
 import { RegistrationModel, UserModel } from "@repo/models";
-import { UserRegistrationDTO } from "../../user/user.dto";
 import { ServerErrorResponse, ServerSuccessResponse } from "../entities/responses.entity";
 import lodash from 'lodash'
 import { IRegistrationDoc } from "@repo/models";
+import { RegistrationDTO } from "../../registrations/registrations.dto";
 
 @Injectable()
 export class UserService {
@@ -21,7 +21,7 @@ export class UserService {
 
     }
 
-    async createNewRegistration(regData: UserRegistrationDTO){
+    async createNewRegistration(regData: RegistrationDTO){
 
         try {
             const newCode =  "REG" + lodash.padStart(`${await(RegistrationModel.countDocuments()) + 1}`, 6, "0");

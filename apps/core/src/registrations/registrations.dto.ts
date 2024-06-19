@@ -1,6 +1,6 @@
 import { IsArray, IsEmail, IsString } from "class-validator";
 
-export class UserRegistrationDTO {
+export class RegistrationDTO {
     @IsString()
     firstName: string;
 

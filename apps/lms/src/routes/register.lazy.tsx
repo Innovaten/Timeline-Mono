@@ -407,7 +407,7 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUs
  
         makeUnauthenticatedRequest(
             'post', 
-            '/api/v1/user/register-student',
+            '/api/v1/registrations',
             newUser,
         )
         .then( res => {

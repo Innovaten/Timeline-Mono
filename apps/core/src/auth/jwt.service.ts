@@ -14,7 +14,7 @@ export class JwtService {
         }
     }
 
-    async signToken(userDoc: IUserDoc){
+    signToken(userDoc: IUserDoc){
         const payload = { username: userDoc.email, sub: userDoc._id }
         return sign(payload, CoreConfig.secrets.core, { expiresIn: '4h'})
     }

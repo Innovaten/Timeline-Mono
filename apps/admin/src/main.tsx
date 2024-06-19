@@ -1,12 +1,26 @@
 import React, { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { RouterProvider, createRouter, useRouteContext } from "@tanstack/react-router";
 import "@repo/ui/index.css";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
+import { create } from "zustand";
+import { ILMSContextAction, ILMSContextState } from "./context";
 
-// Create a new router instance
-const router = createRouter({ routeTree });
+
+export const useLMSContext = create<ILMSContextState & ILMSContextAction>((set) => ({
+  // State
+  user: null,
+  token: null,
+  
+  // Actions 
+  setUser: (user) => set((state: any) => ({ ...state, user: user }) ),
+  setToken: (token) => set((state: any) => ({ ...state, token }) )
+}))
+
+const router = createRouter({ 
+  routeTree
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -15,7 +29,6 @@ declare module "@tanstack/react-router" {
   }
 }
 
-// Render the app
 const rootElement = document.getElementById("root")!;
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);

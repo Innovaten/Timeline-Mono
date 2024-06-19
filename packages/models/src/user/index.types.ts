@@ -2,7 +2,7 @@ import { Types, Document } from "mongoose";
 
 export interface IUser {
   code: string;
-  role: Types.ObjectId;
+  role: "SUDO" | "ADMIN" | "STUDENT";
 
   firstName: string;
   lastName: string;

@@ -2,7 +2,7 @@ import { _getToken, _setToken, _clearToken } from "./auth-token";
 import { cn } from "./cn";
 import useLoading from "./hooks/common/loading.hook";
 import { fadeParent, fadeParentAndReplacePage } from "./frontend-shenanigans";
-import { makeUnauthenticatedRequest } from "./axios";
+import { makeUnauthenticatedRequest, makeAuthenticatedRequest } from "./axios";
 import { validPhoneNumber } from "./phone";
 
 export {
@@ -28,4 +28,5 @@ export {
 
   // Fetch Requests 
   makeUnauthenticatedRequest,
+  makeAuthenticatedRequest,
 };

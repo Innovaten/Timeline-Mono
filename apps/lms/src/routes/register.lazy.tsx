@@ -7,9 +7,9 @@ import YupPassword from 'yup-password'
 import { _setToken, fadeParentAndReplacePage, makeUnauthenticatedRequest, useLoading } from '@repo/utils'
 import React, { RefObject, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { IUserDoc } from '@repo/models'
+import { IRegistrationDoc } from '@repo/models';
+import { constants } from '../config';
 
-import { constants } from '@repo/config'
 import { SelectInput } from '../../../../packages/ui/src/components/forms';
 YupPassword(Yup);
 
@@ -17,24 +17,22 @@ export const Route = createLazyFileRoute('/register')({
   component: () => <RegisterPage />
 })
 
-type RegistrationObjectType = Pick<IUserDoc,
+type RegistrationObjectType = Pick<IRegistrationDoc,
 "firstName" |
 "otherNames" |
 "lastName" |
 "email" |
 "phone" |
-"hasGhanaCard" |
-"ghanaCardFrontImageUrl" |
-"ghanaCardBackImageUrl"|
-"gender"
-> & {
-    modeOfClass: string,
-    courses: string[]
-}
+"gender" | 
+"code" | 
+"modeOfClass" | 
+"courses" 
+>
 
 function RegisterPage(){
 
   const [ newUser, setNewUser ] = useState<RegistrationObjectType>({
+    code: "",
     firstName: "",
     otherNames: "",
     lastName: "",
@@ -43,11 +41,6 @@ function RegisterPage(){
     phone: "",
     
     gender: "Male",
-    
-    hasGhanaCard: true,
-    
-    ghanaCardFrontImageUrl: "",
-    ghanaCardBackImageUrl: "",
     
     // @ts-ignore
     modeOfClass: "In-Person",
@@ -59,6 +52,7 @@ function RegisterPage(){
   const contactDetailsRef = useRef<HTMLDivElement>(null)
   const courseDetailsRef = useRef<HTMLDivElement>(null)
   const summaryDetailsRef = useRef<HTMLDivElement>(null)
+  const summaryConfirmationRef = useRef<HTMLDivElement>(null)
 
   const registrationPages: Record<string, RefObject<HTMLDivElement>> = {
     'parent': parentRef,
@@ -66,6 +60,7 @@ function RegisterPage(){
     'contact-details': contactDetailsRef,
     'course-details': courseDetailsRef,
     'summary-details': summaryDetailsRef,
+    'registration-complete': summaryConfirmationRef,
   }
 
   return (
@@ -73,7 +68,7 @@ function RegisterPage(){
       <main className="w-full min-h-screen overflow-x-hidden bg-blue-50 md:p-8 2xl:p-12 ">
           <div className="flex flex-col items-center">
               <img className='mb-4 sm:mb-8 h-12' src="/img/timeline-logo.png" />
-              <div className='flex w-full h-[90vh] sm:w-[80%] sm:h-fit sm:min-h-[500px] xl:w-[1000px] 2xl:w-[1100px] bg-white rounded shadow overflow-hidden'>
+              <div className='flex w-full h-[90vh] sm:w-[80%] sm:h-fit sm:min-h-[600px] xl:w-[1000px] 2xl:w-[1100px] bg-white rounded shadow overflow-hidden'>
                   <div className='w-1/2 hidden sm:block'>
                       <img className='object-cover h-full' src="/img/login-student-image.jpg" />
                   </div>
@@ -98,6 +93,7 @@ function RegisterPage(){
                         componentRef={registrationPages['summary-details']}
                         registrationPages={registrationPages}
                         newUser={newUser}
+                        setNewUser={setNewUser}
                       />
                       <SummaryConfirmationForm
                         componentRef={registrationPages['registration-complete']}
@@ -229,19 +225,13 @@ function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: Cont
     function handleSubmit(values: { 
         email: string,
         phone: string,
-        hasGhanaCard: number,
-        ghanaCardFrontImageUrl?: string,
-        ghanaCardBackImageUrl?: string,
     }){
         
         setNewUser((prev) => {
             return ({
                 ...prev,
                 email: values.email,
-                phone: values.phone,
-                hasGhanaCard: values.hasGhanaCard == 1,
-                ghanaCardFrontImageUrl: values.ghanaCardFrontImageUrl,
-                ghanaCardBackImageUrl: values.ghanaCardBackImageUrl,
+                phone: values.phone
             })
         })
         fadeParentAndReplacePage(registrationPages.parent, componentRef, registrationPages['course-details'], 'flex')
@@ -251,9 +241,6 @@ function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: Cont
     const registrationInitialValues = {
         email: "",
         phone: "",
-        hasGhanaCard: 0,
-        ghanaCardFrontImageUrl: "",
-        ghanaCardBackImageUrl: "",
     }
   
     const registrationValidationSchema = Yup.object({  
@@ -266,19 +253,6 @@ function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: Cont
             .max(10, "Phone number must be 10 digits")
             .matches(/^[0-9]*$/, "Please enter a valid phone number"),
 
-        hasGhanaCard: Yup.number().required(),
-        ghanaCardFrontImageUrl: 
-            Yup.string()
-            .when('hasGhanaCard', {
-                is: true,
-                then: (schema) => schema.required('Please add the front image of your ghana card'), 
-            }),
-        ghanaCardBackImageUrl: 
-            Yup.string()
-            .when('hasGhanaCard', {
-                is: true,
-                then: (schema) => schema.required('Please add the front image of your ghana card'), 
-            }),
        })
   
     return (
@@ -293,28 +267,8 @@ function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: Cont
                 >
                     <Form className='flex flex-col gap-4 xl:gap-6'>
                         <h1 className='text-blue-950 my-1 md:my-3'>Enter your contact details</h1>
-                        <Input id='e' name='email' type='text' label='Email Address' iconType='email'  placeholder="kwabena@kodditor.co" hasValidation />
+                        <Input id='email' name='email' type='text' label='Email Address' iconType='email'  placeholder="kwabena@kodditor.co" hasValidation />
                         <Input id='p' name='phone' type='text' label='Phone Number' iconType='phone'  placeholder="0201234567" hasValidation />
-                        { /* TODO: Add Ghana Cards */}
-                        <SelectInput
-                            name='hasGhanaCard'
-                            label='Do You have a Ghana Card?'
-                            options={[
-                                {
-                                    label: '---  Select an option ---',
-                                    value: 0,
-                                },
-                                {
-                                    label: 'Yes',
-                                    value: 1
-                                },
-                                {
-                                    label: 'No',
-                                    value: 0
-                                }
-                            ]}
-                            hasValidation
-                         />
                         <Button
                             variant='primary'
                             type='submit'
@@ -439,11 +393,12 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
 type SummaryDetailsProps = {
     componentRef: RefObject<HTMLDivElement>,
     registrationPages: Record<string, RefObject<HTMLDivElement>>
-    newUser: RegistrationObjectType
+    newUser: RegistrationObjectType,
+    setNewUser: React.Dispatch<React.SetStateAction<RegistrationObjectType>>
 }
 
 
-function SummaryDetailsForm({ componentRef, registrationPages, newUser}: SummaryDetailsProps){
+function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUser }: SummaryDetailsProps){
     
     const { isLoading, toggleLoading, resetLoading } = useLoading()
 
@@ -452,15 +407,21 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser}: Summary
  
         makeUnauthenticatedRequest(
             'post', 
-            '/api/auth/new-user',
+            '/api/v1/user/register-student',
             newUser,
         )
         .then( res => {
-            if( res.data.status == 200){
+            if(res.data.success){
               toggleLoading()
+              setNewUser((prev) => {
+                return ({
+                    ...prev,
+                    code: res.data.data.code,
+                })
+              })
               fadeParentAndReplacePage(registrationPages.parent, componentRef, registrationPages['registration-complete'], 'grid')
             } else {
-                toast.error(res.data.error.message)
+                toast.error(res.data.error.msg)
                 toggleLoading()
             }
         })
@@ -495,10 +456,6 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser}: Summary
                         <p className='text-lg text-blue-600 inline'>{newUser.phone}</p>
                     </div>
                     <div className='flex gap-2'>
-                        <p className='text-lg inline font-medium'>Ghana Card:</p>
-                        <p className='text-lg text-blue-600 inline'>{newUser.hasGhanaCard ? "Yes" : "No"}</p>
-                    </div>
-                    <div className='flex gap-2'>
                         <p className='text-lg inline font-medium'>Mode of Class:</p>
                         <p className='text-lg text-blue-600 inline'>{newUser.modeOfClass}</p>
                     </div>
@@ -531,12 +488,13 @@ function SummaryConfirmationForm({ componentRef, newUser}: SummaryConfirmationPr
     
     return (
         <>
-            <div ref={componentRef}  className='w-full h-full hidden place-items-center my-auto'>        
+            <div ref={componentRef}  className='hidden w-full h-full place-items-center my-auto'>        
                 <div className='my-1 md:my-3'>
                     <h1 className='text-blue-950 mb-2'>You've registered, {newUser.firstName}!</h1>
-                    <p className='mt-3 text-lg'>You're registration application has been submitted successfully.
-                        We'll reach out to you with next steps once your application has been accepted.
+                    <p className='mt-4 text-lg'>Your registration application has been submitted successfully.
+                        We'll reach out to you via email with next steps once your application has been accepted.
                     </p>
+                    <p className='my-3 text-lg font-semibold'>Registration code: {newUser.code}</p>
                 </div>
                 
             </div>

@@ -101,11 +101,12 @@ function Login({ componentRef, pages }: LoginProps){
  
       makeUnauthenticatedRequest(
           'post', 
-          '/api/auth/login',
+          '/api/v1/auth/login',
           values,
       )
-      .then( res => {
-          if( res.data.status == 200){
+      .then(res => {
+            console.log(res.data);
+            if(res.data.success){
               const token = res.data.data.token;
               _setToken(token);
               setToken(token);
@@ -117,7 +118,7 @@ function Login({ componentRef, pages }: LoginProps){
                 })
               toggleLoading()
           } else {
-              toast.error(res.data.error.message)
+              toast.error(res.data.error.msg)
               toggleLoading()
           }
       })
@@ -167,10 +168,10 @@ function Login({ componentRef, pages }: LoginProps){
               >
                   <Form className='flex flex-col gap-4 xl:gap-6'>
                       <h1 className='text-blue-950 my-1 md:my-3'>Login</h1>
-                      <Input id='e' name='email' type='email' iconType='email' label='Email Address'  placeholder="kwabena@kodditor.com" hasValidation />
+                      <Input id='email' name='email' type='email' iconType='email' label='Email Address'  placeholder="kwabena@kodditor.com" hasValidation />
                       <Input id='p' name='password' type='password' iconType='password' label='Password' placeholder="********" hasValidation />
                       <div className='hidden sm:flex gap-1 justify-between w-full'>
-                          <Link to='/register' className='text-blue-700 underline-offset-2 underline cursor-pointer' >Register an account</Link>
+                          <Link to='/register' className='text-blue-700 underline-offset-2 underline cursor-pointer' >Create an account</Link>
                           <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['forgot'], 'flex') }}>Forgot your password?</p>
                       </div>
                       <Button
@@ -205,13 +206,13 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
   function handleSubmit(values: { email: string }){
       fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-verification'], 'flex')
       return
-      makeUnauthenticatedRequest('get', `/api/auth/forgot-password?email=${values.email}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/forgot-password?email=${values.email}`)
       .then( res => {
-          if(res.data.status == 200){
+          if(res.data.success){
               sessionStorage.setItem('e', values.email);
               fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-verification'], 'flex')
           } else {
-              toast.error(res.data.error.message)
+              toast.error(res.data.error.msg)
           }
           toggleLoading()
 
@@ -302,13 +303,13 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
       fadeParentAndReplacePage(pages['parent'], pages['forgot-verification'], pages['forgot-new-password'], 'flex')
       return 
 
-      makeUnauthenticatedRequest('get', `/api/auth/verify-otp?email=${email}&otp=${OTP}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/verify-otp?email=${email}&otp=${OTP}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('o', OTP);
               fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-new-password'], 'flex')
           } else {
-              toast.error(res.data.error.message)
+              toast.error(res.data.error.msg)
           }
           toggleLoading()
 
@@ -377,7 +378,7 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
       return
       makeUnauthenticatedRequest(
           'post', 
-          '/api/auth/update-password',
+          '/api/v1/auth/update-password',
           {
               email: `${sessionStorage.getItem('e')}`,
               newPassword: values.newPassword,
@@ -396,7 +397,7 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
               }), 1000)
               toggleLoading()
           } else {
-              toast.error(res.data.error.message)
+              toast.error(res.data.error.msg)
               toggleLoading()
           }
       })

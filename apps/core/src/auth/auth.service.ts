@@ -22,7 +22,7 @@ export class AuthService {
                 access_token: token,
             })
         } catch (err) {
-            return ServerErrorResponse(err, 500)
+            return ServerErrorResponse(new Error(`${err}`), 500)
         }
     }
 

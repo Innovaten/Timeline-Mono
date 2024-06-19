@@ -13,10 +13,6 @@ export interface IUser {
   email: string;
   phone: string;
   
-  hasGhanaCard: boolean,
-  ghanaCardFrontImageUrl?: string;
-  ghanaCardBackImageUrl?: string;
-
   courses: Types.ObjectId[]
   modeOfClass: "In-Person" | "Online"
 

@@ -28,13 +28,13 @@ export class ServerResponse<T, V> {
         });
     }
   
-    export function ServerErrorResponse(error: any, code: number) {
+    export function ServerErrorResponse(error: Error, code: number) {
         return new ServerResponse<null, ServerError>({
             success: false,
             data: null,
             error: new ServerError({
                 code,
-                msg: error,
+                msg: error.message
               }),
           });
       }

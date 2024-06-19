@@ -2,7 +2,7 @@ import { createRootRoute, Link, Navigate, Outlet, useRouter, useRouterState } fr
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { _getToken } from '@repo/utils';
 import SidebarComponent from '../components/Sidebar.component';
-
+import { Toaster } from 'sonner';
 
 export const Route = createRootRoute({
   component: RootPage
@@ -48,6 +48,7 @@ function RootPage(){
       { isRegisterOrLogin && <Outlet />}
       {}
         <TanStackRouterDevtools />
+        <Toaster />
       </>
     )
   }

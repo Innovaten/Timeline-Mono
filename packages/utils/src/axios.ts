@@ -21,7 +21,7 @@ export async function makeUnauthenticatedRequest(
               },
             }
           : {}),
-        ...(body ? { body: body } : {}),
+        ...(body ? body : {}),
       }),
     {
       jitter: "full",

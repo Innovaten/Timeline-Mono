@@ -9,12 +9,15 @@
       "MONGODB_URI",
       "MONGODB_DATABASE",
       "CORE_SECRET_KEY",
-      "KAFKA_BROKER_1",
-      "KAFKA_BROKER_2",
-      "KAFKA_BROKER_3"
+      "CORE_PORT",
+      "KAFKA_USERNAME",
+      "KAFKA_PASSWORD",
+      "KAFKA_BROKER",
+      "MAILGUN_API_KEY",
+      "MAILGUN_DOMAIN",
+      "ARKESEL_API_KEY"
     ],
-  "globalDotEnv": [".env"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"]
     },

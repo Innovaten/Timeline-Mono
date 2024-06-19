@@ -60,11 +60,11 @@ function Announcements({}){
         {announcememnts.map(( announcememnt, index) => (
         <div key = {index} className='flex items-center p-1 h-15 bg-blue-50 justify-between mx-1 mt-1 mb-1'>
           <div className='w-9/12'>
-            <h5 className='ml-2 text-blue-800'>{announcememnt.title}</h5>
+            <button className='ml-2 text-blue-800 hover:underline'>{announcememnt.title}</button>
           </div>
           <div className='justify-between w-3/12 mr-2 items-center flex'>
-            <span className='text-blue-800'>{announcememnt.class}</span>
-            <span className='text-blue-800'>{announcememnt.date}</span>
+            <button className='text-blue-800 '>{announcememnt.class}</button>
+            <button className='text-blue-800'>{announcememnt.date}</button>
             <div className='w-1.5 h-1.5 bg-blue-600 rounded-full'></div>
           </div>
       </div>
@@ -85,9 +85,7 @@ function Dropdown({buttonText, options}){
     <div className='items-center my-5'>
      <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`pl-3 pr-3 w-[180px] text-white font-bold items-center justify-between flex ${
-          !isOpen ? 'bg-blue-500 border-blue-900 rounded-full' : 'bg-blue-500 rounded-tl-lg rounded-tr-lg'
-        }`}
+        className={`pl-3 pr-3 w-[180px] text-white font-bold items-center justify-between flex ${!isOpen ? 'bg-blue-500 border-blue-900 rounded-full' : 'bg-blue-500 rounded-tl-lg rounded-tr-lg'}`}
       >
         {buttonText}
         {isOpen ? <AiOutlineCaretUp className='h-8'/> : <AiOutlineCaretDown className='h-8'/>}

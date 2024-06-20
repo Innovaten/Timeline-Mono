@@ -11,6 +11,9 @@ export interface IRegistration {
   phone: string;
   courses: Array<string>;
 
+  approvedAt: Date;
+  acceptedAt: Date;
+
   createdAt: Date,
   updatedAt: Date,
 }

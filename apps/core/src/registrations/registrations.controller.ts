@@ -48,6 +48,11 @@ export class RegistrationsController {
         
     }
 
+    @Get('approve')
+    async approveRegistration(@Param('_id') regId: string){
+        return await this.service.approveRegistration(regId);
+    }
+
 
     @Post()
     async createNewStudent(

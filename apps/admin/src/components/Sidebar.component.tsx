@@ -1,12 +1,11 @@
 import { AdjustmentsVerticalIcon, CalendarIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, BuildingLibraryIcon, ComputerDesktopIcon, UserGroupIcon, FolderIcon, HomeIcon } from '@heroicons/react/24/outline'
 
-import { useLMSContext } from "../main";
+import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
 
 export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
-
     const userRole = user?.role ?? "ADMIN";
 
     const menuTabs = userRole === "ADMIN" ?  [

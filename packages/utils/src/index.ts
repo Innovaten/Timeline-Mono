@@ -1,4 +1,4 @@
-import { _getToken, _setToken, _clearToken } from "./auth-token";
+import { _getToken, _setToken, _clearToken, _getUser, _setUser } from "./auth-token";
 import { cn } from "./cn";
 import useLoading from "./hooks/common/loading.hook";
 import { fadeParent, fadeParentAndReplacePage } from "./frontend-shenanigans";
@@ -10,6 +10,10 @@ export {
   _getToken,
   _setToken,
   _clearToken,
+
+  // Session user object
+  _getUser,
+  _setUser,
 
   // Phone Numbers
   validPhoneNumber,

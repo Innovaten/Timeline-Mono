@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosPromise, AxiosResponse } from "axios";
 import { backOff } from "exponential-backoff";
 import { UtilsConfig } from "../config";
 import { _getToken } from "./auth-token";
@@ -8,7 +8,7 @@ export async function makeUnauthenticatedRequest(
   url: string,
   body?: Record<string, any>,
   headers?: Record<string, string>
-) {
+): Promise<AxiosResponse> {
   return backOff(
     () =>
       axios[method](UtilsConfig.applications.core + url, {
@@ -37,7 +37,8 @@ export async function makeAuthenticatedRequest(
   url: string,
   body?: Record<string, any>,
   headers?: Record<string, string>
-){
+): Promise<AxiosResponse>
+{
 
   // Basically just adds the authentication token
 

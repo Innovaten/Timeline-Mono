@@ -11,6 +11,8 @@ export class JwtService {
         if (payload.sub){
             const user = await UserModel.findById(payload.sub);
             return user;
+        } else {
+            return null;
         }
     }
 

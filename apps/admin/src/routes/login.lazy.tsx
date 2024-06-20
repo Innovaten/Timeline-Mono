@@ -1,5 +1,5 @@
-import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router'
-import { _getToken } from '@repo/utils';
+import { Link, createLazyFileRoute, useRouter, useMatches, useRouteContext } from '@tanstack/react-router'
+import { _getToken, _setUser } from '@repo/utils';
 import { Input, Button } from '@repo/ui'
 import {  Form, Formik } from 'formik'
 import * as Yup from 'yup'
@@ -7,7 +7,7 @@ import YupPassword from 'yup-password'
 import { _setToken, fadeParentAndReplacePage, makeUnauthenticatedRequest, useLoading } from '@repo/utils'
 import { RefObject, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { useLMSContext } from '../main'
+import { useLMSContext } from '../app'
 import { IUserDoc } from '@repo/models'
 import { HydratedDocument } from 'mongoose'
 import OtpInput from 'react-otp-input'
@@ -35,6 +35,7 @@ function LoginPage(){
       'forgot-new-password':forgotNewPasswordRef,
   
   }
+
 
   return (
       <>
@@ -87,8 +88,8 @@ function Login({ componentRef, pages }: LoginProps){
 
   const { isLoading, toggleLoading, resetLoading } = useLoading()
   const router = useRouter()
-
-  const { setToken, setUser, user } = useLMSContext()
+  const context = useRouteContext({ from: '/login' })
+  const { setUser, user } = useLMSContext()
 
   function handleSubmit(values: { email: string, password: string}){
       toggleLoading()
@@ -99,15 +100,15 @@ function Login({ componentRef, pages }: LoginProps){
           values,
       )
       .then(res => {
-            console.log(res.data);
             if(res.data.success){
               const token = res.data.data.access_token;
               _setToken(token);
-              setToken(token);
               
               const loginUser: HydratedDocument<IUserDoc> = res.data.data.user;
               setUser(loginUser);
-
+              _setUser(loginUser);
+              context.user = loginUser;
+              
               router.navigate({ 
                 to: "/"
               })
@@ -118,7 +119,7 @@ function Login({ componentRef, pages }: LoginProps){
           }
       })
       .catch( err => {
-          toast.error(err)
+          toast.error(`${err}`)
           toggleLoading()
       })
   }

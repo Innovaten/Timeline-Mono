@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { _getToken } from '@repo/utils';
 
-import { useLMSContext } from '../main'
+import { useLMSContext } from '../app'
 import { BookOpenIcon, UsersIcon, AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData'
@@ -20,7 +20,6 @@ function IndexPage() {
     
     const { registrations, isLoading: registrationsIsLoading } = useRegistrations()
  
-    console.log(user);
     const currentHour = new Date().getHours()
     const greeting = currentHour < 12 ? "Morning" :
         currentHour < 17 ? "Afternoon" : "Evening"

@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Get, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { JwtService } from './jwt.service';
+import { JwtService } from '../common/services/jwt.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc } from '@repo/models';
 

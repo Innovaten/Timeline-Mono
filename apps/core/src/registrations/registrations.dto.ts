@@ -24,4 +24,7 @@ export class RegistrationDTO {
 
     @IsArray()
     courses: Array<string>;
+
+    @IsString()
+    authToken: string;
 }

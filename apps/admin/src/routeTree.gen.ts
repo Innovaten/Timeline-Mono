@@ -21,6 +21,7 @@ const LoginLazyImport = createFileRoute('/login')()
 const ClassesLazyImport = createFileRoute('/classes')()
 const CalendarLazyImport = createFileRoute('/calendar')()
 const AnnouncementsLazyImport = createFileRoute('/announcements')()
+const AdministratorsLazyImport = createFileRoute('/administrators')()
 const IndexLazyImport = createFileRoute('/')()
 const ClassesclassCodeLazyImport = createFileRoute('/classes/${classCode}')()
 const ClassesclassCodeLessonsLazyImport = createFileRoute(
@@ -54,6 +55,13 @@ const AnnouncementsLazyRoute = AnnouncementsLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/announcements.lazy').then((d) => d.Route))
 
+const AdministratorsLazyRoute = AdministratorsLazyImport.update({
+  path: '/administrators',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/administrators.lazy').then((d) => d.Route),
+)
+
 const IndexLazyRoute = IndexLazyImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
@@ -83,6 +91,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/administrators': {
+      id: '/administrators'
+      path: '/administrators'
+      fullPath: '/administrators'
+      preLoaderRoute: typeof AdministratorsLazyImport
       parentRoute: typeof rootRoute
     }
     '/announcements': {
@@ -141,6 +156,7 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
+  AdministratorsLazyRoute,
   AnnouncementsLazyRoute,
   CalendarLazyRoute,
   ClassesLazyRoute: ClassesLazyRoute.addChildren({
@@ -161,6 +177,7 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/administrators",
         "/announcements",
         "/calendar",
         "/classes",
@@ -170,6 +187,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/": {
       "filePath": "index.lazy.tsx"
+    },
+    "/administrators": {
+      "filePath": "administrators.lazy.tsx"
     },
     "/announcements": {
       "filePath": "announcements.lazy.tsx"

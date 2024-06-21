@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { RegistrationModel, UserModel } from "@repo/models";
-import { ServerErrorResponse, ServerSuccessResponse } from "../entities/responses.entity";
-import lodash from 'lodash'
-import { IRegistrationDoc } from "@repo/models";
-import { RegistrationDTO } from "../../registrations/registrations.dto";
-
+import { UserModel } from "@repo/models";
+import { CreateUserDto } from "../../user/user.dto";
+import lodash from "lodash";
+import { Types } from "mongoose";
+import { generate } from 'generate-password'
+import bcrypt from 'bcrypt'
 @Injectable()
 export class UserService {
     async verifyPassword(email: string, password: string) {
@@ -21,20 +21,49 @@ export class UserService {
 
     }
 
-    async createNewRegistration(regData: RegistrationDTO){
+    async getUsers(limit?: number, offset?: number, filter?: Record<string, any>){
+        const results = await UserModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0)
+        return results;
+    }
 
-        try {
-            const newCode =  "REG" + lodash.padStart(`${await(RegistrationModel.countDocuments()) + 1}`, 6, "0");
-            const registration = new RegistrationModel({
-                ...regData,
-                code: newCode,
-            });
+    async getCount(filter?: Record<string, any>){
+        return UserModel.countDocuments(filter)
+    }
 
-            await registration.save();
-            console.log(`Created new registration: ${registration.code}`)
-            return ServerSuccessResponse<IRegistrationDoc>(registration)
-        } catch(err) {
-            return ServerErrorResponse(new Error(`${err}`), 500)
-        }
+    async createAdmin(userData: CreateUserDto, creator: string){
+
+        const codePrefix = userData.role == "SUDO" ? "SDO" : "ADM"
+
+        let randomPassword = generate({ 
+            length: 6, 
+            strict: true 
+        })
+
+        randomPassword = randomPassword + ["!","@","#","$","^","*"][ Math.floor(Math.random() * 10) ]
+
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(randomPassword, salt);
+
+        const { authToken, ...actualData } = userData;
+
+        const user = new UserModel({
+            code: codePrefix + lodash.padStart(`${await(UserModel.countDocuments()) + 1}`, 6, "0"),
+            ...actualData,
+            meta: {
+                isPasswordSet: false,
+                isSuspended: false,
+                isDeleted: false,
+            },
+            auth: {
+                password: passwordHash,
+            },
+            createdBy: new Types.ObjectId(creator),
+            createdAt: new Date(),
+            courses: [],
+        })
+
+        user.save()
+        return user;
+
     }
 }

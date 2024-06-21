@@ -1,6 +1,8 @@
 import { _getToken, _setToken, _clearToken, _getUser, _setUser } from "./auth-token";
 import { cn } from "./cn";
-import useLoading from "./hooks/common/loading.hook";
+
+import { useLoading, useDialog } from "./hooks";
+
 import { fadeParent, fadeParentAndReplacePage } from "./frontend-shenanigans";
 import { makeUnauthenticatedRequest, makeAuthenticatedRequest } from "./axios";
 import { validPhoneNumber } from "./phone";
@@ -27,8 +29,10 @@ export {
 
   // Custom Hooks
 
+  useDialog,
   // Common
   useLoading,
+
 
   // Fetch Requests 
   makeUnauthenticatedRequest,

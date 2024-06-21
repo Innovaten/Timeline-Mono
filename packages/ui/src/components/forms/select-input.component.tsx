@@ -19,7 +19,7 @@ export default function SelectInput(props: InputProps) {
     props;
 
   return (
-    <span className="relative flex flex-col gap-2">
+    <span className="relative flex flex-col gap-2 w-full">
       {label && <label className="text-base text-blue-700">{label}</label>}
       <Field
         component='select'

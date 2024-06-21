@@ -1,5 +1,5 @@
 import { Schema, SchemaTypes, model } from "mongoose";
-import { IRegistrationDoc } from "./index.types";
+import { IRegistrationDoc, RegistrationStatus } from "./index.types";
 
 
 export const RegistrationSchema = new Schema<IRegistrationDoc>({
@@ -43,8 +43,24 @@ export const RegistrationSchema = new Schema<IRegistrationDoc>({
         type: [SchemaTypes.String],
         required: true,
     },
+
+    status: {
+        type: SchemaTypes.String,
+        enum: RegistrationStatus,
+        default: "Pending",
+    },
+
+    approvedBy: {
+        type: SchemaTypes.ObjectId,
+        ref: "Users",
+    },
     approvedAt: {
         type: SchemaTypes.Date,
+    },
+    
+    acceptedBy: {
+        type: SchemaTypes.ObjectId,
+        ref: "Users",
     },
     acceptedAt: {
         type: SchemaTypes.Date,

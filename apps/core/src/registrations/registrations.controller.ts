@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
-import { UserService } from '../common/services/user.service';
+import { Controller, Post, Body, Get, Param, Request, UseGuards } from '@nestjs/common';
 import { RegistrationDTO } from './registrations.dto';
 import { RegistrationsService } from './registrations.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IRegistrationDoc } from '@repo/models';
+import { AuthGuard } from '../common/guards/jwt.guard';
+
 
 @Controller({
     path: 'registrations',
@@ -13,12 +14,12 @@ import { IRegistrationDoc } from '@repo/models';
 export class RegistrationsController {
 
     constructor(
-        private user: UserService,
         private service: RegistrationsService
     ) { }
     
+    @UseGuards(AuthGuard)
     @Get()
-    async getRegistration(
+    async getRegistrations(
         @Param('limit') rawLimit: string,
         @Param('offset') rawOffset: string,
         @Param('filter') rawfilter: string,
@@ -29,7 +30,7 @@ export class RegistrationsController {
         let offset;
 
         if(rawLimit){
-            parseInt(rawLimit);
+            limit = parseInt(rawLimit);
         }
 
         if(rawOffset){
@@ -48,9 +49,22 @@ export class RegistrationsController {
         
     }
 
+    @UseGuards(AuthGuard)
     @Get('approve')
-    async approveRegistration(@Param('_id') regId: string){
-        return await this.service.approveRegistration(regId);
+    async approveRegistration(
+        @Param('_id') regId: string, 
+        @Request() req: Request, 
+    ){
+        // @ts-ignore
+        const approver = req["user"]
+        if(!approver){
+            return ServerErrorResponse(
+                new Error("Unauthenticated Request"),
+                403
+            )    
+        }
+
+        return await this.service.approveRegistration(regId, approver);
     }
 
 
@@ -58,7 +72,7 @@ export class RegistrationsController {
     async createNewStudent(
         @Body() regData: RegistrationDTO
     ){
-        return await this.user.createNewRegistration(regData);
+        return await this.service.createNewRegistration(regData);
     }
 
 

@@ -408,7 +408,10 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUs
         makeUnauthenticatedRequest(
             'post', 
             '/api/v1/registrations',
-            newUser,
+            {
+                ...newUser,
+                authToken: _getToken()
+            }
         )
         .then( res => {
             if(res.data.success){

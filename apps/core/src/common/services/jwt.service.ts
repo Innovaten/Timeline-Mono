@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { IUserDoc, UserModel } from "@repo/models";
 import { sign, verify } from 'jsonwebtoken'
-import { CoreConfig } from "../config";
+import { CoreConfig } from "../../config";
 
 
 @Injectable()

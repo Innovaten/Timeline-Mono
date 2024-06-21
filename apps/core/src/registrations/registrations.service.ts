@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { RegistrationModel } from '@repo/models';
+import { IRegistrationDoc, RegistrationModel } from '@repo/models';
 import { Types } from 'mongoose';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
+import { RegistrationDTO } from './registrations.dto';
+import lodash from 'lodash';
 
 @Injectable()
 export class RegistrationsService {
@@ -11,7 +13,7 @@ export class RegistrationsService {
         return results;
     }
 
-    async approveRegistration(_id: string){
+    async approveRegistration(_id: string, approver: string){
         const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
 
         if(!registration){
@@ -22,9 +24,31 @@ export class RegistrationsService {
         }
 
         registration.approvedAt = new Date();
+        registration.approvedBy = new Types.ObjectId(approver);
+        registration.status = 'Approved';
+        
         await registration.save()
 
         return ServerSuccessResponse(registration);
+    }
+
+    async createNewRegistration(regData: RegistrationDTO){
+
+        try {
+            const newCode =  "REG" + lodash.padStart(`${await(RegistrationModel.countDocuments()) + 1}`, 6, "0");
+            
+            const {authToken , ...actualData} = regData
+            const registration = new RegistrationModel({
+                ...actualData,
+                code: newCode,
+            });
+
+            await registration.save();
+            console.log(`Created new registration: ${registration.code}`)
+            return ServerSuccessResponse<IRegistrationDoc>(registration)
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500)
+        }
     }
 
 }

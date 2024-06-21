@@ -1,4 +1,7 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
+
+export const RegistrationStatus = ["Pending", "Approved", "Rejected"] as const;
+export type RegistrationStatusType = typeof RegistrationStatus[number];
 
 export interface IRegistration {
   code: string;
@@ -11,11 +14,15 @@ export interface IRegistration {
   phone: string;
   courses: Array<string>;
 
+  approvedBy: Types.ObjectId;
   approvedAt: Date;
+  acceptedBy: Types.ObjectId;
   acceptedAt: Date;
 
-  createdAt: Date,
-  updatedAt: Date,
+  status: RegistrationStatusType;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface IRegistrationDoc extends Document, IRegistration {}

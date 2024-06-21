@@ -65,14 +65,16 @@ function RootPage(){
                   </Link>
                   {breadCrumbs.map((crumb, idx) => {
                     return (
-                      <Link to={"/" + breadCrumbs.slice(0, idx+1).join('/')}  className='flex gap-2 items-center text-blue-900'>
+                      <Link key={idx} to={"/" + breadCrumbs.slice(0, idx+1).join('/')}  className='flex gap-2 items-center text-blue-900'>
                         {crumb[0].toUpperCase() + crumb.substring(1)}
                         {idx != breadCrumbs.length - 1 && <span>{">"}</span> }
                       </Link>
                     )
                   }) }
               </span>
-              <Outlet />
+              <div className='w-full h-[calc(100%-2rem)]'>
+                <Outlet />
+              </div>
             </div>
           </div>
       </main>

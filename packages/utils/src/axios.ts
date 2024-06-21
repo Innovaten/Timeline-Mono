@@ -9,19 +9,24 @@ export async function makeUnauthenticatedRequest(
   body?: Record<string, any>,
   headers?: Record<string, string>
 ): Promise<AxiosResponse> {
+  
+  let axiosHeaders = {};
+
+  if(headers){
+    if( method == 'get') {
+        axiosHeaders = headers
+    } else {
+      axiosHeaders = {
+        ...headers,
+        "content-type": "application/json"
+      }
+    }
+  }
+
   return backOff(
     () =>
       axios[method](UtilsConfig.applications.core + url, {
-        ...(headers
-          ? {
-              headers: {
-                ...headers,
-                ...(method != "get"
-                  ? { "content-type": "application/json" }
-                  : {}),
-              },
-            }
-          : {}),
+        headers: axiosHeaders,
         ...(body ? body : {}),
       }),
     {
@@ -31,6 +36,7 @@ export async function makeUnauthenticatedRequest(
   );
 }
 
+axios.get("./.",{ headers: { } })
 
 export async function makeAuthenticatedRequest(
   method: "get" | "post" | "put" | "patch" | "delete",
@@ -41,7 +47,6 @@ export async function makeAuthenticatedRequest(
 {
 
   // Basically just adds the authentication token
-
   return makeUnauthenticatedRequest(
     method,
     url,

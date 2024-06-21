@@ -27,7 +27,6 @@ export const UserSchema = new Schema<IUserDoc>({
   otherNames: {
     type: SchemaTypes.String,
     trim: true,
-    required: true,
   },
   gender: {
     type: SchemaTypes.String,
@@ -59,15 +58,7 @@ export const UserSchema = new Schema<IUserDoc>({
   },
 
   meta: {
-    isVerified: {
-      type: SchemaTypes.Boolean,
-      default: false,
-    },
     isPasswordSet: {
-      type: SchemaTypes.Boolean,
-      default: false,
-    },
-    hasVerifiedEmail: {
       type: SchemaTypes.Boolean,
       default: false,
     },
@@ -110,6 +101,21 @@ export const UserSchema = new Schema<IUserDoc>({
       type: SchemaTypes.Date,
     },
   },
+
+  createdBy: {
+    type: SchemaTypes.ObjectId
+  },
+
+  createdAt: {
+    type: SchemaTypes.Date,
+    default: new Date()
+  },
+  updatedAt: {
+    type: SchemaTypes.Date,
+    default: new Date()
+  }
+
+
 });
 
 UserSchema.virtual("fullName").get(function (this: IUserDoc) {

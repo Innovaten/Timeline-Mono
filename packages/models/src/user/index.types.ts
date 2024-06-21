@@ -17,9 +17,7 @@ export interface IUser {
   modeOfClass: "In-Person" | "Online"
 
   meta: {
-    isVerified: boolean;
     isPasswordSet: boolean;
-    hasVerifiedEmail: boolean;
     isSuspended: boolean;
     isDeleted: boolean;
     lastLoggedIn: Date;
@@ -35,8 +33,9 @@ export interface IUser {
     numTries: number;
     expiry: Date;
   };
-  createdAt: Date,
-  updatedAt: Date,
+  createdBy: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface IUserDoc extends Document, IUser {}

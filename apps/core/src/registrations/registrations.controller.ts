@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Request, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Request, UseGuards, Query } from '@nestjs/common';
 import { RegistrationDTO } from './registrations.dto';
 import { RegistrationsService } from './registrations.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
@@ -20,9 +20,9 @@ export class RegistrationsController {
     @UseGuards(AuthGuard)
     @Get()
     async getRegistrations(
-        @Param('limit') rawLimit: string,
-        @Param('offset') rawOffset: string,
-        @Param('filter') rawfilter: string,
+        @Query('limit') rawLimit: string,
+        @Query('offset') rawOffset: string,
+        @Query('filter') rawfilter: string,
     ){
 
         let filter = rawfilter ? JSON.parse(rawfilter) : {}
@@ -52,7 +52,7 @@ export class RegistrationsController {
     @UseGuards(AuthGuard)
     @Get('approve')
     async approveRegistration(
-        @Param('_id') regId: string, 
+        @Query('_id') regId: string, 
         @Request() req: Request, 
     ){
         // @ts-ignore

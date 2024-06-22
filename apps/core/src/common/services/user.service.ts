@@ -22,7 +22,7 @@ export class UserService {
     }
 
     async getUsers(limit?: number, offset?: number, filter?: Record<string, any>){
-        const results = await UserModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0)
+        const results = await UserModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1})
         return results;
     }
 

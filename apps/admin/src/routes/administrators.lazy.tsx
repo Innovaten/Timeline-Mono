@@ -1,9 +1,9 @@
 import { Button, DialogContainer, Input } from '@repo/ui';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import useAdministrators from '../hooks/administrators.hook';
+import useAdministrators, { useAdministratorsFilter } from '../hooks/administrators.hook';
 import { PlusIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
-import { _getToken, makeAuthenticatedRequest, useDialog, useLoading } from '@repo/utils';
+import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, validPhoneNumber } from '@repo/utils';
 import { Formik, Form } from 'formik'
 import { SelectInput } from '@repo/ui';
 import { toast } from 'sonner'
@@ -15,7 +15,8 @@ export const Route = createLazyFileRoute('/administrators')({
 
 function Administrators(){
 
-    const { isLoading: administratorsIsLoading, administrators, count: administratorsCount } = useAdministrators();
+    const { filter, filterOptions, changeFilter, filterChangedFlag } = useAdministratorsFilter();
+    const { isLoading: administratorsIsLoading, administrators, count: administratorsCount } = useAdministrators(filterChangedFlag, filter);
     const { dialogIsOpen, toggleDialog } = useDialog();
 
     const { isLoading, toggleLoading, resetLoading } = useLoading()
@@ -31,11 +32,14 @@ function Administrators(){
     }){
         toggleLoading()
 
+        const validPhone = validPhoneNumber(values.phone)
+
         makeAuthenticatedRequest(
             "post",
             "/api/v1/users",
             {
                 ...values,
+                phone: validPhone,
                 authToken: _getToken(),
             },
         )
@@ -124,6 +128,23 @@ function Administrators(){
                 <div className='mt-2 flex h-fit justify-between items-center'>
                     <h2>Administrators</h2>
                     <Button className='flex px-2 !h-[35px]' onClick={toggleDialog}> <PlusIcon className='inline w-4 mr-1' /> Add an administrator</Button>
+                </div>
+                <div className='w-full mt-3'>
+                    <select
+                        className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
+                        onChange={(e) => { 
+                            // @ts-ignore
+                            changeFilter(e.target.value)
+                        }}
+                    >
+                        { 
+                            filterOptions.map((f, idx) =>{ 
+                                return (
+                                    <option key={idx} value={f}>{f}</option>
+                                )
+                            })
+                        }
+                    </select> 
                 </div>
                 <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow-sm'>
                     <div className='bg-white w-full overflow-auto h-full flex flex-col gap-2 rounded p-1'>

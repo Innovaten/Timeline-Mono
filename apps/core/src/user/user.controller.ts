@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc, UserModel } from '@repo/models';
@@ -21,12 +21,12 @@ export class UsersController {
     @UseGuards(AuthGuard)
     @Get()
     async getAllUsers(
-        @Param('limit') rawLimit: string,
-        @Param('offset') rawOffset: string,
-        @Param('filter') rawfilter: string,
+        @Query('limit') rawLimit: string,
+        @Query('offset') rawOffset: string,
+        @Query('filter') rawFilter: string,
     ){
 
-        let filter = rawfilter ? JSON.parse(rawfilter) : {}
+        let filter = rawFilter ? JSON.parse(rawFilter) : {}
         let limit;
         let offset;
 

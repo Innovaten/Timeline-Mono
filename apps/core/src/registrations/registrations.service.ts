@@ -9,7 +9,7 @@ import lodash from 'lodash';
 export class RegistrationsService {
 
     async getRegistrations(limit?: number, offset?: number, filter?: Record<string, any>){
-        const results = await RegistrationModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0)
+        const results = await RegistrationModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1})
         return results;
     }
 

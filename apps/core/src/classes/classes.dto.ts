@@ -16,10 +16,3 @@ export class CreateClassDto {
     authToken: string;
 }
 
-export class AssignAdminDTO {
-    @IsString()
-    classId: string
-
-    @IsString()
-    administratorId: string
-}

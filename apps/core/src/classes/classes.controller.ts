@@ -2,7 +2,7 @@ import { Body, Controller, Get, Query, Post, Request, UseGuards } from '@nestjs/
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IClassDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateClassDto, AssignAdminDTO } from './classes.dto';
+import { CreateClassDto } from './classes.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { ClassesService } from './classes.service';
 
@@ -90,16 +90,37 @@ export class ClassesController {
 
     }
 
-    @Post('assign-administrator')
+    @UseGuards(AuthGuard)
+    @Get('assign-administrator')
     async assignAdministrator(
-        @Body() assignAdminDTO: AssignAdminDTO,
+        @Query('adminId') adminId: string,
+        @Query('classId') classId: string,
+        @Request() req: any
     ) {
+        const user = req["user"];
+        
+        if (!user) {
+            return ServerErrorResponse(
+                new Error("Unauthenticated"),
+                401
+            );
+        }
+
+        if (user.role !== 'SUDO') {
+            return ServerErrorResponse(
+                new Error("Unauthorized"),
+                401
+            );
+        }
+
         try {
-            const result = await this.service.assignAdministrator(assignAdminDTO.classId, assignAdminDTO.administratorId)
-            return ServerSuccessResponse(result)
-        } catch(err) {
-            return ServerErrorResponse(new Error(`{err}`), 500)
+            const updatedClass = await this.service.assignAdministrator(classId, adminId);
+            return ServerSuccessResponse(updatedClass);
+        } catch (err) {
+            return ServerErrorResponse(
+                new Error(`${err}`),
+                500
+            );
         }
     }
-
 }

@@ -90,4 +90,37 @@ export class ClassesController {
 
     }
 
+    @UseGuards(AuthGuard)
+    @Get('assign-administrator')
+    async assignAdministrator(
+        @Query('adminId') adminId: string,
+        @Query('classId') classId: string,
+        @Request() req: any
+    ) {
+        const user = req["user"];
+        
+        if (!user) {
+            return ServerErrorResponse(
+                new Error("Unauthenticated"),
+                401
+            );
+        }
+
+        if (user.role !== 'SUDO') {
+            return ServerErrorResponse(
+                new Error("Unauthorized"),
+                401
+            );
+        }
+
+        try {
+            const updatedClass = await this.service.assignAdministrator(classId, adminId);
+            return ServerSuccessResponse(updatedClass);
+        } catch (err) {
+            return ServerErrorResponse(
+                new Error(`${err}`),
+                500
+            );
+        }
+    }
 }

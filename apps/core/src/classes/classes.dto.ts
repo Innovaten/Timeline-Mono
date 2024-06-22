@@ -15,3 +15,4 @@ export class CreateClassDto {
     @IsString()
     authToken: string;
 }
+

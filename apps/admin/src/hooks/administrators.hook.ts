@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { IUserDoc } from "@repo/models";
 import { makeAuthenticatedRequest } from "@repo/utils";
 
-export default function useAdministrators(
+export function useAdministrators(
     flag?: boolean, 
     filter: Record<string, any> = { role: { $in: ["SUDO", "ADMIN"] } },
     limit: number = 10, 

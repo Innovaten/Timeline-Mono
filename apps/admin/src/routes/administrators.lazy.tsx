@@ -1,6 +1,6 @@
 import { Button, DialogContainer, Input } from '@repo/ui';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import useAdministrators, { useAdministratorsFilter } from '../hooks/administrators.hook';
+import { useAdministrators, useAdministratorsFilter } from '../hooks';
 import { PlusIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
 import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, validPhoneNumber } from '@repo/utils';
@@ -126,7 +126,7 @@ function Administrators(){
             </DialogContainer>
             <div className='flex flex-col w-full h-full'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
-                    <h2>Administrators</h2>
+                    <h2 className='text-blue-800'>Administrators</h2>
                     <Button className='flex px-2 !h-[35px]' onClick={toggleDialog}> <PlusIcon className='inline w-4 mr-1' /> Add an administrator</Button>
                 </div>
                 <div className='w-full mt-3'>
@@ -161,7 +161,7 @@ function Administrators(){
                         !administratorsIsLoading && administrators.map(({ firstName, lastName, role, updatedAt }, idx) => {
                             return (
                             // Onclick trigger a dialog
-                            <div key={idx} className = 'w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10'>
+                            <div key={idx} className = 'w-full text-blue-700 py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10'>
                                 <div className='flex items-center gap-4'>
                                     <small className='font-light'>{role}</small>
                                     <h5 className='flex-1 font-normal truncate'>{firstName + " " + lastName }</h5>

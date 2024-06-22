@@ -2,7 +2,7 @@ import { Body, Controller, Get, Query, Post, Request, UseGuards } from '@nestjs/
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IClassDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateClassDto } from './classes.dto';
+import { CreateClassDto, AssignAdminDTO } from './classes.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { ClassesService } from './classes.service';
 
@@ -88,6 +88,18 @@ export class ClassesController {
             )
         }
 
+    }
+
+    @Post('assign-administrator')
+    async assignAdministrator(
+        @Body() assignAdminDTO: AssignAdminDTO,
+    ) {
+        try {
+            const result = await this.service.assignAdministrator(assignAdminDTO.classId, assignAdminDTO.administratorId)
+            return ServerSuccessResponse(result)
+        } catch(err) {
+            return ServerErrorResponse(new Error(`{err}`), 500)
+        }
     }
 
 }

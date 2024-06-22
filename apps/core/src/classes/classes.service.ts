@@ -36,4 +36,16 @@ export class ClassesService {
 
         return newClass;
     }
+
+    async assignAdministrator(classId: string, administratorId: string) {
+        const classDoc = await ClassModel.findById(classId)
+        if(!classDoc) {
+            throw new Error('Class not found')
+        }
+
+        classDoc.administrators.push(new Types.ObjectId(administratorId))
+        await classDoc.save()
+
+        return classDoc
+    }
 }

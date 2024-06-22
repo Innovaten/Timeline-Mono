@@ -87,8 +87,8 @@ export function useClassesAssignedStatusFilter(){
 
     const resultingFilters = {
         "All": {},
-        "Assigned": { administrators: { $neq: [] } },
-        "Unassigned": { administrators: { $eq: [] } },
+        "Assigned": { administrators: { $exists: true, $not: { $size: 0 }} },
+        "Unassigned": { administrators: { $exists: true,  $size: 0 }  },
     };
 
     const filterOptions = Object.keys(resultingFilters);

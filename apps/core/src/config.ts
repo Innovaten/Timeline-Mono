@@ -1,3 +1,6 @@
+require("dotenv").config();
+
+
 export const CoreConfig = {
     db: {
         uri: process.env.MONGODB_URI ?? 'mongodb://localhost:27017',

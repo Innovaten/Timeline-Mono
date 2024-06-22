@@ -7,11 +7,13 @@ import { NextFunction, Request, Response } from 'express';
 
 async function bootstrap() {
 
-  // await mongoose.connect(CoreConfig.db.uri, {
-  //   dbName: CoreConfig.db.database
-  // });
-  // console.log('--- MongoDB Connected ---');
-  // console.log('URI: ', CoreConfig.db.uri, "  DB: ", CoreConfig.db.database)
+  console.log(CoreConfig.db.uri)
+
+  await mongoose.connect(CoreConfig.db.uri, {
+    dbName: CoreConfig.db.database
+   });
+   console.log('--- MongoDB Connected ---');
+   console.log('URI: ', CoreConfig.db.uri, "  DB: ", CoreConfig.db.database)
 
   const app = await NestFactory.create(AppModule);
   app.enableCors({

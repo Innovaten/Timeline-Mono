@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 import { UserModel, UserSchema } from "./user";
 import { RegistrationModel, RegistrationSchema } from "./registration";
+import { ClassModel, ClassSchema } from "./class/class.schema";
 
 import { IUserDoc } from "./user/index.types";
 import { IRegistrationDoc } from "./registration/index.types";
+import { IClassDoc } from "./class/class.types";
 
 ( async function index(){
     await mongoose.connect(process.env.MONGODB_URI!, {
@@ -18,13 +20,16 @@ export {
     //Interfaces
     type IUserDoc,
     type IRegistrationDoc,
+    type IClassDoc,
 
     //Models
     UserModel,
     RegistrationModel,
+    ClassModel,
 
     // Schema
     UserSchema,
-    RegistrationSchema
+    RegistrationSchema,
+    ClassSchema,
 
 }

@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { RegistrationsModule } from './registrations/registrations.module';
+import { ClassesModule } from './classAssignment/class.module';
 import CustomCommon from './common';
 
 @Module({
@@ -16,6 +17,7 @@ import CustomCommon from './common';
     AuthModule,
     UserModule,
     RegistrationsModule,
+    ClassesModule
   ],
   controllers: [AppController],
   providers: [AppService, CustomCommon],

@@ -13,7 +13,7 @@ export interface IUser {
   email: string;
   phone: string;
   
-  courses: Types.ObjectId[]
+  classes: Types.ObjectId[]
   modeOfClass: "In-Person" | "Online"
 
   meta: {

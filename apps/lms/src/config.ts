@@ -1,5 +1,5 @@
 export const constants = {
-    courses: {
+    classes: {
       "SAT": {
         displayName: 'Scholastic Assessment Test',   
       },

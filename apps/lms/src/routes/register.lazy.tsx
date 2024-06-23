@@ -26,7 +26,7 @@ type RegistrationObjectType = Pick<IRegistrationDoc,
 "gender" | 
 "code" | 
 "modeOfClass" | 
-"courses" 
+"classes" 
 >
 
 function RegisterPage(){
@@ -44,7 +44,7 @@ function RegisterPage(){
     
     // @ts-ignore
     modeOfClass: "In-Person",
-    courses: []
+    classes: []
   }) 
   
   const parentRef = useRef<HTMLDivElement>(null)
@@ -293,11 +293,11 @@ type CourseDetailsProps = {
 
 function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: CourseDetailsProps){
         
-    const initialCoursesValuesKeys = Object.keys(constants.courses)
-    const initialCoursesValues: Record<string, boolean> = {}
+    const initialClassesValuesKeys = Object.keys(constants.classes)
+    const initialClassesValues: Record<string, boolean> = {}
     
-    for(let key of initialCoursesValuesKeys){initialCoursesValues[key] = false}
-    const [ courses, setCourses] = useState<Record<string,boolean>>(initialCoursesValues)
+    for(let key of initialClassesValuesKeys){initialClassesValues[key] = false}
+    const [ classes, setClasses] = useState<Record<string,boolean>>(initialClassesValues)
 
     function handleSubmit(values: { 
       modeOfClass: string,
@@ -306,7 +306,7 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
             return ({
                 ...prev,
                 modeOfClass: values.modeOfClass,
-                courses: Object.keys(courses).filter( course => courses[course])
+                classes: Object.keys(classes).filter(c => classes[c])
             })
         })
         fadeParentAndReplacePage(registrationPages.parent, componentRef, registrationPages['summary-details'], 'flex')
@@ -332,25 +332,25 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
                 >
                     <Form className='flex flex-col gap-4 xl:gap-6'>
                         <div className='my-1 md:my-3'>
-                            <h1 className='text-blue-950 mb-2'>Choose your Courses</h1>
-                            <p>Please select the courses you want to register for.</p>
+                            <h1 className='text-blue-950 mb-2'>Choose your Classes</h1>
+                            <p>Please select the classes you want to register for.</p>
                         </div>
                         <div className='w-full flex flex-col sm:flex-row gap-4'>
                             <div className='flex gap-4 flex-wrap'>
                                 { 
-                                    Object.keys(courses).map((course, idx) => {
+                                    Object.keys(classes).map((c, idx) => {
                                     return <span 
                                         key={idx} 
-                                        className={`px-4 py-2 ${ courses[course] ? 'bg-blue-600 text-white' : 'bg-slate-100 text-blue-600' } cursor-pointer rounded-full text-xl duration-150`}
+                                        className={`px-4 py-2 ${ classes[c] ? 'bg-blue-600 text-white' : 'bg-slate-100 text-blue-600' } cursor-pointer rounded-full text-xl duration-150`}
                                         onClick={()=> {
-                                            setCourses((prev) => {
+                                            setClasses((prev) => {
                                                 return {
                                                 ...prev,
-                                                [course]: !prev[course]
+                                                [c]: !prev[c]
                                                 }
                                             });
                                         }}
-                                    >{course}</span>
+                                    >{c}</span>
                                     
                                 })}
                             </div>
@@ -464,7 +464,7 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUs
                     </div>
                     <div className='flex gap-2'>
                         <p className='text-lg inline font-medium'>Courses:</p>
-                        <p className='text-lg text-blue-600 inline'>{newUser.courses.join(', ')}</p>
+                        <p className='text-lg text-blue-600 inline'>{newUser.classes.join(', ')}</p>
                     </div>
                 </div>
                 <Button

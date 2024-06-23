@@ -39,7 +39,7 @@ export const RegistrationSchema = new Schema<IRegistrationDoc>({
         type: SchemaTypes.String,
         required: true,
     },
-    courses:  {
+    classes:  {
         type: [SchemaTypes.String],
         required: true,
     },

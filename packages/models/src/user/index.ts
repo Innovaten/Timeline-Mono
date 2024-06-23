@@ -45,7 +45,7 @@ export const UserSchema = new Schema<IUserDoc>({
     required: true,
   },
 
-  courses: {
+  classes: {
     type: [SchemaTypes.ObjectId],
     required: false
     //ref: 'courses'

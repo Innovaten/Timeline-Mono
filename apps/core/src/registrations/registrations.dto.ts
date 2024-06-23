@@ -23,7 +23,7 @@ export class RegistrationDTO {
     phone: string;
 
     @IsArray()
-    courses: Array<string>;
+    classes: Array<string>;
 
     @IsString()
     authToken: string;

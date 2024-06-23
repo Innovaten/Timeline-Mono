@@ -12,7 +12,7 @@ export interface IRegistration {
   modeOfClass: string;
   otherNames: string;
   phone: string;
-  courses: Array<string>;
+  classes: Array<string>;
 
   approvedBy: Types.ObjectId;
   approvedAt: Date;

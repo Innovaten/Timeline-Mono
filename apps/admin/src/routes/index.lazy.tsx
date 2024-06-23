@@ -24,7 +24,8 @@ function IndexPage() {
     const greeting = currentHour < 12 ? "Morning" :
         currentHour < 17 ? "Afternoon" : "Evening"
 
-    const stats = user?.role ?? "ADMIN" == "ADMIN" ?
+
+    const stats = ( user?.role ?? "ADMIN" ) == "ADMIN" ?
     [
       {
         label: 'My Classes',
@@ -66,10 +67,12 @@ function IndexPage() {
       },
       {
         label: 'Registrations',
-        value: 67,
+        value: registrations.length,
         icon: NewspaperIcon,
       },
     ]
+
+    console.log(user?.role, stats)
 
     return (
        <>

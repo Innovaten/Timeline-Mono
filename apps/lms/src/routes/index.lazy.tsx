@@ -126,7 +126,7 @@ function IndexPage() {
               </div>
               <div className='w-full'>
                 <h4>Events</h4>
-                <div className='w-full aspect-[18/9] bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
+                <div className='w-full h-[calc(100%-2.25rem)] bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
                   <div className='bg-white w-full h-full flex flex-col gap-2 rounded p-1'>
                     {
                       events.map(({title, date, url}, idx) => {

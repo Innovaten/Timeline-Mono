@@ -35,7 +35,7 @@ export default function CalendarComponent({ events }: CalendarComponentProps){
     const datesOfEventsThisMonth = Object.keys(eventsInThisMonth).map((date) => new Date(date).getDate())
 
     return (
-        <div className='w-full aspect-[18/9] bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
+        <div className='w-full h-fit bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
             <div className='bg-white w-full h-full rounded p-3'>
             <div className='flex w-full justify-between items-center bg-blue-50 p-1 rounded-full'>
                 <button className='w-6 aspect-square flex items-center justify-center rounded-full bg-white hover:bg-blue-400/10 duration-150 cursor-pointer' onClick={() => { setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, prev.getUTCDate()))}}><ArrowLeftIcon className='w-4'/></button>

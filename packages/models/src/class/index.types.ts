@@ -17,6 +17,7 @@ export interface IClass {
   resources: Types.ObjectId[];
   assignments: Types.ObjectId[];
   quizzes: Types.ObjectId[];
+  timetable: Types.ObjectId;
   
   // settings: {};
 

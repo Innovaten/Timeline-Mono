@@ -46,6 +46,10 @@ export const ClassSchema = new Schema<IClassDoc>({
         type: [ SchemaTypes.ObjectId],
         default: []
     },
+    timetable: {
+        type: SchemaTypes.ObjectId,
+        default: null,
+    },
     /*
     settings: {
         type: SchemaTypes.Subdocument,

@@ -13,7 +13,7 @@ async function bootstrap() {
   app.use((req: Request, res: Response, next: NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
-    res.header('Access-Control-Allow-Headers', '*');
+    res.header('Access-Control-Allow-Headers', 'Authorization,Content-Type');
     next();
   });
   // Disable in Prod

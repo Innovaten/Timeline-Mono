@@ -1,7 +1,7 @@
 import { Button, DialogContainer, Input } from '@repo/ui';
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { useAdministrators, useAdministratorsFilter, useCompositeFilterFlag } from '../hooks';
-import { PlusIcon, FunnelIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
 import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, validPhoneNumber } from '@repo/utils';
 import { Formik, Form } from 'formik'
@@ -19,9 +19,9 @@ function Administrators(){
 
     const { filter, filterOptions, changeFilter, filterChangedFlag } = useAdministratorsFilter();
     const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
-    const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ filterChangedFlag, refreshFlag  ])
+    const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ filterChangedFlag, refreshFlag ])
 
-    const { isLoading: administratorsIsLoading, administrators, count: administratorsCount } = useAdministrators(filterChangedFlag, filter);
+    const { isLoading: administratorsIsLoading, administrators, count: administratorsCount } = useAdministrators(compositeFilterFlag, filter);
     const { dialogIsOpen, toggleDialog: toggleCreateDialog } = useDialog();
     const { dialogIsOpen: updateDialogIsOpen, toggleDialog: toggleUpdateDialog } = useDialog();
     const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
@@ -310,6 +310,9 @@ function Administrators(){
                         </select> 
 
                     }
+                    <div className='flex flex-col gap-2 justify-end'>
+                        <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
+                    </div>
                 </div>
                 <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow-sm'>
                     <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
@@ -325,7 +328,7 @@ function Administrators(){
                         </div>
                         {
                             administratorsIsLoading && 
-                            <div className='w-full h-full m-auto'>
+                            <div className='w-full h-full m-auto mt-4'>
 
                                 <div
                                     className='w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin' 
@@ -336,7 +339,7 @@ function Administrators(){
                         !administratorsIsLoading && administrators.map((admin, idx) => {
                             return (
                             // Onclick trigger a dialog
-                            <div key={idx} onClick={() => { setSelectedAdmin(admin); toggleUpdateDialog() }} className = 'cursor-pointer w-full text-blue-700 py-2 px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10'>
+                            <div key={idx} onClick={() => { setSelectedAdmin(admin); toggleUpdateDialog() }} className = 'cursor-pointer w-full text-blue-700 py-2 px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                 <div className='flex items-center gap-4'>
                                     <small className='font-light w-[50px]'>{admin.role}</small>
                                     <h5 className='flex-1 font-normal truncate'>{admin.firstName + " " + admin.lastName }</h5>

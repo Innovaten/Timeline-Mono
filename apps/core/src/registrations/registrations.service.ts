@@ -32,6 +32,25 @@ export class RegistrationsService {
         return ServerSuccessResponse(registration);
     }
 
+    async rejectRegistration(_id: string, approver: string){
+        const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
+
+        if(!registration){
+            return ServerErrorResponse(
+                new Error("Specified registration could not be found"),
+                404,
+            )
+        }
+
+        registration.rejectedAt = new Date();
+        registration.rejectedBy = new Types.ObjectId(approver);
+        registration.status = 'Rejected';
+        
+        await registration.save()
+
+        return ServerSuccessResponse(registration);
+    }
+
     async createNewRegistration(regData: RegistrationDTO){
 
         try {

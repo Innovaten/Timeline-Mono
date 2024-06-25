@@ -1,14 +1,11 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { _getToken, makeAuthenticatedRequest } from '@repo/utils';
-import { Button, DialogContainer } from '@repo/ui';
+import { _getToken } from '@repo/utils';
 
 import { useLMSContext } from '../app'
 import { BookOpenIcon, UsersIcon, AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData'
 import { useRegistrations } from '../hooks';
-import { useState } from 'react';
-import { toast } from 'sonner';
 
 dayjs.extend(localeData)
 
@@ -19,107 +16,7 @@ export const Route = createLazyFileRoute('/')({
 
 function IndexPage() {
 
-  const [isOpen, setIsOpen] = useState(false) 
-  const [registrantId, setRegistrantId] = useState<any>()
-  const [registrant, setRegistrant] = useState<RegistrationObject>({
-    firstName  : "",
-    otherNames  : "",
-    lastName  : "",
-    email  : "",
-    phone  : "",
-    gender  : "",
-    modeOfClass  : "",
-    courses : []
-  })
-
-    
-  function toggleOpen(registrantId:any){
-    setRegistrantId(registrantId)
-    setIsOpen(!isOpen)
-  }
-
-  function handleClose(){
-      postRegistrant(registrantId)
-      setIsOpen(false)
-}
-
-function postRegistrant(registrantId:any){ 
-  console.log(registrantId)
-  makeAuthenticatedRequest(
-  "get",
-  `/api/v1/registrations/approve?_id=${registrantId}`,
-  {
-    
-      authToken: _getToken(),
-  },
-)
-.then(res => {
-  console.log(res)
-  if(res.status == 200 && res.data.success){
-      toast.success(<p>Student registered successfully.<br/>A confirmation will be sent via email.</p>)
-  } else {
-      toast.error(`${res.data.error.msg}`)
-  }
-})
-.catch( err => {
-  console.log(err)
-  toast.error(`${err}`)
-})
-
-}
-
-interface RegistrationObject{
-firstName  : string
-otherNames  : string
-lastName  : string
-email  : string
-phone  : string
-gender  : string
-modeOfClass  : string
-courses : string[]
-}
-
-
-function ApprovalDiagBox(){
-  const {firstName, lastName, otherNames, email, phone, gender, courses, modeOfClass } = registrant
-
- return(
-   <DialogContainer isOpen={isOpen} onClose={handleClose} toggleOpen={()=> toggleOpen(registrantId)} title={`Apporve ${firstName +" "+ lastName}'s registration`} description={`Confirm the registration of ${firstName +" "+ lastName}`} >
-  <div className='flex-col gap-4 sm:justify-between'>          
-               <div className='flex flex-col gap-2'>
-                   <div className='flex gap-2'>
-                       <p className='text-lg inline font-medium'>Full Name:</p>
-                       <p className='text-lg text-blue-600 inline'>{firstName}{otherNames == "" ? " " : " " + otherNames + " "}{lastName}</p>
-                   </div>
-                   <div className='flex gap-2'>
-                       <p className='text-lg inline font-medium'>Gender:</p>
-                       <p className='text-lg text-blue-600 inline'>{gender}</p>
-                   </div>
-                   <div className='flex gap-2'>
-                       <p className='text-lg inline font-medium'>Email Address:</p>
-                       <p className='text-lg text-blue-600 inline'>{email}</p>
-                   </div>
-                   <div className='flex gap-2'>
-                       <p className='text-lg inline font-medium'>Phone Number:</p>
-                       <p className='text-lg text-blue-600 inline'>{phone}</p>
-                   </div>
-                   <div className='flex gap-2'>
-                       <p className='text-lg inline font-medium'>Mode of Class:</p>
-                       <p className='text-lg text-blue-600 inline'>{modeOfClass}</p>
-                   </div>
-                   <div className='flex gap-2'>
-                       <p className='text-lg inline font-medium'>Courses:</p>
-                       <p className='text-lg text-blue-600 inline'>{courses}</p>
-                   </div>
-                   <Button className='px-3 !h-[35px]' type='submit' isLoading={false} onClick={()=>{handleClose}}>Add Registrant</Button>
-               </div>
-    </div>
-    </DialogContainer>
-
- )
-
-}
-
+  
     const user = useLMSContext((state) => state.user);
     
     const { registrations, isLoading: registrationsIsLoading } = useRegistrations()
@@ -209,16 +106,17 @@ function ApprovalDiagBox(){
                         
                         return (
                           // Onclick trigger a dialog
-                          <div key={idx} className = 'w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10' onClick={()=>{toggleOpen(registration._id); setRegistrant(registration)}}>
+                          <div key={idx} className = 'w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10'>
                             <h5 className='flex-1 font-normal truncate'>{registration.firstName + " " + registration.lastName}</h5>
                             <div className='flex gap-4 items-center font-light'>
                               <span>{new Date(registration.updatedAt).toLocaleTimeString()}</span>
                               <span>{new Date(registration.updatedAt).toDateString()}</span>
                             </div>
-                            <ApprovalDiagBox />
+    
                           </div>
                         )
                       })
+
                     }
                   </div>
                 </div>

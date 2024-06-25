@@ -5,6 +5,7 @@ import { IUserDoc, UserModel } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { CreateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
+import { Roles } from '../common/enums/roles.enum';
 
 @Controller({
     path: 'users',
@@ -88,6 +89,38 @@ export class UsersController {
             )
         }
 
+    }
+
+    @UseGuards(AuthGuard)
+    @Get('upgrade-to-sudo')
+    async upgradeToSudo(@Query('adminId') adminId: string, @Request() req: any) {
+       const user = req['user']
+       if(user.role !== Roles.SUDO) {
+        return ServerErrorResponse(new Error('Unauthorized'), 401)
+       } 
+       
+       try {
+        const updatedUser = await this.user.upgradeToSudo(adminId)
+        return ServerSuccessResponse(updatedUser)
+       } catch (error) {
+        return ServerErrorResponse(new Error(`${error}`), 500)
+       }
+    }
+
+    @UseGuards(AuthGuard)
+    @Get('downgrade-to-admin')
+    async downgradeToAdmin(@Query('sudoId') sudoId: string, @Request() req: any) {
+        const user = req['user']
+        if(user.role !== Roles.SUDO) {
+            return ServerErrorResponse(new Error('Unauthorized'), 401)
+        }
+
+        try {
+            const updatedUser = await this.user.downgradeToAdmin(sudoId)
+            return ServerSuccessResponse(updatedUser)
+        } catch (error) {
+            return ServerErrorResponse(new Error(`${error}`), 500)
+        }
     }
 
 }

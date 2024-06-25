@@ -6,6 +6,7 @@ import { CreateClassDto } from './classes.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { ClassesService } from './classes.service';
 
+
 @Controller({
     path: 'classes',
     version: '1',

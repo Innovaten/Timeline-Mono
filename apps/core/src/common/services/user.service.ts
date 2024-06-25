@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
 import { UserModel } from "@repo/models";
-import { CreateUserDto } from "../../user/user.dto";
+import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import lodash from "lodash";
 import { Types } from "mongoose";
 import { generate } from 'generate-password'
@@ -92,6 +92,18 @@ export class UserService {
 
         user.role = Roles.ADMIN
         await user.save()
+
+        return user
+    }
+
+    async updateUser(updateUserDto: UpdateUserDto) {
+        const { _id, ...updateFields } = updateUserDto;
+
+        const user = await UserModel.findByIdAndUpdate(new Types.ObjectId(_id), updateFields, { new: true })
+
+        if(!user) {
+            throw new Error("User not found")
+        }
 
         return user
     }

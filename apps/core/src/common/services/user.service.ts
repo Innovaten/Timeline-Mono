@@ -6,6 +6,9 @@ import lodash from "lodash";
 import { Types } from "mongoose";
 import { generate } from 'generate-password'
 import bcrypt from 'bcrypt'
+import { Roles } from "../enums/roles.enum";
+
+
 @Injectable()
 export class UserService {
     async verifyPassword(email: string, password: string) {
@@ -66,4 +69,31 @@ export class UserService {
         return user;
 
     }
+
+    async upgradeToSudo(adminId: string) {
+        const user = await UserModel.findById(new Types.ObjectId(adminId))
+
+        if(!user) {
+            throw new Error("User not found")
+        }
+
+        user.role = Roles.SUDO;
+        await user.save()
+
+        return user
+    }
+
+    async downgradeToAdmin(sudoId: string) {
+        const user = await UserModel.findById(new Types.ObjectId(sudoId))
+
+        if(!user) {
+            throw new Error("User not found")
+        }
+
+        user.role = Roles.ADMIN
+        await user.save()
+
+        return user
+    }
 }
+

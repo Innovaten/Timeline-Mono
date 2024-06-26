@@ -124,7 +124,7 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard)
-    @Patch('update')
+    @Patch()
     async updateUser(@Body() updateUserDto: UpdateUserDto, @Request() req: any) {
         const user = req['user']
         if (user.role !== 'SUDO' && user._id !== updateUserDto._id) {

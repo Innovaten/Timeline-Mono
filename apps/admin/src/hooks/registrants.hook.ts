@@ -41,12 +41,12 @@ export function useRegistrants(
 }
 
 export function useRegistrantsFilter(){
-    const [ filterLabel, setFilterLabel ] = useState< "All" | "Pending" | "Approved" | "Rejected">("All");
+    const [ filterLabel, setFilterLabel ] = useState< "All" | "Pending" | "Approved" | "Rejected">("Pending");
     const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
 
     const resultingFilters = {
-        "All": { status: { $in: ["Pending", "Approved", "Rejected"] } },
         "Pending": { status: { $in: ["Pending"] } },
+        "All": { status: { $in: ["Pending", "Approved", "Rejected"] } },
         "Approved": { status: { $in: ["Approved"] } },
         "Rejected": { status: { $in: ["Rejected"] } },
     };

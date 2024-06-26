@@ -32,7 +32,7 @@ export class RegistrationsService {
         return ServerSuccessResponse(registration);
     }
 
-    async rejectRegistration(_id: string, approver: string){
+    async rejectRegistration(_id: string, rejector: string){
         const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
 
         if(!registration){
@@ -43,7 +43,8 @@ export class RegistrationsService {
         }
 
         registration.rejectedAt = new Date();
-        registration.rejectedBy = new Types.ObjectId(approver);
+        registration.rejectedBy = new Types.ObjectId(rejector);
+        registration.updatedAt = new Date();
         registration.status = 'Rejected';
         
         await registration.save()

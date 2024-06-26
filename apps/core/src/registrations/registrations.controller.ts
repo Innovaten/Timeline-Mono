@@ -74,15 +74,15 @@ export class RegistrationsController {
         @Request() req: Request, 
     ){
         // @ts-ignore
-        const approver = req["user"]
-        if(!approver){
+        const rejector = req["user"]
+        if(!rejector){
             return ServerErrorResponse(
                 new Error("Unauthenticated Request"),
                 403
             )    
         }
 
-        return await this.service.rejectRegistration(regId, approver);
+        return await this.service.rejectRegistration(regId, rejector);
     }
 
     @Post()

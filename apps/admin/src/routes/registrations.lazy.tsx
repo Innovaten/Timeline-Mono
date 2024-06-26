@@ -35,46 +35,10 @@ function RegistrationsPage() {
     courses: [],
   });
 
- 
-  function toggleOpenApproval(registrantId: any) {
-    setRegistrantId(registrantId);
-    setIsOpen(!isOpen);
-  }
-  function toggleOpenRejection(){
-    setConfirmationReject(!confirmationReject)
-  }
-
-  function handleCloseApproval() {
-    setIsOpen(false);
-  }
-
-  function handleCloseRejection(){
-    setConfirmationReject(false)
-  }
-
-  function postAcceptedRegistrant() {
-    handleCloseApproval();
-    acceptRegistrant(registrantId);
-  }
-
-  function handleReject() {
-    setIsOpen(false);
-    setConfirmationReject(true)  
-  }
-
-  function postRejectedRegistrant() {
-    handleCloseRejection();
-    rejectRegistrant(registrantId);
-  }
-
   function acceptRegistrant(registrantId: any) {
-    console.log(registrantId);
     makeAuthenticatedRequest(
       "get",
       `/api/v1/registrations/approve?_id=${registrantId}`,
-      {
-        authToken: _getToken(),
-      }
     )
       .then((res) => {
         console.log(res);
@@ -96,13 +60,9 @@ function RegistrationsPage() {
   }
 
   function rejectRegistrant(registrantId: any) {
-    console.log(registrantId);
     makeAuthenticatedRequest(
       "get",
       `/api/v1/registrations/reject?_id=${registrantId}`,
-      {
-        authToken: _getToken(),
-      }
     )
       .then((res) => {
         console.log(res);
@@ -148,9 +108,9 @@ function RegistrationsPage() {
     return (
       <DialogContainer
         isOpen={isOpen}
-        onClose={handleCloseApproval}
-        toggleOpen={() => toggleOpenApproval(registrantId)}
-        title={`Apporve ${firstName + " " + lastName}'s registration`}
+        onClose={()=>setIsOpen(false)}
+        toggleOpen={() => setIsOpen(!isOpen)}
+        title={`Approve Registration`}
         description={`Confirm the registration of ${firstName + " " + lastName}`}
       >
         <div className="flex-col gap-4 sm:justify-between">
@@ -190,11 +150,11 @@ function RegistrationsPage() {
               })}
             </div>
             <div className="flex flex-row space-x-8">
-            <Button className="px-3 w-56 !h-[35px]" type="submit" isLoading={false} onClick={() => {postAcceptedRegistrant()}}>
-              Add Registrant
-            </Button>
-            <Button className="px-3 w-56 !h-[35px]" type="submit" isLoading={false} variant="danger" onClick={() => {handleReject()}}>
+            <Button className="px-3 w-56 !h-[35px]" type="submit" isLoading={false} variant="outline" onClick={() => {setIsOpen(false); setConfirmationReject(true)  }}>
               Reject Registrant
+            </Button>
+            <Button className="px-3 w-56 !h-[35px]" type="submit" isLoading={false} variant="primary" onClick={() => {setIsOpen(false); acceptRegistrant(registrantId)}}>
+              Approve Registrant
             </Button>
             </div>
           </div>
@@ -207,26 +167,21 @@ function RegistrationsPage() {
     return (
       <DialogContainer
         isOpen={confirmationReject}
-        onClose={handleCloseRejection}
-        toggleOpen={() => toggleOpenRejection()}
-        title={`Reject ${registrant.firstName + " " + registrant.lastName}'s registration`}
-        description={`Confirm the rejection of ${registrant.firstName + " " + registrant.lastName}`}
+        onClose={()=>setConfirmationReject(false)}
+        toggleOpen={() => setConfirmationReject(!confirmationReject)}
+        title={`Reject Registration`}
+        description={`Are you sure you want to reject ${registrant.firstName + " " + registrant.lastName} ?`}
       >
         <div className="flex-col gap-4 sm:justify-between">
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2">
-              <p className="text-lg inline font-medium">Full Name:</p>
-              <p className="text-lg text-blue-600 inline">
-                {registrant.firstName + " " + registrant.lastName}
-              </p>
-            </div>
               <Button
                 className="px-3 !h-[35px]"
                 type="submit"
                 variant="danger"
                 isLoading={false}
                 onClick={() => {
-                  postRejectedRegistrant();
+                  setConfirmationReject(false);
+                  rejectRegistrant(registrantId);
                 }}
               >
                 Reject Registrant
@@ -273,10 +228,11 @@ function RegistrationsPage() {
                 return (
                   <div
                     key={idx}
-                    className="w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10"
+                    className="w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10 cursor-pointer"
                     onClick={() => {
-                      toggleOpenApproval(registrant._id);
+                      setRegistrantId(registrant._id);
                       setRegistrant(registrant);
+                      setIsOpen(true)
                     }}
                   >
                     <h5 className="flex-1 font-normal truncate">

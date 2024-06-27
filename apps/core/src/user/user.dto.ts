@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsPhoneNumber, IsEnum } from "class-validator";
+import { IsEmail, IsString, IsPhoneNumber, IsEnum, IsOptional } from "class-validator";
 
 enum Role {
     "ADMIN",
@@ -26,4 +26,29 @@ export class CreateUserDto {
 
     @IsString()
     authToken: string;
+}
+
+export class UpdateUserDto {
+    @IsString()
+    _id: string
+
+    @IsString()
+    @IsOptional()
+    firstName?: string
+
+    @IsString()
+    @IsOptional()
+    lastName?: string
+
+    @IsString()
+    @IsOptional()
+    phone?: string
+
+    @IsEmail()
+    @IsOptional()
+    email?: string
+
+    @IsString()
+    @IsOptional()
+    gender?: string
 }

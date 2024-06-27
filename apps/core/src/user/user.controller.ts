@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc, UserModel } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateUserDto } from './user.dto';
+import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { Roles } from '../common/enums/roles.enum';
 
@@ -117,6 +117,22 @@ export class UsersController {
 
         try {
             const updatedUser = await this.user.downgradeToAdmin(sudoId)
+            return ServerSuccessResponse(updatedUser)
+        } catch (error) {
+            return ServerErrorResponse(new Error(`${error}`), 500)
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Patch()
+    async updateUser(@Body() updateUserDto: UpdateUserDto, @Request() req: any) {
+        const user = req['user']
+        if (user.role !== 'SUDO' && user._id !== updateUserDto._id) {
+            return ServerErrorResponse(new Error("Unauthorized"), 401)
+        }
+
+        try {
+            const updatedUser = await this.user.updateUser(updateUserDto)
             return ServerSuccessResponse(updatedUser)
         } catch (error) {
             return ServerErrorResponse(new Error(`${error}`), 500)

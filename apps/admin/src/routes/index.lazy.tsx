@@ -16,6 +16,7 @@ export const Route = createLazyFileRoute('/')({
 
 function IndexPage() {
 
+  
     const user = useLMSContext((state) => state.user);
     
     const { registrations, isLoading: registrationsIsLoading } = useRegistrations()
@@ -104,18 +105,21 @@ function IndexPage() {
                        </div>
                     } 
                     { 
-                       !registrationsIsLoading && registrations.map(({ firstName, lastName,  updatedAt }, idx) => {
+                       !registrationsIsLoading && registrations.map((registration, idx) => {
+                        
                         return (
                           // Onclick trigger a dialog
                           <div key={idx} className = 'w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10'>
-                            <h5 className='flex-1 font-normal truncate'>{firstName + " " + lastName }</h5>
+                            <h5 className='flex-1 font-normal truncate'>{registration.firstName + " " + registration.lastName}</h5>
                             <div className='flex gap-4 items-center font-light'>
-                              <span>{new Date(updatedAt).toLocaleTimeString()}</span>
-                              <span>{new Date(updatedAt).toDateString()}</span>
+                              <span>{new Date(registration.updatedAt).toLocaleTimeString()}</span>
+                              <span>{new Date(registration.updatedAt).toDateString()}</span>
                             </div>
+    
                           </div>
                         )
                       })
+
                     }
                   </div>
                 </div>

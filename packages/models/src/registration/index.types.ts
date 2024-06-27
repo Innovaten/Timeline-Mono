@@ -16,6 +16,8 @@ export interface IRegistration {
 
   approvedBy: Types.ObjectId;
   approvedAt: Date;
+  rejectedBy: Types.ObjectId;
+  rejectedAt: Date;
   acceptedBy: Types.ObjectId;
   acceptedAt: Date;
 

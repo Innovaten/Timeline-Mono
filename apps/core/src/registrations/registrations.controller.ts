@@ -14,7 +14,7 @@ import { AuthGuard } from '../common/guards/jwt.guard';
 export class RegistrationsController {
 
     constructor(
-        private service: RegistrationsService
+        private service: RegistrationsService, 
     ) { }
     
     @UseGuards(AuthGuard)
@@ -67,6 +67,23 @@ export class RegistrationsController {
         return await this.service.approveRegistration(regId, approver);
     }
 
+    @UseGuards(AuthGuard)
+    @Get('reject')
+    async rejectRegistration(
+        @Query('_id') regId: string, 
+        @Request() req: Request, 
+    ){
+        // @ts-ignore
+        const rejector = req["user"]
+        if(!rejector){
+            return ServerErrorResponse(
+                new Error("Unauthenticated Request"),
+                403
+            )    
+        }
+
+        return await this.service.rejectRegistration(regId, rejector);
+    }
 
     @Post()
     async createNewStudent(

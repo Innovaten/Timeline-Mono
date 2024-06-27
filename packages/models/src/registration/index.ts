@@ -58,6 +58,14 @@ export const RegistrationSchema = new Schema<IRegistrationDoc>({
         type: SchemaTypes.Date,
     },
     
+    rejectedBy: {
+        type: SchemaTypes.ObjectId,
+        ref: "Users",
+    },
+    rejectedAt: {
+        type: SchemaTypes.Date,
+    }, 
+    
     acceptedBy: {
         type: SchemaTypes.ObjectId,
         ref: "Users",

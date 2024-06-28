@@ -1,12 +1,12 @@
 import { ClassModel } from "@repo/models";
-import { CreateClassDto } from "./classes.dto";
+import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import lodash from "lodash";
 import { Types } from "mongoose";
 
 export class ClassesService {
    
     async getClasses(limit?: number, offset?: number, filter?: Record<string, any>){
-        const results = await ClassModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1})
+        const results = await ClassModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0).sort({ updatedAt: -1})
         return results;
     }
 
@@ -30,6 +30,7 @@ export class ClassesService {
             quizzes: [],
 
             createdBy: new Types.ObjectId(creator),
+            updatedBy: new Types.ObjectId(creator),
         })
 
         newClass.save()
@@ -38,6 +39,18 @@ export class ClassesService {
     }
 
     
+    async updateClass(_id: string, updatedData: UpdateClassDto, updator: string){
+
+        const { authToken, ...actualData } = updatedData;
+
+        const tClass = await ClassModel.findByIdAndUpdate(_id, {
+            ...actualData,
+            updatedBy: new Types.ObjectId(updator),
+            updatedAt: new Date()
+        }, { new: true });
+
+        return tClass;
+    }
 
     async assignAdministrator(classId: string, adminId: string) {
         const classDoc = await ClassModel.findById(classId)

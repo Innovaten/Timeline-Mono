@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc, UserModel } from '@repo/models';
@@ -123,16 +123,27 @@ export class UsersController {
         }
     }
 
-    @UseGuards(AuthGuard)
-    @Patch()
-    async updateUser(@Body() updateUserDto: UpdateUserDto, @Request() req: any) {
-        const user = req['user']
-        if (user.role !== 'SUDO' && user._id !== updateUserDto._id) {
+    @Patch(":_id")
+    async updateUser(
+        @Body() updateUserDto: UpdateUserDto,
+        @Param("_id") _id: string,
+    ) {
+        if(!updateUserDto.authToken){
+            return ServerErrorResponse(new Error("Unauthenticated"), 401)
+        }
+
+        const updator = await this.jwt.validateToken(updateUserDto.authToken);
+
+        if(!updator){
+            return ServerErrorResponse(new Error("Unauthenticated"), 401)
+        }
+
+        if (updator.role !== 'SUDO' && updator._id !== _id) {
             return ServerErrorResponse(new Error("Unauthorized"), 401)
         }
 
         try {
-            const updatedUser = await this.user.updateUser(updateUserDto)
+            const updatedUser = await this.user.updateUser(_id, updateUserDto)
             return ServerSuccessResponse(updatedUser)
         } catch (error) {
             return ServerErrorResponse(new Error(`${error}`), 500)

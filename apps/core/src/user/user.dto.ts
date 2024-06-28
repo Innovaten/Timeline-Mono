@@ -30,9 +30,6 @@ export class CreateUserDto {
 
 export class UpdateUserDto {
     @IsString()
-    _id: string
-
-    @IsString()
     @IsOptional()
     firstName?: string
 
@@ -51,4 +48,7 @@ export class UpdateUserDto {
     @IsString()
     @IsOptional()
     gender?: string
+
+    @IsString()
+    authToken: string;
 }

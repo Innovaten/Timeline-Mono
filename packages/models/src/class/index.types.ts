@@ -22,6 +22,7 @@ export interface IClass {
   // settings: {};
 
   createdBy: Types.ObjectId;
+  updatedBy: Types.ObjectId;
 
   createdAt: Date;
   updatedAt: Date;

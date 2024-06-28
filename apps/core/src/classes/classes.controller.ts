@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param } from '@nestjs/common';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IClassDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateClassDto } from './classes.dto';
+import { CreateClassDto, UpdateClassDto } from './classes.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { ClassesService } from './classes.service';
 
@@ -122,6 +122,47 @@ export class ClassesController {
                 new Error(`${err}`),
                 500
             );
+        }
+    }
+
+    @Patch(":_id")
+    async updateClass(
+        @Param("_id") _id: string,
+        @Body() updatedData: UpdateClassDto,
+    ){
+        if(!updatedData.authToken){
+            return ServerErrorResponse(
+                new Error("Unauthenticated"),
+                401
+            );
+        }
+
+        const updator = await this.jwt.validateToken(updatedData.authToken);
+
+        if(!updator){
+            return ServerErrorResponse(
+                new Error("Unauthenticated actor"),
+                401
+            );
+        }
+
+        if(!["SUDO", "ADMINISTRATOR"].includes(updator.role)){
+            return ServerErrorResponse(
+                new Error("Unauthorized"),
+                403
+            );
+        }
+
+        try {
+            const updatedClass = await this.service.updateClass(_id, updatedData, `${updator._id}`);
+            if(!updatedClass){
+                throw new Error("Specified class could not be found.")
+            }
+            console.log("Updated class {"+ updatedClass._id + "}")
+            return ServerSuccessResponse(updatedClass);
+        } catch (err){
+            console.log(err);
+            return ServerErrorResponse(new Error(`${err}`), 500);
         }
     }
 }

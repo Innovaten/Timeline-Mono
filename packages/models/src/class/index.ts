@@ -70,6 +70,10 @@ export const ClassSchema = new Schema<IClassDoc>({
         type: SchemaTypes.Date,
         default: new Date()
     },
+    updatedBy: {
+        type: SchemaTypes.ObjectId,
+        default: new Date()
+    },
 })
 
 

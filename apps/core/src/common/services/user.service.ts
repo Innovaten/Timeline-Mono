@@ -96,10 +96,9 @@ export class UserService {
         return user
     }
 
-    async updateUser(updateUserDto: UpdateUserDto) {
-        const { _id, ...updateFields } = updateUserDto;
+    async updateUser(_id: string, updateUserDto: UpdateUserDto) {
 
-        const user = await UserModel.findByIdAndUpdate(new Types.ObjectId(_id), updateFields, { new: true })
+        const user = await UserModel.findByIdAndUpdate(new Types.ObjectId(_id), updateUserDto, { new: true })
 
         if(!user) {
             throw new Error("User not found")

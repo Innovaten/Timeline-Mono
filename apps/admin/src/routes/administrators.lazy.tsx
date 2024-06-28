@@ -69,8 +69,6 @@ function Administrators(){
                 changedValues[field] = values[field]
             }
         })
-        
-        alert(JSON.stringify(changedValues))
 
         makeAuthenticatedRequest(
             "patch",

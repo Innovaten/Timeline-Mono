@@ -8,6 +8,8 @@ import { SelectInput } from '@repo/ui';
 import { toast } from 'sonner'
 import { useClasses, useCompositeFilterFlag } from '../hooks';
 import { useClassesAssignedStatusFilter, useClassesModeOfClassFilter, useClassesStatusFilter } from '../hooks/classes.hook';
+import { IClassDoc } from '@repo/models';
+import { useState } from 'react';
 
 export const Route = createLazyFileRoute('/classes')({
     component: Classes
@@ -31,9 +33,20 @@ function Classes(){
     });
 
     const { dialogIsOpen, toggleDialog } = useDialog();
+    const { dialogIsOpen: updateDialogIsOpen, toggleDialog: toggleUpdateDialog } = useDialog();
 
 
     const { isLoading, toggleLoading, resetLoading } = useLoading()
+    const { isLoading: updateIsLoading, toggleLoading: toggleUpdateIsLoading, resetLoading:resetUpdateIsLoading } = useLoading()
+    const [ selectedClass, setSelectedClass ] = useState<Partial<IClassDoc>>({
+        name: '',
+        modeOfClass: 'Active'
+    })
+
+    const updateClassInitialValues = {
+        name: selectedClass.name!,
+        modeOfClass: selectedClass.modeOfClass!,
+    }
 
     function handleCreateClassSubmit(values:{
         name: string,
@@ -66,6 +79,51 @@ function Classes(){
         })
 
     }
+
+    function handleUpdateClassSubmit(values:{
+        name: string | undefined,
+        modeOfClass: string
+    }){
+        toggleUpdateIsLoading()
+
+        const changedValues = {}
+        
+        Object.keys(values).map((field) => {
+            // @ts-ignore
+            if(values[field] !== selectedClass[field]){
+                //@ts-ignore
+                changedValues[field] = values[field]
+            }
+        })
+
+        makeAuthenticatedRequest(
+            "patch",
+            `/api/v1/classes/${selectedClass._id}`,
+            {
+                ...changedValues,
+                authToken: _getToken()
+                
+            }
+        ).then( res => {
+            if(res.status == 200 && res.data.success){
+                toast.success("Administrator Updated Successfully")
+                manuallyToggleCompositeFilterFlag()
+            } else {
+                toast.error(`${res.data.error.msg}`)
+            }
+            toggleUpdateDialog()
+            resetUpdateIsLoading()
+        })
+        .catch( err => {
+            if(err.message){
+                toast.error(`${err.message}`)
+            } else {
+                toast.error(`${err}`)
+            }
+            resetUpdateIsLoading()
+        })
+    }
+
 
     return (
         <>
@@ -107,13 +165,51 @@ function Classes(){
                     </Form>
                 </Formik>
             </DialogContainer>
+            <DialogContainer 
+                toggleOpen={toggleUpdateDialog}
+                isOpen={updateDialogIsOpen}
+                title='Update A Class'
+                description={`Update the "${selectedClass.name}" class details below`}
+            >
+                <Formik
+                    initialValues={updateClassInitialValues}
+                    validationSchema={createClassValidation}
+                    onSubmit={handleUpdateClassSubmit}
+                >
+                    <Form className='flex flex-col gap-6'>
+                        <Input name='name' label='Class Name' hasValidation />
+                        <span className='w-full flex flex-col sm:flex-row gap-2'>
+                            <SelectInput
+                                className='w-full'
+                                label='Mode Of Class'
+                                hasValidation
+                                options={[
+                                    {
+                                        label: "In Person",
+                                        value: "In-Person"
+                                    },
+                                    {
+                                        label: "Online",
+                                        value: "Online"
+                                    },
+                                ]}
+                                name='modeOfClass'
+                                />
+                        </span>
+                        <span className='flex justify-end gap-4 w-full'>
+                            <Button className='px-3 !h-[35px]' type='button' onClick={()=>{ toggleUpdateDialog(); resetUpdateIsLoading()}} variant='neutral'>Close</Button>
+                            <Button className='px-3 !h-[35px]' type='submit' isLoading={updateIsLoading}>Update Class</Button>
+                        </span>
+                    </Form>
+                </Formik>
+            </DialogContainer>
             <div className='flex flex-col w-full h-full'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
                     <h2 className='text-blue-800'>Classes</h2>
                     <Button className='flex px-2 !h-[35px]' onClick={toggleDialog}> <PlusIcon className='inline w-4 mr-1' /> Add a class</Button>
                 </div>
-                <div className='w-full mt-3 flex gap-3'>
-                    <div  className='flex flex-col gap-2 justify-end mt-6'>
+                <div className='w-full flex gap-3 mt-2'>
+                    <div  className=''>
                         <Button
                             onClick={toggleFiltersAreShown}
                             variant='outline'
@@ -126,7 +222,7 @@ function Classes(){
                     { 
                         filterIsShown && 
                         <>
-                            <div className='flex flex-col gap-2 '>
+                            <div className='flex flex-row items-center gap-2 '>
                                 <small className='text-blue-700'>Status</small>
                                 <select
                                     className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
@@ -144,7 +240,7 @@ function Classes(){
                                     }
                                 </select> 
                             </div>
-                            <div className='flex flex-col gap-2 '>
+                            <div className='flex flex-row items-center gap-2 '>
                                 <small className='text-blue-700'>Mode of Class</small>
                                 <select
                                     className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
@@ -162,7 +258,7 @@ function Classes(){
                                     }
                                 </select>
                             </div>
-                            <div className='flex flex-col gap-2 '>
+                            <div className='flex flex-row items-center gap-2 '>
                                 <small className='text-blue-700'>Assigned Status</small> 
                                 <select
                                     className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
@@ -182,7 +278,7 @@ function Classes(){
                             </div>
                         </>
                     }
-                    <div className='flex flex-col gap-2 justify-end'>
+                    <div>
                         <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
                     </div>
                 </div>
@@ -209,19 +305,23 @@ function Classes(){
                             </div>
                         } 
                         { 
-                        !classesIsLoading && classes.map(({ code, name, modeOfClass, updatedAt, administrators }, idx) => {
+                        !classesIsLoading && classes.map((tClass, idx) => {
                             return (
                             // Onclick trigger a dialog
-                            <div key={idx} className = 'w-full text-blue-700 cursor-pointer py-2 px-3 bg-white border-blue-700/40 border-b-[0.5px] flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                            <div 
+                                key={idx} 
+                                className = 'w-full text-blue-700 cursor-pointer py-2 px-3 bg-white border-blue-700/40 border-b-[0.5px] flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
+                                onClick={()=>{ setSelectedClass(tClass), toggleUpdateDialog()}}
+                                >
                                 <div className='flex items-center gap-4'>
-                                    <small className='font-light w-[70px]'>{code}</small>
-                                    <h5 className='flex-1 font-normal truncate'>{name}</h5>
+                                    <small className='font-light w-[70px]'>{tClass.code}</small>
+                                    <h5 className='flex-1 font-normal truncate'>{tClass.name}</h5>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
-                                  <span className='w-[150px] flex justify-end'>{modeOfClass}</span>
-                                  <span className='w-[200px] flex justify-end'>{administrators.length} Administrators</span>
-                                  <span className='w-[100px] flex justify-end'>{new Date(updatedAt).toLocaleTimeString()}</span>
-                                  <span className='w-[150px] flex justify-end'>{new Date(updatedAt).toDateString()}</span>
+                                  <span className='w-[150px] flex justify-end'>{tClass.modeOfClass}</span>
+                                  <span className='w-[200px] flex justify-end'>{tClass.administrators.length} Administrators</span>
+                                  <span className='w-[100px] flex justify-end'>{new Date(tClass.updatedAt).toLocaleTimeString()}</span>
+                                  <span className='w-[150px] flex justify-end'>{new Date(tClass.updatedAt).toDateString()}</span>
                                 </div>
                             </div>
                             )

@@ -4,9 +4,11 @@ import {
   useRegistrants,
   useRegistrantsFilter,
 } from "../hooks/registrants.hook";
-import { _getToken, makeAuthenticatedRequest } from "@repo/utils";
+import { _getToken, makeAuthenticatedRequest, useDialog } from "@repo/utils";
 import { toast } from "sonner";
 import { useState } from "react";
+import { FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { IRegistrationDoc } from "@repo/models";
 
 export const Route = createLazyFileRoute("/registrations")({
   component: RegistrationsPage,
@@ -20,11 +22,13 @@ function RegistrationsPage() {
     registrants,
     count: registrantsCount,
   } = useRegistrants(filterChangedFlag, filter);
+  const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
+    
 
   const [isOpen, setIsOpen] = useState(false);
   const [registrantId, setRegistrantId] = useState<any>();
   const [confirmationReject, setConfirmationReject] = useState(false);
-  const [registrant, setRegistrant] = useState<RegistrationObject>({
+  const [registrant, setRegistrant] = useState<Partial<IRegistrationDoc>>({
     firstName: "",
     otherNames: "",
     lastName: "",
@@ -32,7 +36,7 @@ function RegistrationsPage() {
     phone: "",
     gender: "",
     modeOfClass: "",
-    courses: [],
+    classes: [],
   });
 
   function acceptRegistrant(registrantId: any) {
@@ -82,16 +86,6 @@ function RegistrationsPage() {
       });
   }
 
-  interface RegistrationObject {
-    firstName: string;
-    otherNames: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    gender: string;
-    modeOfClass: string;
-    courses: string[];
-  }
 
   function ApprovalDiagBox() {
     const {
@@ -101,7 +95,7 @@ function RegistrationsPage() {
       email,
       phone,
       gender,
-      courses,
+      classes,
       modeOfClass,
     } = registrant;
 
@@ -140,14 +134,15 @@ function RegistrationsPage() {
               <p className="text-lg text-blue-600 inline">{modeOfClass}</p>
             </div>
             <div className="flex gap-2">
-              <p className="text-lg inline font-medium">Courses:</p>
-              {courses.map((course, idx) => {
+              <p className="text-lg inline font-medium">Classes:</p>
+              {classes?.length && classes.map((course, idx) => {
                 return (
                   <p key={idx} className="text-lg text-blue-600 inline">
                     {course}
                   </p>
                 );
               })}
+              { !classes?.length && <p className="text-lg text-blue-600 inline">No Class Indicated</p> }
             </div>
             <div className="flex flex-row space-x-8">
             <Button className="px-3 w-56 !h-[35px]" type="submit" isLoading={false} variant="outline" onClick={() => {setIsOpen(false); setConfirmationReject(true)  }}>
@@ -197,29 +192,56 @@ function RegistrationsPage() {
       <div className="mt-2 flex h-fit justify-between items-center">
         <h2 className="text-blue-800">Registrations</h2>
       </div>
-      <div className="w-full mt-3">
-        <select
-          className="text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2"
-          onChange={(e) => {
-            // @ts-ignore
-            changeFilter(e.target.value);
-          }}
+      <div className="w-full mt-3 flex gap-4">
+        <Button
+            onClick={toggleFiltersAreShown}
+            variant='outline'
+            className='!h-[35px] px-2 flex items-center gap-2'
         >
-          {filterOptions.map((f, idx) => {
-            return (
-              <option key={idx} value={f}>
-                {f}
-              </option>
-            );
-          })}
-        </select>
+            <FunnelIcon className='w-4' />
+            { filterIsShown ? "Close" : "Show"} Filters    
+        </Button>
+
+          { filterIsShown &&
+              <select
+                className="text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2"
+                onChange={(e) => {
+                  // @ts-ignore
+                  changeFilter(e.target.value);
+                }}
+              >
+              {
+                filterOptions.map((f, idx) => {
+                  return (
+                    <option key={idx} value={f}>
+                      {f}
+                    </option>
+                  );
+                })
+              }
+            </select> 
+
+          }
+          <div className='flex flex-col gap-2 justify-end'>
+              <Button className='!h-[35px] px-2' variant='outline' onClick={()=> changeFilter("Pending")}> <ArrowPathIcon className='w-4' /> </Button>
+          </div>
       </div>
-      <div className="mt-8 w-full flex flex-col gap-2 text-blue-600">
-        <h4>Latest Registrations</h4>
-        <div className="w-full min-h-[350px] bg-blue-50 p-1 rounded-sm shadow-sm mt-2">
-          <div className="bg-white w-full h-full flex flex-col gap-2 rounded p-1">
+      <div className="mt-2 w-full flex flex-col flex-1 gap-2 text-blue-600">
+        <div className="w-full min-h-[350px] bg-blue-50 p-1 flex-1 rounded-sm shadow-sm mt-2">
+          <div className="bg-white w-full h-full overflow-auto rounded">
+            <div className = 'w-full text-blue-700 py-2 px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
+                <div className='flex items-center gap-4'>
+                    <span  className='w-[80px]'>CODE</span>
+                    <span className='flex-1 font-normal truncate'>NAME</span>
+                </div>
+                <div className='flex gap-4 items-center font-light'>
+                    <span className='w-[100px] flex justify-end'>STATUS</span>
+                    <span className='w-[120px] flex justify-end'>DATE CREATED</span>
+                    <span className='w-[150px] flex justify-end'></span>
+                </div>
+            </div>
             {registrantsIsLoading && (
-              <div className="w-full h-full m-auto">
+              <div className="w-full h-full m-auto mt-4">
                 <div className="w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin"></div>
               </div>
             )}
@@ -228,21 +250,25 @@ function RegistrationsPage() {
                 return (
                   <div
                     key={idx}
-                    className="w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10 cursor-pointer"
+                    className="cursor-pointer w-full text-blue-700 py-2 px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10"
                     onClick={() => {
                       setRegistrantId(registrant._id);
                       setRegistrant(registrant);
                       setIsOpen(true)
                     }}
                   >
+                     <small className='font-light w-[80px]'>{registrant.code}</small>
                     <h5 className="flex-1 font-normal truncate">
                       {registrant.firstName + " " + registrant.lastName}
                     </h5>
                     <div className="flex gap-4 items-center font-light">
-                      <span>
+                      <span className='w-[100px] flex justify-end'>
+                        {registrant.status}
+                      </span>
+                      <span className='w-[120px] flex justify-end'>
                         {new Date(registrant.updatedAt).toLocaleTimeString()}
                       </span>
-                      <span>
+                      <span className='w-[150px] flex justify-end'>
                         {new Date(registrant.updatedAt).toDateString()}
                       </span>
                     </div>

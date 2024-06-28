@@ -1,4 +1,4 @@
-import { IsString, IsEnum } from "class-validator";
+import { IsString, IsEnum, IsOptional } from "class-validator";
 
 enum ModeOfClass {
     "In-Person",
@@ -16,3 +16,17 @@ export class CreateClassDto {
     authToken: string;
 }
 
+
+
+export class UpdateClassDto {
+    @IsString()
+    @IsOptional()
+    name: string;
+
+    @IsEnum(ModeOfClass)
+    @IsOptional()
+    modeOfClass: string;
+
+    @IsString()
+    authToken: string;
+}

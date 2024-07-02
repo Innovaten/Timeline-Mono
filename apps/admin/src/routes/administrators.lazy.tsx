@@ -1,7 +1,7 @@
 import { Button, DialogContainer, Input, SelectInput } from '@repo/ui';
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { useAdministrators, useAdministratorsFilter, useCompositeFilterFlag } from '../hooks';
-import { PlusIcon, FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, FunnelIcon, ArrowPathIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
 import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, validPhoneNumber } from '@repo/utils';
 import { Formik, Form } from 'formik'
@@ -23,8 +23,10 @@ function Administrators(){
     const { isLoading: administratorsIsLoading, administrators, count: administratorsCount } = useAdministrators(compositeFilterFlag, filter);
     const { dialogIsOpen, toggleDialog: toggleCreateDialog } = useDialog();
     const { dialogIsOpen: updateDialogIsOpen, toggleDialog: toggleUpdateDialog } = useDialog();
+    const { dialogIsOpen: deleteDialogIsOpen, toggleDialog: toggleDeleteDialog } = useDialog();
     const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
     const { isLoading, toggleLoading, resetLoading } = useLoading()
+    const { isLoading: deleteIsLoading, toggleLoading: toggleDeleteIsLoading } = useLoading()
     const { isLoading: updateIsLoading, toggleLoading: toggleUpdateLoading, resetLoading: resetUpdateLoading } = useLoading()
 
 
@@ -161,6 +163,35 @@ function Administrators(){
 
     }
 
+    function handleDeleteAdmin(){
+        toggleDeleteIsLoading()
+        makeAuthenticatedRequest(
+            "delete",
+            `/api/v1/users/${selectedAdmin._id}`,
+            {
+                authToken: _getToken()
+            }
+        ).then( res => {
+            if(res.status == 200 && res.data.success){
+                toast.success("Administrator deleted successfully")
+                toggleRefreshFlag();                
+            } else {
+                toast.error(`${res.data.err.msg}`)
+            }
+        })
+        .catch(err => {
+            if(err.message){
+                toast.error(`${err.message}`)
+            } else {
+                toast.error(`${err}`)
+            }
+        })
+        .finally(() => {
+            toggleDeleteIsLoading();
+            toggleDeleteDialog()
+        })
+    }
+
     return (
         <>
             <DialogContainer 
@@ -274,6 +305,18 @@ function Administrators(){
                 
 
             </DialogContainer>
+            <DialogContainer
+                title='Delete Administrator'
+                description={`Are you sure you want to delete the ${selectedAdmin.firstName} ${selectedAdmin.lastName} account?`}
+                isOpen={deleteDialogIsOpen}
+                toggleOpen={toggleDeleteDialog}
+            >
+                <div className='flex justify-end gap-4 mt-8'>
+                    <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); setSelectedAdmin({}) }}>Close</Button>
+                    <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={() => { handleDeleteAdmin }}>Delete Administrator</Button>
+                </div>
+            </DialogContainer>
+
             <div className='flex flex-col w-full h-full'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
                     <h2 className='text-blue-800'>Administrators</h2>
@@ -319,8 +362,8 @@ function Administrators(){
                                 <span className='flex-1 font-normal truncate'>NAME</span>
                             </div>
                             <div className='flex gap-4 items-center font-light'>
-                                <span className='w-[100px] flex justify-end'>LAST UPDATED</span>
-                                <span className='w-[150px] flex justify-end'></span>
+                                <span className='w-[150px] flex justify-end'>LAST UPDATED</span>
+                                <span className='w-[100px] flex justify-end'>ACTIONS</span>
                             </div>
                         </div>
                         {
@@ -335,15 +378,21 @@ function Administrators(){
                         { 
                         !administratorsIsLoading && administrators.map((admin, idx) => {
                             return (
-                            // Onclick trigger a dialog
-                            <div key={idx} onClick={() => { setSelectedAdmin(admin); toggleUpdateDialog() }} className = 'cursor-pointer w-full text-blue-700 py-2 px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                            <div key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                 <div className='flex items-center gap-4'>
                                     <small className='font-light w-[50px]'>{admin.role}</small>
                                     <h5 className='flex-1 font-normal truncate'>{admin.firstName + " " + admin.lastName }</h5>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
-                                    <span className='w-[100px] flex justify-end'>{new Date(admin.updatedAt).toLocaleTimeString()}</span>
                                     <span className='w-[150px] flex justify-end'>{new Date(admin.updatedAt).toDateString()}</span>
+                                    <div className='w-[100px] flex justify-end gap-4'>
+                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleUpdateDialog() }}>              
+                                            <PencilIcon className='w-4 h-4' />
+                                        </span>
+                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleDeleteDialog() }}>
+                                            <TrashIcon className='w-4 h-4' />
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             )
@@ -375,9 +424,9 @@ const createAdminInitialValues = {
 
 
 const createAdminValidation = yup.object({
-    firstName: yup.string().required("Please enter the first name").min(2).max(256),
-    otherNames: yup.string().min(2).max(256),
-    lastName: yup.string().required("Please enter the last name").min(2).max(256),
+    firstName: yup.string().required("Please enter the first name").min(2, "First name is too short").max(256, "First name is too short"),
+    otherNames: yup.string().min(2, "Other names is too short").max(256, "Other names is too long"),
+    lastName: yup.string().required("Please enter the last name").min(2, "Last name is too short").max(256, "Last name is too long"),
 
     email: yup.string()
         .email("Please enter a valid email")

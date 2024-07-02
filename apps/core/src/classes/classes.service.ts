@@ -56,12 +56,31 @@ export class ClassesService {
         const classDoc = await ClassModel.findById(classId)
 
         if (!classDoc) {
-            throw new Error("Class not found")
+            throw new Error("Specified class not found")
         }
 
         classDoc.administrators.push(new Types.ObjectId(adminId))
+
+        classDoc.updatedAt = new Date();
         await classDoc.save()
 
         return classDoc
+    }
+
+    async deleteClass( classId: string, actor: string){
+        const classDoc = await ClassModel.findById(classId)
+
+        if (!classDoc) {
+            throw new Error("Specified class not found")
+        }
+
+        classDoc.meta.isDeleted = true;
+        classDoc.updatedAt = new Date();
+        classDoc.updatedBy = new Types.ObjectId(actor);
+
+        await classDoc.save();
+
+        return classDoc;
+
     }
 }

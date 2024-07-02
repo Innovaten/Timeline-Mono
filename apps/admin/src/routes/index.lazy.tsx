@@ -104,7 +104,7 @@ function IndexPage() {
                       </div>
                       <div className='flex gap-4 items-center font-light'>
                           <span className='w-[100px] flex justify-end'>STATUS</span>
-                          <span className='w-[120px] flex justify-end'>LAST CREATED</span>
+                          <span className='w-[120px] flex justify-end'>DATE CREATED</span>
                           <span className='w-[150px] flex justify-end'></span>
                       </div>
                   </div>

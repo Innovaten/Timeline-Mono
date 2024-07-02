@@ -57,6 +57,15 @@ export const ClassSchema = new Schema<IClassDoc>({
     },
     */
 
+    meta: {
+        type: new Schema({
+            isDeleted: {
+                type: SchemaTypes.Boolean,
+                default: false
+            }
+        })
+    },
+
     createdBy: {
         type: SchemaTypes.ObjectId,
         required: true,

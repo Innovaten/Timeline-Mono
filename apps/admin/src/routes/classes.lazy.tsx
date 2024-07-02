@@ -1,6 +1,6 @@
 import { Button, DialogContainer, Input } from '@repo/ui';
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { PlusIcon, ArrowPathIcon, FunnelIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, ArrowPathIcon, FunnelIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
 import { _getToken, makeAuthenticatedRequest, useDialog, useLoading } from '@repo/utils';
 import { Formik, Form } from 'formik'
@@ -34,8 +34,9 @@ function Classes(){
 
     const { dialogIsOpen, toggleDialog } = useDialog();
     const { dialogIsOpen: updateDialogIsOpen, toggleDialog: toggleUpdateDialog } = useDialog();
+    const { dialogIsOpen: deleteDialogIsOpen, toggleDialog: toggleDeleteDialog } = useDialog();
 
-
+    const { isLoading: deleteIsLoading, toggleLoading: toggleDeleteIsLoading } = useLoading()
     const { isLoading, toggleLoading, resetLoading } = useLoading()
     const { isLoading: updateIsLoading, toggleLoading: toggleUpdateIsLoading, resetLoading:resetUpdateIsLoading } = useLoading()
     const [ selectedClass, setSelectedClass ] = useState<Partial<IClassDoc>>({
@@ -124,6 +125,35 @@ function Classes(){
         })
     }
 
+    function handleDeleteClass(){
+        toggleDeleteIsLoading()
+        makeAuthenticatedRequest(
+            "delete",
+            `/api/v1/classes/${selectedClass._id}`,
+            {
+                authToken: _getToken()
+            }
+        ).then( res => {
+            if(res.status == 200 && res.data.success){
+                manuallyToggleCompositeFilterFlag();
+                toast.success("Class deleted successfully")                
+            } else {
+                toast.error(`${res.data.err.msg}`)
+            }
+        })
+        .catch(err => {
+            if(err.message){
+                toast.error(`${err.message}`)
+            } else {
+                toast.error(`${err}`)
+            }
+        })
+        .finally(() => {
+            toggleDeleteIsLoading();
+            toggleDeleteDialog()
+        })
+    }
+
 
     return (
         <>
@@ -202,6 +232,17 @@ function Classes(){
                         </span>
                     </Form>
                 </Formik>
+            </DialogContainer>
+            <DialogContainer
+                title='Delete Class'
+                description={`Are you sure you want to delete ${selectedClass.name}?`}
+                isOpen={deleteDialogIsOpen}
+                toggleOpen={toggleDeleteDialog}
+            >
+                <div className='flex w-full justify-end gap-4 mt-4'>
+                    <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); setSelectedClass({}) }}>Close</Button>
+                    <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={() => { handleDeleteClass }}>Delete Class</Button>
+                </div>
             </DialogContainer>
             <div className='flex flex-col w-full h-full'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
@@ -292,8 +333,9 @@ function Classes(){
                                 <div className='flex gap-4 items-center font-light'>
                                   <span className='w-[150px]  flex justify-end'>MODE OF CLASS</span>
                                   <span className='w-[200px] flex justify-end'>NO. OF ADMINISTRATORS</span>
-                                  <span className='w-[100px] flex justify-end'>LAST UPDATED</span>
-                                  <span className='w-[150px]'></span>
+                                  <span className='w-[150px] flex justify-end'>LAST UPDATED</span>
+                                  
+                                  <span className='w-[100px] flex justify-end'>ACTIONS</span>
                                 </div>
                             </div>
                         {
@@ -311,7 +353,6 @@ function Classes(){
                             <div 
                                 key={idx} 
                                 className = 'w-full text-blue-700 cursor-pointer py-2 px-3 bg-white border-blue-700/40 border-b-[0.5px] flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
-                                onClick={()=>{ setSelectedClass(tClass), toggleUpdateDialog()}}
                                 >
                                 <div className='flex items-center gap-4'>
                                     <small className='font-light w-[70px]'>{tClass.code}</small>
@@ -320,9 +361,17 @@ function Classes(){
                                 <div className='flex gap-4 items-center font-light'>
                                   <span className='w-[150px] flex justify-end'>{tClass.modeOfClass}</span>
                                   <span className='w-[200px] flex justify-end'>{tClass.administrators.length} Administrators</span>
-                                  <span className='w-[100px] flex justify-end'>{new Date(tClass.updatedAt).toLocaleTimeString()}</span>
                                   <span className='w-[150px] flex justify-end'>{new Date(tClass.updatedAt).toDateString()}</span>
+                                  <div className='w-[100px] flex justify-end gap-4'>
+                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={()=>{ setSelectedClass(tClass), toggleUpdateDialog()}}>              
+                                            <PencilIcon className='w-4 h-4' />
+                                        </span>
+                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedClass(tClass); toggleDeleteDialog() }}>
+                                            <TrashIcon className='w-4 h-4' />
+                                        </span>
+                                    </div>
                                 </div>
+
                             </div>
                             )
                         })

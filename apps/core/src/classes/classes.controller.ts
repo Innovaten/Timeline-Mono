@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete } from '@nestjs/common';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IClassDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateClassDto, UpdateClassDto } from './classes.dto';
+import { CreateClassDto, DeleteClassDto, UpdateClassDto } from './classes.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { ClassesService } from './classes.service';
 
@@ -163,6 +163,37 @@ export class ClassesController {
         } catch (err){
             console.log(err);
             return ServerErrorResponse(new Error(`${err}`), 500);
+        }
+    }
+
+    @Delete(":_id")
+    async deleteClass(
+        @Param("_id") _id: string,
+        @Body() deleteClassDto: DeleteClassDto,
+    ) {
+
+        if(!deleteClassDto.authToken){
+            return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
+        }
+
+        const actor = await this.jwt.validateToken(deleteClassDto.authToken);
+
+        if(!actor){
+            return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
+        }
+
+        if (actor.role !== 'SUDO') {
+            return ServerErrorResponse(new Error("Unauthorized Request"), 401)
+        }
+
+        try {
+            const deletedClass = await this.service.deleteClass(_id, `${actor}`);
+            return ServerSuccessResponse(deletedClass)
+        } catch (err) {
+            return ServerErrorResponse(
+                new Error(`${err}`), 
+                500
+            )
         }
     }
 }

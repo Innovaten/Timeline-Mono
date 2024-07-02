@@ -66,6 +66,15 @@ export class RegistrationsService {
         
         await registration.save()
 
+        await this.kafka.produceMessage(
+            "notifications.send-email",
+            "registration-rejected",
+            {
+                email: registration.email,
+                firstName: registration.firstName,
+            }
+        )
+
         return ServerSuccessResponse(registration);
     }
 

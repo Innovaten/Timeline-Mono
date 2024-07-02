@@ -41,7 +41,7 @@ export function useRegistrants(
 }
 
 export function useRegistrantsFilter(){
-    const [ filterLabel, setFilterLabel ] = useState< "All" | "Pending" | "Approved" | "Rejected">("Pending");
+    const [ filterLabel, setFilterLabel ] = useState< "All" | "Pending" | "Approved" | "Rejected">("All");
     const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
 
     const resultingFilters = {

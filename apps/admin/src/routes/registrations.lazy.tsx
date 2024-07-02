@@ -4,17 +4,19 @@ import {
   useRegistrants,
   useRegistrantsFilter,
 } from "../hooks/registrants.hook";
-import { _getToken, makeAuthenticatedRequest, useDialog } from "@repo/utils";
+import { _getToken, cn, makeAuthenticatedRequest, useDialog } from "@repo/utils";
 import { toast } from "sonner";
 import { useState } from "react";
 import { FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { IRegistrationDoc } from "@repo/models";
+import { useClasses } from "../hooks";
 
 export const Route = createLazyFileRoute("/registrations")({
   component: RegistrationsPage,
 });
 
 function RegistrationsPage() {
+  const { dialogIsOpen: newStudentIsSelected, toggleDialog: toggleNewStudentIsSelected} = useDialog();
   const { filter, filterOptions, changeFilter, filterChangedFlag } =
     useRegistrantsFilter();
   const {
@@ -23,7 +25,10 @@ function RegistrationsPage() {
     count: registrantsCount,
   } = useRegistrants(filterChangedFlag, filter);
   const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
-    
+  const { dialogIsOpen: classesApprovalIsOpen, toggleDialog: toggleClassesApprovalDialog } = useDialog();
+  
+  const { classes: classesUpForApproval, } = useClasses(newStudentIsSelected);
+  let [approvedClasses, setApprovedClasses ] = useState<Array<string>>([]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [registrantId, setRegistrantId] = useState<any>();
@@ -42,7 +47,7 @@ function RegistrationsPage() {
   function acceptRegistrant(registrantId: any) {
     makeAuthenticatedRequest(
       "get",
-      `/api/v1/registrations/approve?_id=${registrantId}`,
+      `/api/v1/registrations/approve?_id=${registrantId}&approved-classes=${JSON.stringify(approvedClasses)}`,
     )
       .then((res) => {
         console.log(res);
@@ -71,11 +76,7 @@ function RegistrationsPage() {
       .then((res) => {
         console.log(res);
         if (res.status == 200 && res.data.success) {
-          toast.success(
-            <p>
-              Student has been rejected.
-            </p>
-          );
+          toast.success("Student has been rejected");
         } else {
           toast.error(`${res.data.error.msg}`);
         }
@@ -107,55 +108,100 @@ function RegistrationsPage() {
         title={`Approve Registration`}
         description={`Confirm the registration of ${firstName + " " + lastName}`}
       >
-        <div className="flex-col gap-4 sm:justify-between">
-          <div className="flex flex-col gap-2">
-            <div className="flex gap-2">
-              <p className="text-lg inline font-medium">Full Name:</p>
-              <p className="text-lg text-blue-600 inline">
-                {firstName}
-                {otherNames == "" ? " " : " " + otherNames + " "}
-                {lastName}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <p className="text-lg inline font-medium">Gender:</p>
-              <p className="text-lg text-blue-600 inline">{gender}</p>
-            </div>
-            <div className="flex gap-2">
-              <p className="text-lg inline font-medium">Email Address:</p>
-              <p className="text-lg text-blue-600 inline">{email}</p>
-            </div>
-            <div className="flex gap-2">
-              <p className="text-lg inline font-medium">Phone Number:</p>
-              <p className="text-lg text-blue-600 inline">{phone}</p>
-            </div>
-            <div className="flex gap-2">
-              <p className="text-lg inline font-medium">Mode of Class:</p>
-              <p className="text-lg text-blue-600 inline">{modeOfClass}</p>
-            </div>
-            <div className="flex gap-2">
-              <p className="text-lg inline font-medium">Classes:</p>
-              {classes?.length && classes.map((course, idx) => {
-                return (
-                  <p key={idx} className="text-lg text-blue-600 inline">
-                    {course}
-                  </p>
-                );
-              })}
-              { !classes?.length && <p className="text-lg text-blue-600 inline">No Class Indicated</p> }
-            </div>
-            <div className="flex flex-row space-x-8">
-            <Button className="px-3 w-56 !h-[35px]" type="submit" isLoading={false} variant="outline" onClick={() => {setIsOpen(false); setConfirmationReject(true)  }}>
-              Reject Registrant
-            </Button>
-            <Button className="px-3 w-56 !h-[35px]" type="submit" isLoading={false} variant="primary" onClick={() => {setIsOpen(false); acceptRegistrant(registrantId)}}>
-              Approve Registrant
-            </Button>
+        <div className="flex flex-col gap-4 sm:justify-between">
+          <div className='w-full flex-1 bg-blue-50 p-1 rounded-sm shadow-sm'>
+            <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
+              <div className="flex justify-between border-b-[1.5px]" >
+                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >FULL NAME</span>
+                <span className="text-lg text-blue-600 inline p-2" >
+                  {firstName}
+                  {otherNames == "" ? " " : " " + otherNames + " "}
+                  {lastName}
+                </span>
+              </div>
+              <div className="flex justify-between border-b-[1.5px]" >
+                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >GENDER</span>
+                <span className="text-lg text-blue-600 inline p-2">{gender}</span>
+              </div>
+              <div className="flex justify-between border-b-[1.5px]" >
+                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >EMAIL ADDRESS</span>
+                <span className="text-lg text-blue-600 inline  p-2">{email}</span>
+              </div>
+              <div className="flex justify-between border-b-[1.5px]" >
+                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >PHONE NUMBER</span>
+                <span  className="text-lg text-blue-600 inline p-2">{phone}</span>
+              </div>
+              <div className="flex justify-between border-b-[1.5px]" >
+                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >MODE OF CLASS</span>
+                <span className="text-lg text-blue-600 inline p-2" >{modeOfClass}</span>
+              </div>
+              <div className="flex justify-between" >
+                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >CLASSES</span>
+                <span className="flex gap-2 p-2">
+                  {classes?.length && classes.map((course, idx) => {
+                    return (
+                      <span key={idx} className="text-lg text-blue-600 inline" >
+                        {course}
+                      </span>
+                    );
+                  })}
+                  { !classes?.length && <span className="text-lg text-blue-600 inline">No Class Indicated</span> }
+                </span>
+
+              </div>
             </div>
           </div>
+          <div className="flex flex-row gap-4">
+            <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="outline" onClick={() => {setIsOpen(false); setConfirmationReject(true)  }}>
+              Reject Registrant
+            </Button>
+            <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="primary" onClick={() => {setIsOpen(false); toggleClassesApprovalDialog() }}>
+              Approve Registrant
+            </Button>
+          </div>
+
         </div>
       </DialogContainer>
     );
+  }
+
+  function ApproveClassesDialog(){
+
+    return (
+      <DialogContainer 
+        isOpen={classesApprovalIsOpen} 
+        toggleOpen={toggleClassesApprovalDialog} 
+        title={`Approve classes for ${registrant.firstName} ${registrant.lastName}`} 
+        description="Kindly select the classes the registrant is allowed to access"
+      >
+        <div className="flex flex-col gap-4 sm:justify-between min-h-[200px]">
+          <div className="flex gap-x-4 mt-4 ">
+            {
+              classesUpForApproval.map((c, idx) => <div 
+                className={ cn(
+                  approvedClasses.includes(c._id as string) ? "bg-blue-700 text-white hover:bg-blue-700/70" : "bg-blue-50 hover:bg-blue-200",
+                  'px-4 py-2 rounded-full border-[1.5px] border-blue-700/60  cursor-pointer duration-150', 
+                )}
+                onClick={
+                  () =>{ setApprovedClasses( prev => [
+                    ...(prev.includes(c._id as string) ? approvedClasses.filter( d => d != c._id as string) : [...approvedClasses, c._id as string ] )
+                  ]); }
+                }
+              >{c.name}</div>)
+            }
+          </div>
+          <div className="flex flex-row gap-4">
+              <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="outline" onClick={() => {setIsOpen(true); toggleClassesApprovalDialog() }}>
+                Back to details
+              </Button>
+              <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="primary" onClick={() => {toggleClassesApprovalDialog(); acceptRegistrant(registrantId)}}>
+                Approve Registrant
+              </Button>
+            </div>
+        </div>
+
+      </DialogContainer>
+    )
   }
 
   function RejectBox() {
@@ -254,6 +300,7 @@ function RegistrationsPage() {
                     onClick={() => {
                       setRegistrantId(registrant._id);
                       setRegistrant(registrant);
+                      toggleNewStudentIsSelected();
                       setIsOpen(true)
                     }}
                   >
@@ -262,8 +309,14 @@ function RegistrationsPage() {
                       {registrant.firstName + " " + registrant.lastName}
                     </h5>
                     <div className="flex gap-4 items-center font-light">
-                      <span className='w-[100px] flex justify-end'>
+                      <span className='w-[100px] flex items-center gap-2 justify-end'>
                         {registrant.status}
+                        <span className={cn(
+                                  "w-2 h-2 rounded-full",
+                                  registrant.status == 'Pending' ? "bg-yellow-600" : "",
+                                  registrant.status == 'Approved' ? "bg-green-600" : "",
+                                  registrant.status == 'Rejected' ? "bg-red-600" : "",
+                                )}></span>
                       </span>
                       <span className='w-[120px] flex justify-end'>
                         {new Date(registrant.updatedAt).toLocaleTimeString()}
@@ -277,6 +330,7 @@ function RegistrationsPage() {
               })}
             {registrantId && <ApprovalDiagBox />}
             {confirmationReject && <RejectBox />}
+            <ApproveClassesDialog />
           </div>
         </div>
       </div>

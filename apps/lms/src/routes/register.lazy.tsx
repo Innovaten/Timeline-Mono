@@ -135,7 +135,7 @@ function PersonalDetailsForm({ componentRef, registrationPages, setNewUser}: Per
             return ({
                 ...prev,
                 firstName: values.firstName,
-                otherNames: values.otherNames,
+                otherNames: values.otherNames ?? "",
                 lastName: values.lastName,
                 gender: values.gender as "Male" | "Female",
             })

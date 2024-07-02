@@ -37,7 +37,7 @@ export async function start(){
 
     streamHandlers.forEach( async ({ streamKey, handler}) => {
         try{
-            await consumer.subscribe({ topic: streamKey, fromBeginning: true})
+            await consumer.subscribe({ topic: streamKey })
             consumer.run({
                 eachMessage: handler
             })            

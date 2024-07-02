@@ -33,7 +33,6 @@ export const RegistrationSchema = new Schema<IRegistrationDoc>({
     },
     otherNames:  {
         type: SchemaTypes.String,
-        required: true,
     },
     phone:  {
         type: SchemaTypes.String,
@@ -48,6 +47,12 @@ export const RegistrationSchema = new Schema<IRegistrationDoc>({
         type: SchemaTypes.String,
         enum: RegistrationStatus,
         default: "Pending",
+    },
+
+    approvedClasses: {
+        type: [SchemaTypes.ObjectId],
+        default: [],
+        ref: "Classes"
     },
 
     approvedBy: {

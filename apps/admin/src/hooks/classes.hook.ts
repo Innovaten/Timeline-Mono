@@ -4,7 +4,7 @@ import { IClassDoc } from "@repo/models";
 
 export function useClasses(
     flag?: boolean, 
-    filter?: Record<string, any>,
+    filter: Record<string, any> = {},
     limit: number = 10, 
     offset: number = 0, 
 ){

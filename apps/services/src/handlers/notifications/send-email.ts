@@ -6,7 +6,7 @@ import FormData from 'form-data'; // Hmmmm
 import { LMSKafkaMessage } from "../..";
 
 
-//const mg = new Mailgun(FormData).client({ username: 'api', key: ServiceConfig.mail.api_key})
+const mg = new Mailgun(FormData).client({ username: 'api', key: ServicesConfig.mail.api_key})
 
 export async function emailHandler(KafkaArgs: EachMessagePayload){
     try {
@@ -14,7 +14,7 @@ export async function emailHandler(KafkaArgs: EachMessagePayload){
     
         const emailSubject = emailSubjectTemplates[purpose]({ ...data})
         const emailBody = emailBodyTemplates[purpose]({ ...data})
-        sendRequestToMG({ email: data.email, subject: emailSubject, body: emailBody })
+        await sendRequestToMG({ email: data.email, subject: emailSubject, body: emailBody })
         console.log(`Sent ${purpose} email to ${data.email}`)
     } catch (err) {
         console.log('--- Kafka Email Handler Error ---\n', err)
@@ -28,16 +28,19 @@ type RequestToMGArgs = {
 }
 
 async function sendRequestToMG(args: RequestToMGArgs) {
-    /*
-    mg.messages.create(ServicesConfig.mail.domain, { // Change to real account when in prod
-        to: [args.email],
-        from: 'Timeline Trust Support <noreply-timeline-support@mg.kodditor.co>',
-        bcc: ['kobbyowusudarko@gmail.com'],
-        subject: args.subject,
-        html: `
-        <html>
-          ${args.body}
-        </html>
+    try{
+        mg.messages.create(ServicesConfig.mail.domain, { // Change to real account when in prod
+            //to: ServicesConfig.node_env == 'production' ?  [args.email] : [ServicesConfig.mail.test_email],
+            to: [args.email],
+            from: 'Timeline Trust Support <noreply-timeline-support@mg.kodditor.co>',
+            bcc: ['kobbyowusudarko@gmail.com'],
+            subject: args.subject,
+            html: `
+            <html>
+              ${args.body}
+            </html>
         `})
-    */
+    } catch (err) {
+        console.log(`--- Mailgun Error ---\n`, err)
+    }
 }

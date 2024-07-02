@@ -1,5 +1,5 @@
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
-import { _getToken } from '@repo/utils';
+import { _getToken, cn } from '@repo/utils';
 
 import { useLMSContext } from '../app'
 import { BookOpenIcon, UsersIcon, AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon } from '@heroicons/react/24/outline'
@@ -104,8 +104,8 @@ function IndexPage() {
                       </div>
                       <div className='flex gap-4 items-center font-light'>
                           <span className='w-[100px] flex justify-end'>STATUS</span>
-                          <span className='w-[120px] flex justify-end'>TIME CREATED</span>
-                          <span className='w-[150px] flex justify-end'>DATE CREATED</span>
+                          <span className='w-[120px] flex justify-end'>LAST CREATED</span>
+                          <span className='w-[150px] flex justify-end'></span>
                       </div>
                   </div>
                     {
@@ -130,8 +130,14 @@ function IndexPage() {
                               {registrant.firstName + " " + registrant.lastName}
                             </h5>
                             <div className="flex gap-4 items-center font-light">
-                              <span className='w-[100px] flex justify-end'>
+                              <span className='w-[100px] flex gap-2 items-center justify-end'>
                                 {registrant.status}
+                                <span className={cn(
+                                  "w-2 h-2 rounded-full",
+                                  registrant.status == 'Pending' ? "bg-yellow-600" : "",
+                                  registrant.status == 'Approved' ? "bg-green-600" : "",
+                                  registrant.status == 'Rejected' ? "bg-red-600" : "",
+                                )}></span>
                               </span>
                               <span className='w-[120px] flex justify-end'>
                                 {new Date(registrant.updatedAt).toLocaleTimeString()}

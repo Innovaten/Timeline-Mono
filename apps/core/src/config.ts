@@ -9,6 +9,11 @@ export const CoreConfig = {
     ports: {
         core: process.env.CORE_PORT ?? 4000
     },
+    url: {
+        admin: process.env.ADMIN_URL ?? 'http://localhost:3000',
+        lms: process.env.LMS_URL ?? 'http://localhost:3001',
+        core: process.env.CORE_URL ?? 'http://localhost:4000',
+    },
     kafka: {
         username: process.env.KAFKA_USERNAME ?? "default",
         password: process.env.KAFKA_PASSWORD ?? "123456789",

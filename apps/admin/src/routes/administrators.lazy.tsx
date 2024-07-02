@@ -1,11 +1,10 @@
-import { Button, DialogContainer, Input } from '@repo/ui';
+import { Button, DialogContainer, Input, SelectInput } from '@repo/ui';
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { useAdministrators, useAdministratorsFilter, useCompositeFilterFlag } from '../hooks';
 import { PlusIcon, FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
 import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, validPhoneNumber } from '@repo/utils';
 import { Formik, Form } from 'formik'
-import { SelectInput } from '@repo/ui';
 import { toast } from 'sonner'
 import { useState } from 'react';
 import { IUserDoc } from '@repo/models';
@@ -320,8 +319,8 @@ function Administrators(){
                                 <span className='flex-1 font-normal truncate'>NAME</span>
                             </div>
                             <div className='flex gap-4 items-center font-light'>
-                                <span className='w-[100px] flex justify-end'>TIME CREATED</span>
-                                <span className='w-[150px] flex justify-end'>DATE CREATED</span>
+                                <span className='w-[100px] flex justify-end'>LAST UPDATED</span>
+                                <span className='w-[150px] flex justify-end'></span>
                             </div>
                         </div>
                         {

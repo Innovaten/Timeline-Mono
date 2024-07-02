@@ -53,6 +53,7 @@ export class RegistrationsController {
     @Get('approve')
     async approveRegistration(
         @Query('_id') regId: string, 
+        @Query('approved-classes') rawApprovedClasses: string,
         @Request() req: Request, 
     ){
         // @ts-ignore
@@ -64,7 +65,17 @@ export class RegistrationsController {
             )    
         }
 
-        return await this.service.approveRegistration(regId, approver);
+        if(!rawApprovedClasses){
+            return ServerErrorResponse(
+                new Error("Approved classes not specified"),
+                400,
+            )
+        }
+
+        const approvedClasses: Array<string> = JSON.parse(rawApprovedClasses);
+
+
+        return await this.service.approveRegistration(regId, approvedClasses, approver);
     }
 
     @UseGuards(AuthGuard)

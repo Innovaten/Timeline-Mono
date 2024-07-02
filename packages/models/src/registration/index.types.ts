@@ -14,6 +14,7 @@ export interface IRegistration {
   phone: string;
   classes: Array<string>;
 
+  approvedClasses: Array<Types.ObjectId>;
   approvedBy: Types.ObjectId;
   approvedAt: Date;
   rejectedBy: Types.ObjectId;

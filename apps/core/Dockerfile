@@ -11,8 +11,6 @@ COPY package.json ./
 # Copy workspace configurations
 COPY turbo.json ./
 
-RUN npm install -g yarn
-
 # Install dependencies
 RUN yarn install --frozen-lockfile
 

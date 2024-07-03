@@ -4,6 +4,8 @@ FROM node:18 AS builder
 # Set the working directory
 WORKDIR /
 
+RUN yarn global add turbo@^2>
+
 # Copy the root package.json and yarn.lock
 COPY package.json yarn.lock ./
 

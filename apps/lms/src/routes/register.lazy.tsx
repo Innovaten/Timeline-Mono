@@ -429,7 +429,7 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUs
             }
         })
         .catch( err => {
-            toast.error(err)
+            toast.error(`${err}`)
             toggleLoading()
         })
     }

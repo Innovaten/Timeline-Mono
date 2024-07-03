@@ -44,4 +44,4 @@ EXPOSE 4000
 ENV NODE_ENV production
 
 # Command to run the application
-CMD ["yarn", "start", "--filter", "core"]
+CMD ["yarn", "dev", "--filter", "core"]

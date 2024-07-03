@@ -6,7 +6,7 @@ WORKDIR /app
 
 
 # Copy the root package.json and yarn.lock
-COPY package.json ../../yarn.lock ./
+COPY package.json ./
 
 # Copy workspace configurations
 COPY turbo.json ./
@@ -31,7 +31,6 @@ COPY --from=builder /app/dist ./dist
 
 # Copy package.json and yarn.lock to install production dependencies
 COPY package.json ./package.json
-COPY yarn.lock ./yarn.lock
 
 # Install only production dependencies
 RUN yarn install --production --frozen-lockfile

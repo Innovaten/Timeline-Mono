@@ -4,17 +4,20 @@ FROM node:18 AS builder
 # Set the working directory
 WORKDIR /app
 
+
 # Copy the root package.json and yarn.lock
-COPY package.json yarn.lock ./
+COPY package.json ../../yarn.lock ./
 
 # Copy workspace configurations
 COPY turbo.json ./
 
-# Copy workspace packages
-COPY src/ ./src/
+RUN npm install -g yarn
 
 # Install dependencies
 RUN yarn install --frozen-lockfile
+
+# Copy workspace packages
+COPY src/ ./src/
 
 # Build the application
 RUN yarn build
@@ -22,8 +25,6 @@ RUN yarn build
 # Stage 2: Production
 FROM node:18 AS runner
 
-# Set the working directory
-WORKDIR /app
 
 # Copy the built application from the build stage
 COPY --from=builder /app/dist ./dist

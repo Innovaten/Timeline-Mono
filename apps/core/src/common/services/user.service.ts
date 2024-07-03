@@ -7,10 +7,14 @@ import { Types } from "mongoose";
 import { generate } from 'generate-password'
 import bcrypt from 'bcrypt'
 import { Roles } from "../enums/roles.enum";
-
+import { KafkaService } from "./kafka.service";
 
 @Injectable()
 export class UserService {
+    constructor(
+        private kafka: KafkaService
+    ) { }
+
     async verifyPassword(email: string, password: string) {
         const user = await UserModel.findOne({ email });
         if(!user) return null;
@@ -38,7 +42,7 @@ export class UserService {
         const codePrefix = userData.role == "SUDO" ? "SDO" : "ADM"
 
         let randomPassword = generate({ 
-            length: 6, 
+            length: 7, 
             strict: true 
         })
 
@@ -65,7 +69,19 @@ export class UserService {
             courses: [],
         })
 
-        user.save()
+        await user.save()
+
+        await this.kafka.produceMessage(
+            "notifications.send-email",
+            "admin-credentials",
+            {
+                email: user.email,
+                code: user.code,
+                password: randomPassword,
+                firstName: user.firstName,
+            }
+        )
+        
         return user;
 
     }
@@ -105,6 +121,21 @@ export class UserService {
         }
 
         return user
+    }
+
+    async deleteUser(_id: string, actor: string){
+
+        const user = await UserModel.findById(_id)
+        
+        if(!user) {
+            throw new Error("Specified user not found")
+        }
+
+        user.meta.isDeleted = true;
+        user.updatedAt = new Date();
+
+        await user.save();
+        return user;
     }
 }
 

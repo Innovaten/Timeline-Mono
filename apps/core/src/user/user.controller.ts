@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
-import { IUserDoc, UserModel } from '@repo/models';
+import { IUserDoc } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { Roles } from '../common/enums/roles.enum';
 
@@ -67,14 +67,14 @@ export class UsersController {
 
         if(!creator){
             return ServerErrorResponse(
-                new Error("Unauthenticated"),
+                new Error("Unauthenticated Request"),
                 401
             )
         }
 
         if(creator.role != 'SUDO'){
             return ServerErrorResponse(
-                new Error("Unauthorized"),
+                new Error("Unauthorized Request"),
                 401
             )
         }
@@ -96,7 +96,7 @@ export class UsersController {
     async upgradeToSudo(@Query('adminId') adminId: string, @Request() req: any) {
        const user = req['user']
        if(user.role !== Roles.SUDO) {
-        return ServerErrorResponse(new Error('Unauthorized'), 401)
+        return ServerErrorResponse(new Error('Unauthorized Request'), 401)
        } 
        
        try {
@@ -112,7 +112,7 @@ export class UsersController {
     async downgradeToAdmin(@Query('sudoId') sudoId: string, @Request() req: any) {
         const user = req['user']
         if(user.role !== Roles.SUDO) {
-            return ServerErrorResponse(new Error('Unauthorized'), 401)
+            return ServerErrorResponse(new Error('Unauthorized Request'), 401)
         }
 
         try {
@@ -129,17 +129,17 @@ export class UsersController {
         @Param("_id") _id: string,
     ) {
         if(!updateUserDto.authToken){
-            return ServerErrorResponse(new Error("Unauthenticated"), 401)
+            return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
         }
 
         const updator = await this.jwt.validateToken(updateUserDto.authToken);
 
         if(!updator){
-            return ServerErrorResponse(new Error("Unauthenticated"), 401)
+            return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
         }
 
         if (updator.role !== 'SUDO' && updator._id !== _id) {
-            return ServerErrorResponse(new Error("Unauthorized"), 401)
+            return ServerErrorResponse(new Error("Unauthorized Request"), 401)
         }
 
         try {
@@ -148,6 +148,38 @@ export class UsersController {
         } catch (error) {
             return ServerErrorResponse(new Error(`${error}`), 500)
         }
+    }
+
+    @Delete(":_id")
+    async deleteUser(
+        @Body() deleteUserDto: DeleteUserDto,
+        @Param("_id") _id: string
+    ) {
+
+        if(!deleteUserDto.authToken){
+            return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
+        }
+
+        const actor = await this.jwt.validateToken(deleteUserDto.authToken);
+
+        if(!actor){
+            return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
+        }
+
+        if (actor.role !== 'SUDO' && actor._id !== _id) {
+            return ServerErrorResponse(new Error("Unauthorized Request"), 401)
+        }
+
+        try {
+            const deletedUser = await this.user.deleteUser(_id, `${actor}`);
+            return ServerSuccessResponse(deletedUser)
+        } catch (err) {
+            return ServerErrorResponse(
+                new Error(`${err}`), 
+                500
+            )
+        }
+
     }
 
 }

@@ -2,9 +2,10 @@ import {  Module } from "@nestjs/common";
 import { JwtService } from "./services/jwt.service";
 import { UserService } from "./services/user.service";
 import { AuthGuard } from "./guards/jwt.guard";
+import { KafkaService } from "./services/kafka.service";
 
 @Module({
-    providers: [JwtService, UserService, AuthGuard],
+    providers: [JwtService, UserService, KafkaService, AuthGuard],
     exports: [JwtService, UserService, AuthGuard]
 })
 

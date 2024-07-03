@@ -52,3 +52,8 @@ export class UpdateUserDto {
     @IsString()
     authToken: string;
 }
+
+export class DeleteUserDto {
+    @IsString()
+    authToken: string
+}

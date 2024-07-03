@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { IRegistrationDoc } from "@repo/models";
-import { useClasses } from "../hooks";
+import { useClasses, useCompositeFilterFlag } from "../hooks";
 
 export const Route = createLazyFileRoute("/registrations")({
   component: RegistrationsPage,
@@ -19,11 +19,14 @@ function RegistrationsPage() {
   const { dialogIsOpen: newStudentIsSelected, toggleDialog: toggleNewStudentIsSelected} = useDialog();
   const { filter, filterOptions, changeFilter, filterChangedFlag } =
     useRegistrantsFilter();
+  const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefresh } = useDialog()
+
+  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag, filterChangedFlag ])
   const {
     isLoading: registrantsIsLoading,
     registrants,
     count: registrantsCount,
-  } = useRegistrants(filterChangedFlag, filter);
+  } = useRegistrants(compositeFilterFlag, filter);
   const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
   const { dialogIsOpen: classesApprovalIsOpen, toggleDialog: toggleClassesApprovalDialog } = useDialog();
   
@@ -50,8 +53,8 @@ function RegistrationsPage() {
       `/api/v1/registrations/approve?_id=${registrantId}&approved-classes=${JSON.stringify(approvedClasses)}`,
     )
       .then((res) => {
-        console.log(res);
         if (res.status == 200 && res.data.success) {
+          manuallyToggleCompositeFilterFlag()
           toast.success(
             <p>
               Student registered successfully.
@@ -74,7 +77,7 @@ function RegistrationsPage() {
       `/api/v1/registrations/reject?_id=${registrantId}`,
     )
       .then((res) => {
-        console.log(res);
+        manuallyToggleCompositeFilterFlag()
         if (res.status == 200 && res.data.success) {
           toast.success("Student has been rejected");
         } else {

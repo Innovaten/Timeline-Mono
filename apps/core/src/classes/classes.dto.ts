@@ -30,3 +30,8 @@ export class UpdateClassDto {
     @IsString()
     authToken: string;
 }
+
+export class DeleteClassDto {
+    @IsString()
+    authToken: string;
+}

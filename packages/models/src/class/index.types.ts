@@ -21,6 +21,10 @@ export interface IClass {
   
   // settings: {};
 
+  meta: {
+    isDeleted: boolean;
+  };
+
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
 

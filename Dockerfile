@@ -31,7 +31,7 @@ WORKDIR /
 COPY --from=builder ./apps/core/dist ./dist
 
 # Copy package.json and yarn.lock to install production dependencies
-COPY apps/core/package.json ./package.json
+COPY package.json ./package.json
 COPY yarn.lock ./yarn.lock
 
 # Install only production dependencies

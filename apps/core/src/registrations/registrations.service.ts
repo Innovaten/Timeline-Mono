@@ -19,12 +19,20 @@ export class RegistrationsService {
     }
 
     async approveRegistration(_id: string, approvedClasses: string[], approver: string){
+
         const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
 
         if(!registration){
             return ServerErrorResponse(
                 new Error("Specified registration could not be found"),
                 404,
+            )
+        }
+
+        if (registration.status !== 'Pending') {
+            return ServerErrorResponse(
+                new Error("Registration is not in a pending state"),
+                400,
             )
         }
         
@@ -56,6 +64,13 @@ export class RegistrationsService {
             return ServerErrorResponse(
                 new Error("Specified registration could not be found"),
                 404,
+            )
+        }
+
+        if (registration.status !== 'Pending') {
+            return ServerErrorResponse(
+                new Error("Registration is not in a pending state"),
+                400,
             )
         }
 

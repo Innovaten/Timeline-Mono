@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData'
 import { useRegistrations } from '../hooks';
 import { Button } from '@repo/ui';
+import { useAdminsCount, useClassesCount, usePendingCount, useStudentsCount } from '../hooks/resourcesCount.hook';
 
 dayjs.extend(localeData)
 
@@ -21,6 +22,11 @@ function IndexPage() {
     const user = useLMSContext((state) => state.user);
     
     const { registrations, isLoading: registrationsIsLoading } = useRegistrations()
+    const { pendingCount } = usePendingCount()
+    const { adminCount } = useAdminsCount()
+    const { studentCount } = useStudentsCount()
+    const { classesCount } = useClassesCount()
+    
  
     const currentHour = new Date().getHours()
     const greeting = currentHour < 12 ? "Morning" :
@@ -54,22 +60,22 @@ function IndexPage() {
     [
       {
         label: 'Total Classes',
-        value: 12,
+        value: classesCount,
         icon: BookOpenIcon,
       },
       {
         label: 'Total Students',
-        value: 704,
+        value: studentCount,
         icon: AcademicCapIcon,
       },
       {
         label: 'Total Admins',
-        value: 4,
+        value: adminCount,
         icon: UsersIcon,
       },
       {
         label: 'Registrations',
-        value: registrations.length,
+        value: pendingCount,
         icon: NewspaperIcon,
       },
     ] 

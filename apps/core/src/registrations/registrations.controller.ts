@@ -103,5 +103,34 @@ export class RegistrationsController {
         return await this.service.createNewRegistration(regData);
     }
 
+    @Get('user')
+    async getRegistrationByUser(
+        @Query('_id') regId: string
+    ){
+        const registrant = await this.service.getRegistrant(regId);
+        if(!registrant){
+            return ServerErrorResponse(
+                new Error("Registrant not found"),
+                404
+            )
+        }
+        return registrant;
+    }
+
+    @Get('admission/approve')
+    async approveAdmission(
+        @Query('_id') regId: string, 
+    ){
+        return await this.service.approveAdmission(regId);
+    }
+
+    @Get('admission/reject')
+    async rejectAdmission(
+        @Query('_id') regId: string, 
+    ){
+        return await this.service.rejectAdmission(regId);
+    }
+
+
 
 }

@@ -42,7 +42,7 @@ export class RegistrationsService {
                 email: registration.email,
                 code: registration.code,
                 firstName: registration.firstName,
-                link: `${CoreConfig.url.lms}/registration/accept/${registration._id}`
+                link: `${CoreConfig.url.lms}/register/accept/${registration._id}`
             }
         )
 
@@ -110,5 +110,74 @@ export class RegistrationsService {
             return ServerErrorResponse(new Error(`${err}`), 500)
         }
     }
+
+    async getRegistrant(_id: string){
+        const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
+
+        if(!registration){
+            return ServerErrorResponse(
+                new Error("Specified registration could not be found"),
+                404,
+            )
+        }
+
+        return ServerSuccessResponse(registration);
+    }
+
+    async approveAdmission(_id: string){
+        const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
+        let courses: string[] = []
+       if(registration !== null){
+        courses = registration.approvedClasses.map(c => c.toString())
+       }
+        if(!registration){
+            return ServerErrorResponse(
+                new Error("Specified registration could not be found"),
+                404,
+            )
+        }
+
+        if(registration.status === 'Rejected'){
+            return ServerErrorResponse(
+                new Error("Registration has already been rejected"),
+                403,
+            )
+
+        }
+        
+        registration.admissionStatus = 'Accepted'
+        registration.classes = courses;
+        registration.updatedAt = new Date();
+        await registration.save()
+
+        return ServerSuccessResponse(registration);
+        
+    }
+
+    async rejectAdmission(_id: string){
+        const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
+        if(!registration){
+            return ServerErrorResponse(
+                new Error("Specified registration could not be found"),
+                404,
+            )
+        }
+
+        if(registration.status === 'Rejected'){
+            return ServerErrorResponse(
+                new Error("Registration has already been rejected"),
+                403,
+            )
+
+        }
+
+        registration.admissionStatus = 'Rejected';
+        registration.updatedAt = new Date();
+        await registration.save()
+
+        return ServerSuccessResponse(registration);
+    }
+
+
 
 }

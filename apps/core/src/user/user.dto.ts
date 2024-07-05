@@ -2,7 +2,8 @@ import { IsEmail, IsString, IsPhoneNumber, IsEnum, IsOptional } from "class-vali
 
 enum Role {
     "ADMIN",
-    "SUDO"
+    "SUDO",
+    "STUDENT"
 }
 
 export class CreateUserDto {
@@ -26,6 +27,9 @@ export class CreateUserDto {
 
     @IsString()
     authToken: string;
+
+    @IsString()
+    gender: string;
 }
 
 export class UpdateUserDto {

@@ -147,10 +147,10 @@ function Students(){
           </Formik>
 
       </DialogContainer>
-      <div className='flex flex-col w-full h-full'>
-        <h2 className='text-blue-800'>Students</h2>     
+      <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
+        <h2 className='text-blue-800 mt-2'>Students</h2>     
           <div className='w-full flex gap-3 mt-2'>
-              <div  className='w-full flex gap-3 mt-2 '>
+              <div  className='w-full flex flex-wrap gap-3 mt-2 '>
                   <Button
                       onClick={toggleFiltersAreShown}
                       variant='outline'
@@ -197,7 +197,7 @@ function Students(){
                     <span  className='w-[50px]'>CODE</span>
                     <span className='flex-1 font-normal truncate'>NAME</span>
                   </div>
-                  <div className='flex gap-4 items-center font-light'>
+                  <div className='hidden sm:flex gap-4 items-center font-light'>
                       <span className='w-[100px] flex justify-end'>DATE CREATED</span>
                       <span className='w-[150px] flex justify-end'></span>
                   </div>
@@ -219,7 +219,7 @@ function Students(){
                             <small className='font-light w-[50px]'>{student.code}</small>
                             <h5 className='flex-1 font-normal truncate'>{student.firstName + " " + student.lastName }</h5>
                         </div>
-                        <div className='flex gap-4 items-center font-light'>
+                        <div className='hidden sm:flex gap-4 items-center font-light'>
                             <span className='w-[100px] flex justify-end'>{new Date(student.updatedAt).toLocaleTimeString()}</span>
                             <span className='w-[150px] flex justify-end'>{new Date(student.updatedAt).toDateString()}</span>
                         </div>

@@ -1,5 +1,5 @@
 import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router'
-import { _getToken } from '@repo/utils';
+import { _getToken, _setUser } from '@repo/utils';
 import { Input, Button } from '@repo/ui'
 import {  Form, Formik } from 'formik'
 import * as Yup from 'yup'
@@ -7,7 +7,7 @@ import YupPassword from 'yup-password'
 import { _setToken, fadeParentAndReplacePage, makeUnauthenticatedRequest, useLoading } from '@repo/utils'
 import { RefObject, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { useLMSContext } from '../main'
+import { useLMSContext } from '../app'
 import { IUserDoc } from '@repo/models'
 import { HydratedDocument } from 'mongoose'
 import OtpInput from 'react-otp-input'
@@ -41,10 +41,10 @@ function LoginPage(){
 
   return (
       <>
-          <main className="w-screen min-h-screen bg-blue-50 md:p-8 2xl:p-12 ">
+          <main className="w-full min-h-screen overflow-x-hidden bg-blue-50 md:p-8 2xl:p-12 ">
               <div className="flex flex-col items-center">
                   <img className='my-4  sm:my-8 h-12' src="/img/timeline-logo.png" />
-                  <div className='flex w-full h-[90vh] sm:w-[80%] sm:h-fit sm:min-h-[400px] xl:w-[1000px] 2xl:w-[1100px] bg-white rounded shadow overflow-hidden'>
+                  <div className='flex w-full h-[90vh] sm:w-[80%] sm:h-fit sm:min-h-[400px] xl:w-[1000px] bg-white rounded shadow overflow-hidden'>
                       <div className='w-1/2 hidden sm:block'>
                           <img className='object-cover h-full' src="/img/login-student-image.jpg" />
                       </div>
@@ -91,7 +91,6 @@ function Login({ componentRef, pages }: LoginProps){
   const { isLoading, toggleLoading, resetLoading } = useLoading()
   const router = useRouter()
 
-  const setToken = useLMSContext((state) => state.setToken )
   const setUser = useLMSContext((state) => state.setUser )
 
   const searchParams = Route.useSearch()
@@ -109,9 +108,9 @@ function Login({ componentRef, pages }: LoginProps){
             if(res.data.success){
               const token = res.data.data.token;
               _setToken(token);
-              setToken(token);
               
               const user: HydratedDocument<IUserDoc> = res.data.user;
+              _setUser(user)
               setUser(user);
               router.navigate({ 
                 ...( searchParams.destination == '' ?  {to: '/home' } : { to: searchParams.destination })
@@ -166,8 +165,8 @@ function Login({ componentRef, pages }: LoginProps){
               validateOnBlur
               resetForm
               >
-                  <Form className='flex flex-col gap-4 xl:gap-6'>
-                      <h1 className='text-blue-950 my-1 md:my-3'>Login</h1>
+                  <Form className='flex flex-col gap-6'>
+                      <h1 className='text-blue-950'>Login</h1>
                       <Input id='email' name='email' type='email' iconType='email' label='Email Address'  placeholder="kwabena@kodditor.com" hasValidation />
                       <Input id='p' name='password' type='password' iconType='password' label='Password' placeholder="********" hasValidation />
                       <div className='hidden sm:flex gap-1 justify-between w-full'>
@@ -178,7 +177,6 @@ function Login({ componentRef, pages }: LoginProps){
                           variant='primary'
                           isLoading={isLoading}
                           type='submit'
-                          className='mt-2'
                       >Login</Button>
                       <div className='sm:hidden flex items-center gap-1 justify-between w-full'>
                           <Link to='/register'  className='text-blue-700 underline-offset-2 underline cursor-pointer' >Register an account</Link>
@@ -250,14 +248,14 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
               validateOnBlur
               resetForm
               >
-                  <Form className='flex flex-col gap-4 sm:gap-6'>
-                      <div className='my-3'>
+                  <Form className='flex flex-col gap-6'>
+                      <div className=''>
                           <h1 className='text-blue-950 mb-3'>Forgot Your Password?</h1>
                           <p>We'll send you a One Time Password (OTP)</p>
                       </div>
                       <Input id='e' name='email' type='email' label='Email Address' iconType='email'  placeholder="kwabena@example.com" hasValidation />
                       <div className='hidden sm:flex justify-end w-full'>
-                          <p className='text-blue-700 underline-offset-2 cursor-pointer underline' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['login'], 'flex') }}>Already have account? Click here to login</p>
+                          <p className='text-blue-700 underline-offset-2 cursor-pointer underline' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['login'], 'flex') }}>Already have an account?</p>
                       </div>
                       <Button
                           variant='primary'
@@ -266,7 +264,7 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
                           className='mt-8 sm:mt-2'
                       >Send OTP</Button>
                       <div className='sm:hidden flex justify-center w-full'>
-                          <p className='text-blue-700 underline-offset-2 cursor-pointer underline' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['login'], 'flex') }}>Already have account? Click here to login</p>
+                          <p className='text-blue-700 underline-offset-2 cursor-pointer underline' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['login'], 'flex') }}>Already have an account?</p>
                       </div>
                   </Form>
               </Formik>
@@ -327,8 +325,8 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
   return (
       <>
           <div ref={componentRef}  className='hidden flex-col gap-4 sm:justify-between'>
-                  <form onSubmit={handleSubmit} onReset={handleReset} className='flex flex-col gap-4 sm:gap-6'>
-                      <div className='my-3'>
+                  <form onSubmit={handleSubmit} onReset={handleReset} className='flex flex-col gap-6'>
+                      <div>
                           <h1 className='text-blue-950 mb-3'>Enter your OTP.</h1>
                           <p>Please check your email.</p>
                       </div>
@@ -349,9 +347,8 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
                       <Button
                           variant='primary'
                           isLoading={isLoading}
-                          type='submit'
-                          className='mt-8 sm:mt-2'
-                      >Send OTP</Button>
+                          type='submit' 
+                      >Verify OTP</Button>
                   </form>
           </div>
       </>
@@ -442,15 +439,14 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
               validateOnBlur
               resetForm
               >
-                  <Form className='flex flex-col gap-4 sm:gap-6'>
-                      <h1 className='text-blue-950 my-3'>Update Your Password</h1>
+                  <Form className='flex flex-col gap-6'>
+                      <h1 className='text-blue-950'>Update Your Password</h1>
                       <Input id='p1' name='newPassword' type='password' label='New Password' iconType='password' placeholder="********" hasValidation />
                       <Input id='p2' name='confirmPassword' type='password' label='Password' iconType='password' placeholder="********" hasValidation />
                       <Button
                           variant='primary'
                           isLoading={isLoading}
                           type='submit'
-                          className='mt-2'
                       >Update your password</Button>
                   </Form>
               </Formik>

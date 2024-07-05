@@ -21,13 +21,13 @@ export default function SelectInput(props: InputProps) {
     props;
 
   return (
-    <span className="relative flex flex-col gap-2 w-full">
-      {label && <label className="text-base text-blue-700">{label}</label>}
+    <span className="relative flex flex-col gap-1 w-full">
+      {label && <label className="text-sm text-blue-700">{label}</label>}
       <Field
         component='select'
         className={cn(
           className ? className : '', 
-          "text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[45px] px-2",
+          "text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0 rounded-md border-slate-300 shadow-sm h-[35px] px-2",
           variant == "outline" ? "border-blue-900 text-blue-900" : "",
         )}
         name={name}

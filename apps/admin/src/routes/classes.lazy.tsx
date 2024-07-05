@@ -244,12 +244,12 @@ function Classes(){
                     <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={() => { handleDeleteClass }}>Delete Class</Button>
                 </div>
             </DialogContainer>
-            <div className='flex flex-col w-full h-full'>
+            <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
                     <h2 className='text-blue-800'>Classes</h2>
                     <Button className='flex px-2 !h-[35px]' onClick={toggleDialog}> <PlusIcon className='inline w-4 mr-1' /> Add a class</Button>
                 </div>
-                <div className='w-full flex gap-3 mt-2'>
+                <div className='w-full flex flex-wrap gap-3 mt-3'>
                     <div  className=''>
                         <Button
                             onClick={toggleFiltersAreShown}
@@ -331,9 +331,9 @@ function Classes(){
                                     <span className='flex-1 font-normal truncate'>NAME</span>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
-                                  <span className='w-[150px]  flex justify-end'>MODE OF CLASS</span>
-                                  <span className='w-[200px] flex justify-end'>NO. OF ADMINISTRATORS</span>
-                                  <span className='w-[150px] flex justify-end'>LAST UPDATED</span>
+                                  <span className='w-[150px]  hidden sm:flex justify-end'>MODE OF CLASS</span>
+                                  <span className='w-[200px] hidden sm:flex justify-end'>NO. OF ADMINISTRATORS</span>
+                                  <span className='w-[150px] hidden sm:flex justify-end'>LAST UPDATED</span>
                                   
                                   <span className='w-[100px] flex justify-end'>ACTIONS</span>
                                 </div>

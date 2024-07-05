@@ -1,10 +1,11 @@
-import { createRootRouteWithContext, Link, redirect, Outlet, useRouterState } from '@tanstack/react-router'
+import { createRootRouteWithContext, Link, Outlet, useRouterState, redirect } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { _getToken, _getUser, _setUser, makeAuthenticatedRequest } from '@repo/utils';
+import { _getToken, _getUser, _setUser } from '@repo/utils';
 import SidebarComponent from '../components/Sidebar.component';
 import { Toaster } from 'sonner';
 import { IUserDoc } from "@repo/models";
 import { useLMSContext } from '../app';
+import { makeAuthenticatedRequest } from '@repo/utils';
 
 export interface ConsoleRouterContext {
   user: IUserDoc | null,
@@ -54,10 +55,10 @@ function RootPage(){
 
   return (
     <>
-      <main className='bg-blue-50 w-screen min-h-screen sm:overflow-hidden p-10'>
-          <div className='h-[calc(100vh-5rem)] w-[calc(100vw-5rem)] flex gap-8'>
+      <main className='bg-blue-50 w-screen min-h-screen sm:overflow-hidden sm:p-10'>
+          <div className='min-h-screen sm:min-h-0 sm:h-[calc(100vh-5rem)] w-full sm:w-[calc(100vw-5rem)] sm:flex sm:gap-8'>
               <SidebarComponent />
-              <div className='flex-1 overflow-y-auto overflow-x-hidden bg-white shadow-sm rounded p-4 sm:p-8'>
+              <div className='w-full min-h-screen sm:min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-white shadow-sm rounded p-4 pt-10 sm:p-8'>
                 <span className='flex gap-2 mb-2'>
                   <Link to={"/"}  className='flex gap-2 items-center text-blue-900 '>
                     <span>Home</span>
@@ -72,7 +73,7 @@ function RootPage(){
                     )
                   }) }
               </span>
-              <div className='w-full h-[calc(100%-2rem)]'>
+              <div className='w-full min-h-[calc(100vh-5.5rem)] sm:min-h-0 sm:h-[calc(100%-2rem)]'>
                 <Outlet />
               </div>
             </div>

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { UserModel } from "@repo/models";
+import { RegistrationModel, UserModel } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import lodash from "lodash";
 import { Types } from "mongoose";
@@ -46,7 +46,7 @@ export class UserService {
             strict: true 
         })
 
-        randomPassword = randomPassword + ["!","@","#","$","^","*"][ Math.floor(Math.random() * 10) ]
+        randomPassword = randomPassword + ["!","@","#","$","^","*"][ Math.floor(Math.random() * 6) ] + [Math.abs(Math.floor((Math.random() * 149)-97))]
 
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(randomPassword, salt);
@@ -137,5 +137,69 @@ export class UserService {
         await user.save();
         return user;
     }
+
+    async createStudent(_id: string){
+        const student = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
+        if(!student){
+            throw new Error("Registration not found")
+        }
+
+        if(student.status !== "Approved"){
+            throw new Error("Registration not approved")
+        }
+        else{
+        const userData = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)}) as CreateUserDto;
+        const codePrefix = "STU"
+
+        let randomPassword = generate({ 
+            length: 7, 
+            strict: true 
+        })
+
+        randomPassword = randomPassword + ["!","@","#","$","^","*"][ Math.floor(Math.random() * 6) ] + [Math.abs(Math.floor((Math.random() * 149)-97))]
+
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(randomPassword, salt);
+        
+
+        const user = new UserModel({
+            code: codePrefix + lodash.padStart(`${await(UserModel.countDocuments()) + 1}`, 6, "0"),
+            role: Roles.STUDENT,
+            firstName: userData.firstName,
+            otherNames: userData.otherNames,
+            lastName: userData.lastName,
+            email: userData.email,
+            phone: userData.phone,
+            gender: userData.gender,
+
+            
+            meta: {
+                isPasswordSet: false,
+                isSuspended: false,
+                isDeleted: false,
+            },
+            auth: {
+                password: passwordHash,
+            },
+            createdAt: new Date(),
+            courses: [],
+        })
+
+        await user.save()
+
+        await this.kafka.produceMessage(
+            "notifications.send-email",
+            "student-credentials",
+            {
+                email: user.email,
+                code: user.code,
+                password: randomPassword,
+                firstName: user.firstName,
+            }
+        )
+        return user;
+
+    }
+}
 }
 

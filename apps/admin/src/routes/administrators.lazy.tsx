@@ -317,12 +317,12 @@ function Administrators(){
                 </div>
             </DialogContainer>
 
-            <div className='flex flex-col w-full h-full'>
+            <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
                     <h2 className='text-blue-800'>Administrators</h2>
-                    <Button className='flex px-2 !h-[35px]' onClick={toggleCreateDialog}> <PlusIcon className='inline w-4 mr-1' /> Add an administrator</Button>
+                    <Button className='flex px-2 !h-[35px]' onClick={toggleCreateDialog}> <PlusIcon className='inline w-4 mr-1' /> Add <span className='hidden sm:inline' >&nbsp;an administrator</span></Button>
                 </div>
-                <div className='w-full mt-3 flex gap-4'>
+                <div className='w-full mt-3 flex flex-wrap gap-4'>
                     <Button
                         onClick={toggleFiltersAreShown}
                         variant='outline'
@@ -362,7 +362,7 @@ function Administrators(){
                                 <span className='flex-1 font-normal truncate'>NAME</span>
                             </div>
                             <div className='flex gap-4 items-center font-light'>
-                                <span className='w-[150px] flex justify-end'>LAST UPDATED</span>
+                                <span className='w-[150px] hidden sm:flex justify-end'>LAST UPDATED</span>
                                 <span className='w-[100px] flex justify-end'>ACTIONS</span>
                             </div>
                         </div>
@@ -384,7 +384,7 @@ function Administrators(){
                                     <h5 className='flex-1 font-normal truncate'>{admin.firstName + " " + admin.lastName }</h5>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
-                                    <span className='w-[150px] flex justify-end'>{new Date(admin.updatedAt).toDateString()}</span>
+                                    <span className='w-[150px] hidden sm:flex justify-end'>{new Date(admin.updatedAt).toDateString()}</span>
                                     <div className='w-[100px] flex justify-end gap-4'>
                                         <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleUpdateDialog() }}>              
                                             <PencilIcon className='w-4 h-4' />

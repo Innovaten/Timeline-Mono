@@ -42,6 +42,32 @@ small {
     @apply text-xs;
 }
 
+@media screen and (max-width: 768px) {
+    h1 {
+        @apply text-3xl font-semibold;
+    }
+    
+    h2 {
+        @apply text-2xl font-semibold;
+    }
+    
+    h3 {
+        @apply text-xl font-semibold;
+    }
+    
+    h4 {
+        @apply text-lg font-medium;
+    }
+    
+    h5 {
+        @apply text-base font-medium;
+    }
+    
+    h6 {
+        @apply text-sm font-semibold;
+    }
+}
+
 
 @keyframes fadeInOut {
     0% {

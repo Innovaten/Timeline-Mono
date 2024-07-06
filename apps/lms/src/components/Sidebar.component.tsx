@@ -1,9 +1,9 @@
 import { AdjustmentsVerticalIcon, CalendarIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
-import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, FolderIcon, HomeIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, FolderIcon, HomeIcon, XMarkIcon, Bars2Icon } from '@heroicons/react/24/outline'
 
-import { useLMSContext } from "../main";
+import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
-
+import { useMovileNavigation } from "@repo/utils";
 
 const menuTabs = [
     {
@@ -73,13 +73,28 @@ const classesTabs = [
 
 export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
+    const routerState = useRouterState();
+    const { navIsOpen, toggleNav } = useMovileNavigation(routerState.location.pathname);
+ 
 
     return (
         <>
-            <div className="h-full flex flex-col gap-2 justify-between w-[150px] xl:w-[250px]">
-                <div className="flex-1 overflow-auto">
+        {/* Movile Nav Header */}
+            <div className="z-50 flex sm:hidden w-[100vw] items-center px-4 justify-between bg-white shadow h-[60px] top-0 fixed">
+                <img className="h-[35px]" src="/img/timeline-logo.png" />
+                {
+                    navIsOpen ?
+                    <XMarkIcon className="w-5 text-blue-900" onClick={toggleNav} />
+                    :
+                    <Bars2Icon className="w-5 text-blue-900" onClick={toggleNav} />
+
+                }
+            </div>
+            <div className={` ${ !navIsOpen && "hidden" } bg-blue-50 px-4 sm:p-0 z-40 fixed sm:static h-full sm:flex flex-col gap-2 sm:justify-between w-full sm:w-[150px] xl:w-[250px]`}>
+                <div className="sm:flex-1 sm:overflow-auto">
                     <img className="h-[40px] m-auto" src="/img/timeline-logo.png" />
-                    <div className="mt-6">
+                    <div className="mt-12 sm:mt-6">
+
                         <small className="text-blue-600">MENU</small>
                         <div className="mt-2 flex flex-col gap-2">
                             {
@@ -128,7 +143,7 @@ export default function SidebarComponent(){
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 mt-8 sm:mt-0">
                     <Link to='/' className="flex gap-4 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
                         <InformationCircleIcon className="w-5" />
                         <p>SUPPORT</p>

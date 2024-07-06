@@ -2,6 +2,7 @@ import { useAdministratorsFilter, useAdministrators } from "./administrators.hoo
 import { useRegistrations } from "./registrations.hook"
 import { useClasses } from "./classes.hook"
 import useCompositeFilterFlag from "./composite-filter.hook"
+import { useMovileNavigation } from "../../../../packages/utils/src/hooks/common/navigation.hook"
 
 export {
 
@@ -10,5 +11,5 @@ export {
     useAdministratorsFilter,
     useClasses,
     useCompositeFilterFlag,
-
+    useMovileNavigation,
 }

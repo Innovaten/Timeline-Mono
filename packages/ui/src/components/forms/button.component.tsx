@@ -16,7 +16,7 @@ export default function Button(props: ButtonProps){
         <>
             <button
                 className={cn(
-                    'border-[1.5px] h-[40px] font-medium sm:h-[45px] grid shadow place-items-center text-center font align-middle bg-blue-500 hover:bg-blue-600 text-blue-50 px-6 rounded-md duration-150',
+                    'border-[1.5px] h-[35px] font-medium grid shadow place-items-center text-center font align-middle bg-blue-500 hover:bg-blue-600 text-blue-50 px-2 rounded-md duration-150',
                     variant == 'outline' ? 'bg-transparent  border-blue-900 text-blue-900 hover:text-blue-50 hover:bg-blue-900' : '',
                     variant == 'secondary' ? 'bg-transparent border-transparent text-blue-900 shadow-none hover:shadow hover:bg-slate-100' : '',
                     variant == 'danger' ? 'bg-red-600 border-red-600 text-white hover:border-red-400 hover:bg-red-400' : '',

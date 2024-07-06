@@ -1,7 +1,7 @@
 import { Link, createLazyFileRoute } from '@tanstack/react-router'
 import { _getToken } from '@repo/utils';
 
-import { useLMSContext } from '../main'
+import { useLMSContext } from '../app'
 import { BookOpenIcon, MegaphoneIcon, PencilSquareIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData'
@@ -105,9 +105,9 @@ function IndexPage() {
 
     return (
        <>
-          <div className='text-blue-900'>
-            <h3 className='mt-2'>Good {greeting}, {user?.firstName || "Kwabena"}</h3>
-            <div className='mt-4 flex gap-5 w-full justify-evenly'>
+          <div className='text-blue-900 w-full flex flex-col'>
+            <h3 className='mt-4'>Good {greeting}, {user?.firstName || "Kwabena"}</h3>
+            <div className='mt-4 flex gap-2 sm:gap-5 flex-wrap sm:flex-nowrap w-full justify-evenly'>
               {
                 stats.map(({ label, icon, value}, idx) => (
                   <StatCard
@@ -179,13 +179,13 @@ function StatCard({label, value, icon}: StatCardType){
 
   return (
     <>
-      <div className='flex gap-3 bg-blue-50 p-4 w-full rounded shadow-sm'>
-        <div className='w-16 aspect-square bg-white rounded-full grid place-items-center'>
-          <Icon className='w-8 text-blue-600'/>
+      <div className='flex gap-2 sm:gap-3 bg-blue-50 p-2 sm:p-4 w-[calc(50%-10px)] sm:w-full rounded items-center shadow-sm'>
+        <div className='w-[40px] sm:w-16 aspect-square bg-white rounded-full grid place-items-center'>
+          <Icon className='w-4 sm:w-8 text-blue-600'/>
         </div>
         <div className='flex-1 flex flex-col justify-center'>
           <div className='flex flex-col'>
-            <p className='font-semibold text-3xl'>{value}</p>
+            <p className='font-semibold text-2xl sm:text-3xl truncate'>{value}</p>
             <p>{label}</p>
           </div>
         </div>

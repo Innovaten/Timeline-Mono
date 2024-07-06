@@ -65,10 +65,10 @@ function RegisterPage(){
 
   return (
     <>
-      <main className="w-full min-h-screen overflow-x-hidden bg-blue-50 md:p-8 2xl:p-12 ">
+      <main className="w-full min-h-screen max-h-screen sm:max-h-max overflow-y-hidden sm:overflow-y-auto overflow-x-hidden bg-blue-50  sm:grid place-items-center">
           <div className="flex flex-col items-center">
-              <img className='mb-4 sm:mb-8 h-12' src="/img/timeline-logo.png" />
-              <div className='flex w-full h-[90vh] sm:w-[80%] sm:h-fit sm:min-h-[600px] xl:w-[1000px] 2xl:w-[1100px] bg-white rounded shadow overflow-hidden'>
+              <img className='mb-4 mt-4 sm:mb-8 h-12' src="/img/timeline-logo.png" />
+              <div className='flex w-full h-[90vh] sm:w-[80%] sm:h-fit sm:min-h-[500px] xl:w-[1000px] bg-white rounded shadow overflow-hidden'>
                   <div className='w-1/2 hidden sm:block'>
                       <img className='object-cover h-full' src="/img/login-student-image.jpg" />
                   </div>
@@ -99,17 +99,17 @@ function RegisterPage(){
                         componentRef={registrationPages['registration-complete']}
                         newUser={newUser}
                       />
-                      <div className='absolute flex sm:hidden bottom-10 flex-col items-center w-[calc(100vw-4rem)] m-auto text-blue-600'>
+                      <div className='absolute flex sm:hidden bottom-5 flex-col items-center w-[calc(100vw-4rem)] m-auto text-blue-600'>
                           <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
                           <p>Powered By <a>Innovaten</a></p>
                       </div>
                   </div>
                 </div>
+                <div className=' hidden sm:flex bottom-10 flex-col items-center gap-2 w-full m-auto mt-6 mb-4 text-blue-600'>
+                    <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
+                    <p className='text-center'>Powered By <a>Innovaten</a></p>
+                </div>
             </div>
-            <div className=' hidden sm:flex bottom-10 flex-col items-center gap-2 md:w-[calc(100vw-4rem)] 2xl:w-calc(100vw-6rem) m-auto mt-8 text-blue-600'>
-              <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
-              <p className='text-center'>Powered By <a>Innovaten</a></p>
-          </div>
       </main>
     </>
   )
@@ -161,7 +161,7 @@ function PersonalDetailsForm({ componentRef, registrationPages, setNewUser}: Per
   
     return (
         <>
-            <div ref={componentRef}  className='flex flex-col gap-4 sm:justify-between'>
+            <div ref={componentRef}  className='flex flex-col gap-6 sm:justify-between'>
                 <Formik
                 initialValues={registrationInitialValues}
                 validationSchema={registrationValidationSchema}
@@ -169,8 +169,8 @@ function PersonalDetailsForm({ componentRef, registrationPages, setNewUser}: Per
                 validateOnBlur
                 resetForm
                 >
-                    <Form className='flex flex-col gap-4 xl:gap-6'>
-                        <div className='my-1 md:my-3'>
+                    <Form className='flex flex-col gap-6'>
+                        <div>
                             <h1 className='text-blue-950 mb-2'>Register as a student</h1>
                             <p>Please enter your personal details</p>
                         </div>
@@ -265,14 +265,13 @@ function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: Cont
                 validateOnBlur
                 resetForm
                 >
-                    <Form className='flex flex-col gap-4 xl:gap-6'>
-                        <h1 className='text-blue-950 my-1 md:my-3'>Enter your contact details</h1>
+                    <Form className='flex flex-col gap-6'>
+                        <h1 className='text-blue-950'>Enter your contact details</h1>
                         <Input id='email' name='email' type='text' label='Email Address' iconType='email'  placeholder="kwabena@kodditor.co" hasValidation />
                         <Input id='p' name='phone' type='text' label='Phone Number' iconType='phone'  placeholder="0201234567" hasValidation />
                         <Button
                             variant='primary'
                             type='submit'
-                            className='mt-2'
                         >Continue</Button>
                         <div className='m-auto flex gap-1 justify-between'>
                             <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { fadeParentAndReplacePage(registrationPages['parent'], componentRef, registrationPages['personal-details'], 'flex') }}>Back</p>
@@ -330,8 +329,8 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
                 validateOnBlur
                 resetForm
                 >
-                    <Form className='flex flex-col gap-4 xl:gap-6'>
-                        <div className='my-1 md:my-3'>
+                    <Form className='flex flex-col gap-6'>
+                        <div>
                             <h1 className='text-blue-950 mb-2'>Choose your Classes</h1>
                             <p>Please select the classes you want to register for.</p>
                         </div>
@@ -377,7 +376,6 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
                         <Button
                             variant='primary'
                             type='submit'
-                            className='mt-2'
                         >Continue</Button>
                         <div className='m-auto flex gap-1 justify-between'>
                             <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { fadeParentAndReplacePage(registrationPages['parent'], componentRef, registrationPages['contact-details'], 'flex') }}>Back</p>
@@ -436,8 +434,8 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUs
     
     return (
         <>
-            <div ref={componentRef}  className='hidden flex-col gap-4 sm:justify-between'>        
-                <div className='my-1 md:my-3'>
+            <div ref={componentRef}  className='hidden flex-col gap-6 sm:justify-between'>        
+                <div>
                     <h1 className='text-blue-950 mb-2'>Registration Summary</h1>
                     <p>Please confirm your registration details.</p>
                 </div>

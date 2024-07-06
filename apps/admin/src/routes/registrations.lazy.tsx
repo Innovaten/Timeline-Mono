@@ -237,7 +237,7 @@ function RegistrationsPage() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full">
       <div className="mt-2 flex h-fit justify-between items-center">
         <h2 className="text-blue-800">Registrations</h2>
       </div>
@@ -276,21 +276,21 @@ function RegistrationsPage() {
           </div>
       </div>
       <div className="mt-2 w-full flex flex-col flex-1 gap-2 text-blue-600">
-        <div className="w-full min-h-[350px] bg-blue-50 p-1 flex-1 rounded-sm shadow-sm mt-2">
+        <div className="w-full bg-blue-50 p-1 flex-1 rounded-sm shadow-sm mt-2">
           <div className="bg-white w-full h-full overflow-auto rounded">
             <div className = 'w-full text-blue-700 py-2 px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
                 <div className='flex items-center gap-4'>
-                    <span  className='w-[80px]'>CODE</span>
+                    <span  className='w-[80px] hidden sm:inline'>CODE</span>
                     <span className='flex-1 font-normal truncate'>NAME</span>
                 </div>
                 <div className='flex gap-4 items-center font-light'>
                     <span className='w-[100px] flex justify-end'>STATUS</span>
-                    <span className='w-[120px] flex justify-end'>DATE CREATED</span>
-                    <span className='w-[150px] flex justify-end'></span>
+                    <span className='w-[120px] hidden sm:flex justify-end'>DATE CREATED</span>
+                    <span className='w-[150px] hidden sm:flex justify-end'></span>
                 </div>
             </div>
             {registrantsIsLoading && (
-              <div className="w-full h-full m-auto mt-4">
+              <div className="w-full m-auto mt-4">
                 <div className="w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin"></div>
               </div>
             )}
@@ -307,7 +307,7 @@ function RegistrationsPage() {
                       setIsOpen(true)
                     }}
                   >
-                     <small className='font-light w-[80px]'>{registrant.code}</small>
+                     <small className='font-light hidden sm:inline w-[80px]'>{registrant.code}</small>
                     <h5 className="flex-1 font-normal truncate">
                       {registrant.firstName + " " + registrant.lastName}
                     </h5>
@@ -321,10 +321,10 @@ function RegistrationsPage() {
                                   registrant.status == 'Rejected' ? "bg-red-600" : "",
                                 )}></span>
                       </span>
-                      <span className='w-[120px] flex justify-end'>
+                      <span className='w-[120px] hidden sm:flex justify-end'>
                         {new Date(registrant.updatedAt).toLocaleTimeString()}
                       </span>
-                      <span className='w-[150px] flex justify-end'>
+                      <span className='w-[150px] hidden sm:flex justify-end'>
                         {new Date(registrant.updatedAt).toDateString()}
                       </span>
                     </div>

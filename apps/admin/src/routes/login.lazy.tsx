@@ -39,7 +39,7 @@ function LoginPage(){
 
   return (
       <>
-          <main className="w-full min-h-screen overflow-x-hidden bg-blue-50 md:p-8 2xl:p-12 ">
+          <main className="w-full min-h-screen max-h-screen sm:max-h-max overflow-y-hidden sm:overflow-y-auto overflow-x-hidden bg-blue-50 sm:grid sm:place-items-center ">
               <div className="flex flex-col items-center">
                   <img className='my-4 sm:my-8 h-12' src="/img/timeline-logo.png" />
                   <div className='flex w-full h-[90vh] sm:w-[80%] sm:h-fit sm:min-h-[400px] xl:w-[1000px] bg-white rounded shadow overflow-hidden'>
@@ -69,10 +69,10 @@ function LoginPage(){
                           </div>
                       </div>
                   </div>
-              </div>
-              <div className=' hidden sm:flex bottom-10 flex-col items-center gap-2 w-[calc(100vw-8rem)] m-auto mt-8 text-blue-600'>
-                  <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
-                  <p className='text-center'>Powered By <a>Innovaten</a></p>
+                <div className='hidden sm:flex bottom-10 flex-col items-center gap-2 m-auto mt-6 mb-4 text-blue-600'>
+                    <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
+                    <p className='text-center'>Powered By <a>Innovaten</a></p>
+                </div>
               </div>
           </main>
       </>

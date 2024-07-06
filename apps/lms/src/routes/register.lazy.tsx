@@ -65,9 +65,9 @@ function RegisterPage(){
 
   return (
     <>
-      <main className="w-full min-h-screen overflow-x-hidden bg-blue-50 md:p-8 2xl:p-12 ">
+      <main className="w-full min-h-screen max-h-screen sm:max-h-max overflow-y-hidden sm:overflow-y-auto overflow-x-hidden bg-blue-50  sm:grid place-items-center">
           <div className="flex flex-col items-center">
-              <img className='mb-4 sm:mb-8 h-12' src="/img/timeline-logo.png" />
+              <img className='mb-4 mt-4 sm:mb-8 h-12' src="/img/timeline-logo.png" />
               <div className='flex w-full h-[90vh] sm:w-[80%] sm:h-fit sm:min-h-[500px] xl:w-[1000px] bg-white rounded shadow overflow-hidden'>
                   <div className='w-1/2 hidden sm:block'>
                       <img className='object-cover h-full' src="/img/login-student-image.jpg" />
@@ -99,17 +99,17 @@ function RegisterPage(){
                         componentRef={registrationPages['registration-complete']}
                         newUser={newUser}
                       />
-                      <div className='absolute flex sm:hidden bottom-10 flex-col items-center w-[calc(100vw-4rem)] m-auto text-blue-600'>
+                      <div className='absolute flex sm:hidden bottom-5 flex-col items-center w-[calc(100vw-4rem)] m-auto text-blue-600'>
                           <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
                           <p>Powered By <a>Innovaten</a></p>
                       </div>
                   </div>
                 </div>
+                <div className=' hidden sm:flex bottom-10 flex-col items-center gap-2 w-full m-auto mt-6 mb-4 text-blue-600'>
+                    <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
+                    <p className='text-center'>Powered By <a>Innovaten</a></p>
+                </div>
             </div>
-            <div className=' hidden sm:flex bottom-10 flex-col items-center gap-2 md:w-[calc(100vw-4rem)] 2xl:w-calc(100vw-6rem) m-auto mt-8 text-blue-600'>
-              <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
-              <p className='text-center'>Powered By <a>Innovaten</a></p>
-          </div>
       </main>
     </>
   )

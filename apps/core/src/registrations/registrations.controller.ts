@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Request, UseGuards, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Request, UseGuards, Query, Param } from '@nestjs/common';
 import { RegistrationDTO } from './registrations.dto';
 import { RegistrationsService } from './registrations.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
@@ -103,11 +103,11 @@ export class RegistrationsController {
         return await this.service.createNewRegistration(regData);
     }
 
-    @Get('user')
+    @Get(':_id')
     async getRegistrationByUser(
-        @Query('_id') regId: string
+        @Param('_id') regId: string
     ){
-        const registrant = await this.service.getRegistrant(regId);
+        const registrant = await this.service.getRegistration(regId);
         if(!registrant){
             return ServerErrorResponse(
                 new Error("Registrant not found"),
@@ -117,20 +117,42 @@ export class RegistrationsController {
         return registrant;
     }
 
-    @Get('admission/approve')
-    async approveAdmission(
+    @Get('accept')
+    async acceptRegistration(
         @Query('_id') regId: string, 
     ){
         return await this.service.approveAdmission(regId);
     }
 
-    @Get('admission/reject')
-    async rejectAdmission(
+    @Get('deny')
+    async denyRegistration(
         @Query('_id') regId: string, 
     ){
-        return await this.service.rejectAdmission(regId);
+        return await this.service.denyAdmission(regId);
     }
 
+    @UseGuards(AuthGuard)
+    @Get('students/count')
+    async getStudentsCount( ){
+        try{
+            const student_count = await this.service.getStudentsCount()
 
+            return ServerSuccessResponse<number>(student_count);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        }
+    }
+
+    @Get('pending/count')
+    async getPendingCount( ){
+        try{
+            const pending_count = await this.service.getPendingCount()
+
+            return ServerSuccessResponse<number>(pending_count);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } }
 
 }

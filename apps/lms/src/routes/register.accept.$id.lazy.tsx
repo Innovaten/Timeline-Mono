@@ -3,52 +3,45 @@ import { createLazyFileRoute, Outlet } from '@tanstack/react-router'
 import { useRegistrant } from '../hooks/registration.info.hooks';
 import { Button, DialogContainer } from '@repo/ui';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export const Route = createLazyFileRoute('/register/accept/$id')({
-  component: RegistrationsAcceptIdLazy,
+  component: AcceptRegistration,
 })
 
-function RegistrationsAcceptIdLazy(){
+function AcceptRegistration(){
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [firstName, setFirstName] = useState("");
+    const [isOpen, setIsOpen] = useState(false);
     const {id} = Route.useParams();
     const { registrant } = useRegistrant(id);
    
 
     function acceptAdmission(){
-      makeUnauthenticatedRequest(
-        "get",
-        `/api/v1/users/${id}`
-      ).then( res => {
-        if(res.status == 200 && res.data.success){
-          console.log(res.data)
-        } else {
-          console.log(res.data.error.msg);
-        }
-      })
 
       makeUnauthenticatedRequest(
         "get",
-        `/api/v1/registrations/admission/approve?_id=${id}`
+        `/api/v1/registrations/accept?_id=${id}`
       ).then( res => {
         if(res.status == 200 && res.data.success){
           console.log(res.data)
         } else {
           console.log(res.data.error.msg);
+          toast.error(res.data.error.msg);
         }
       })
+      
     }
 
     function rejectAdmission(){
       makeUnauthenticatedRequest(
-        "post",
-        `/api/v1/registrations/admission/approve?_id=${id}`
+        "get",
+        `/api/v1/registrations/deny?_id=${id}`
       ).then( res => {
         if(res.status == 200 && res.data.success){
           console.log(res.data)
         } else {
           console.log(res.data.error.msg);
+          toast.error(res.data.error.msg);
         }
       })
     }
@@ -62,7 +55,7 @@ function RegistrationsAcceptIdLazy(){
           onClose={()=>setIsOpen(false)}
           toggleOpen={() => setIsOpen(!isOpen)}
           title={`Admission Acceptance`}
-          description={`Congratulations ${firstName }, you are in!`}
+          description={`Congratulations ${registrant.firstName }, you are in!`}
         >
           <div className="flex flex-col gap-4 sm:justify-between">
             <div className='w-full flex-1'>
@@ -130,7 +123,7 @@ function RegistrationsAcceptIdLazy(){
             <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="outline" onClick={() => {setIsOpen(false);rejectAdmission() }}>
               Reject Admission
             </Button>
-            <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="primary" onClick={() => {setIsOpen(true); setFirstName(registrant.firstName); acceptAdmission()}}>
+            <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="primary" onClick={() => {setIsOpen(true);acceptAdmission()}}>
               Accept Admission
             </Button>      
           </div>

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { RegistrationModel, UserModel } from "@repo/models";
+import {  UserModel } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import lodash from "lodash";
 import { Types } from "mongoose";
@@ -8,6 +8,7 @@ import { generate } from 'generate-password'
 import bcrypt from 'bcrypt'
 import { Roles } from "../enums/roles.enum";
 import { KafkaService } from "./kafka.service";
+import { IRegistration } from "../../../../../packages/models/src/registration/index.types";
 
 @Injectable()
 export class UserService {
@@ -46,7 +47,7 @@ export class UserService {
             strict: true 
         })
 
-        randomPassword = randomPassword + ["!","@","#","$","^","*"][ Math.floor(Math.random() * 6) ] + [Math.abs(Math.floor((Math.random() * 149)-97))]
+        randomPassword = randomPassword + ["!","@","#","$","^","*","&"][ Math.floor(Math.random() * 6) ] + [Math.abs(Math.floor((Math.random() * 149)-97))]
 
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(randomPassword, salt);
@@ -138,25 +139,20 @@ export class UserService {
         return user;
     }
 
-    async createStudent(_id: string){
-        const student = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
-        if(!student){
-            throw new Error("Registration not found")
-        }
+    async createStudent(userData: IRegistration){
 
-        if(student.status !== "Approved"){
-            throw new Error("Registration not approved")
+        if(userData.status !== "Accepted"){
+            throw new Error("Registration not accepted yet")
         }
         else{
-        const userData = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)}) as CreateUserDto;
         const codePrefix = "STU"
 
         let randomPassword = generate({ 
             length: 7, 
             strict: true 
         })
-
-        randomPassword = randomPassword + ["!","@","#","$","^","*"][ Math.floor(Math.random() * 6) ] + [Math.abs(Math.floor((Math.random() * 149)-97))]
+  
+        randomPassword = randomPassword + ["!","@","#","$","^","*","&"][ Math.floor(Math.random() * 6) ] + [Math.abs(Math.floor((Math.random() * 149)-97))]
 
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(randomPassword, salt);
@@ -171,7 +167,6 @@ export class UserService {
             email: userData.email,
             phone: userData.phone,
             gender: userData.gender,
-
             
             meta: {
                 isPasswordSet: false,
@@ -182,7 +177,7 @@ export class UserService {
                 password: passwordHash,
             },
             createdAt: new Date(),
-            courses: [],
+            classes: userData.approvedClasses,
         })
 
         await user.save()
@@ -201,5 +196,11 @@ export class UserService {
 
     }
 }
+
+async getAdminCount(){
+    const count = await UserModel.find({role:'ADMIN'});
+    return count.length;
+}
+
 }
 

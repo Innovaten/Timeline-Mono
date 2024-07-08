@@ -6,7 +6,6 @@ import { AuthGuard } from '../common/guards/jwt.guard';
 import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { Roles } from '../common/enums/roles.enum';
-import { RegistrationsModule } from '../registrations/registrations.module';
 
 @Controller({
     path: 'users',
@@ -183,23 +182,19 @@ export class UsersController {
 
     }
 
-    @Get(':_id')
-    async createStudent(
-        @Param("_id") _id: string,
-    
-    ) {
+    @UseGuards(AuthGuard)
+    @Get('admins/count')
+    async getAdminCount( ){
+        try{
+            const admin_count = await this.user.getAdminCount()
 
-        try {
-            const user = await this.user.createStudent(_id);
-            return ServerSuccessResponse(user);
+            return ServerSuccessResponse<number>(admin_count);
+
         } catch(err) {
-            return ServerErrorResponse(
-                new Error(`${err}`),
-                500
-            )
-        }
-
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
     }
+
 
 
 }

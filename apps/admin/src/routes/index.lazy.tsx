@@ -5,9 +5,8 @@ import { useLMSContext } from '../app'
 import { BookOpenIcon, UsersIcon, AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData'
-import { useRegistrations } from '../hooks';
+import { useRegistrations, useAdminsCount, useClassesCount, usePendingCount, useStudentsCount } from '../hooks';
 import { Button } from '@repo/ui';
-import { useAdminsCount, useClassesCount, usePendingCount, useStudentsCount } from '../hooks/resourcesCount.hook';
 
 dayjs.extend(localeData)
 

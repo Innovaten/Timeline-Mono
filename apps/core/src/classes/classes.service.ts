@@ -83,4 +83,9 @@ export class ClassesService {
         return classDoc;
 
     }
+
+    async getClassesCount(){
+        const count = await ClassModel.find({});
+        return count.length;
+    }
 }

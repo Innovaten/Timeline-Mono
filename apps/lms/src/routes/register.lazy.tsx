@@ -75,11 +75,13 @@ function RegisterPage(){
                       <img className='object-cover h-full' src="/img/login-student-image.jpg" />
                   </div>
                   <div ref={parentRef}  className='w-full sm:w-1/2  p-8'>
-                      { !isAdmission && <PersonalDetailsForm componentRef={personalDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />}
-                      {!isAdmission && <ContactDetailsForm componentRef={contactDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />}
-                        {!isAdmission && <CourseDetailsForm componentRef={courseDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />}
-                        {!isAdmission && <SummaryDetailsForm componentRef={summaryDetailsRef} registrationPages={registrationPages} newUser={newUser} setNewUser={setNewUser} />}
-                        {!isAdmission && <SummaryConfirmationForm componentRef={summaryConfirmationRef} newUser={newUser} />}
+                      { !isAdmission 
+                        && <PersonalDetailsForm componentRef={personalDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
+                        && <ContactDetailsForm componentRef={contactDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
+                        && <CourseDetailsForm componentRef={courseDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
+                        && <SummaryDetailsForm componentRef={summaryDetailsRef} registrationPages={registrationPages} newUser={newUser} setNewUser={setNewUser} />
+                        && <SummaryConfirmationForm componentRef={summaryConfirmationRef} newUser={newUser} />
+                        }
 
                       { isAdmission && <Outlet />}
                       <div className='absolute flex sm:hidden bottom-10 flex-col items-center w-[calc(100vw-4rem)] m-auto text-blue-600'>

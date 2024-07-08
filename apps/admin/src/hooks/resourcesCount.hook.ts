@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { makeAuthenticatedRequest } from "@repo/utils";
+import { toast } from "sonner";
 
 export function useClassesCount(
 ){
@@ -11,13 +12,14 @@ export function useClassesCount(
             setIsLoadingClasses(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/resources/classes/count`
+                `/api/v1/classes/count`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){
                     setClassesCount(res.data.data);
                 } else {
                     console.log(res.data.error.msg);
+                    toast.error(res.data.error.msg);
                 }
                 setIsLoadingClasses(false);
             })
@@ -38,13 +40,14 @@ export function useAdminsCount(
             setAdminIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/resources/admins/count`
+                `/api/v1/users/admins/count`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){
                     setAdminCount(res.data.data);
                 } else {
                     console.log(res.data.error.msg);
+                    toast.error(res.data.error.msg);
                 }
                 setAdminIsLoading(false);
             })
@@ -64,13 +67,14 @@ export function useStudentsCount(
             setStudentIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/resources/students/count`
+                `/api/v1/registrations/students/count`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){
                     setStudentCount(res.data.data);
                 } else {
                     console.log(res.data.error.msg);
+                    toast.error(res.data.error.msg);
                 }
                 setStudentIsLoading(false);
             })
@@ -90,13 +94,14 @@ export function usePendingCount(
             setPendingIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/resources/pending/count`
+                `/api/v1/registrations/pending/count`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){
                     setCount(res.data.data);
                 } else {
                     console.log(res.data.error.msg);
+                    toast.error(res.data.error.msg);
                 }
                 setPendingIsLoading(false);
             })

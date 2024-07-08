@@ -1,5 +1,5 @@
 import { Schema, SchemaTypes, model } from "mongoose";
-import { IRegistrationDoc, RegistrationStatus, AdmissionStatus } from "./index.types";
+import { IRegistrationDoc, RegistrationStatus } from "./index.types";
 
 
 export const RegistrationSchema = new Schema<IRegistrationDoc>({
@@ -48,12 +48,6 @@ export const RegistrationSchema = new Schema<IRegistrationDoc>({
         enum: RegistrationStatus,
         default: "Pending",
     },
-
-    admissionStatus: {
-        type: SchemaTypes.String,
-        enum: AdmissionStatus,
-        default: "Pending",
-    },  
 
     approvedClasses: {
         type: [SchemaTypes.ObjectId],

@@ -71,7 +71,7 @@ export const emailBodyTemplates: Record<string, TemplateExecutor> = {
     ].join("<br>")
     // Data:
     // firstName
-    // 
+    // email
 ),
     "student-credentials": lodash.template([
         "Hi ${firstName}!",

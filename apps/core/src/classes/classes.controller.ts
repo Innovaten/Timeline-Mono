@@ -196,4 +196,19 @@ export class ClassesController {
             )
         }
     }
+
+    @Get('count')
+    async getClassesCount( ){
+
+        try{
+            const classes_count = await this.service.getClassesCount()
+
+            return ServerSuccessResponse<number>(classes_count);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        }
+
+        
+    }
 }

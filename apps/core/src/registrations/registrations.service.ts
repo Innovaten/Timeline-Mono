@@ -6,11 +6,13 @@ import { RegistrationDTO } from './registrations.dto';
 import lodash from 'lodash';
 import { KafkaService } from '../common/services/kafka.service';
 import { CoreConfig } from '../config';
+import { UserService } from '../common/services/user.service';
 
 @Injectable()
 export class RegistrationsService {
     constructor(
-        private kafka: KafkaService
+        private kafka: KafkaService,
+        private user: UserService,
     ) { }
 
     async getRegistrations(limit?: number, offset?: number, filter?: Record<string, any>){
@@ -111,7 +113,7 @@ export class RegistrationsService {
         }
     }
 
-    async getRegistrant(_id: string){
+    async getRegistration(_id: string){
         const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
 
         if(!registration){
@@ -126,10 +128,7 @@ export class RegistrationsService {
 
     async approveAdmission(_id: string){
         const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
-        let courses: string[] = []
-       if(registration !== null){
-        courses = registration.approvedClasses.map(c => c.toString())
-       }
+        
         if(!registration){
             return ServerErrorResponse(
                 new Error("Specified registration could not be found"),
@@ -145,16 +144,19 @@ export class RegistrationsService {
 
         }
         
-        registration.admissionStatus = 'Accepted'
-        registration.classes = courses;
-        registration.updatedAt = new Date();
-        await registration.save()
+        else if(registration.status === 'Approved'){
+            registration.status = 'Accepted'
+            registration.updatedAt = new Date();
 
-        return ServerSuccessResponse(registration);
+            await registration.save()
+            await this.user.createStudent(registration)
+
+            return ServerSuccessResponse(registration);
+        }
         
     }
 
-    async rejectAdmission(_id: string){
+    async denyAdmission(_id: string){
         const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
         if(!registration){
             return ServerErrorResponse(
@@ -171,13 +173,23 @@ export class RegistrationsService {
 
         }
 
-        registration.admissionStatus = 'Rejected';
+        registration.status = 'Denied';
         registration.updatedAt = new Date();
         await registration.save()
 
         return ServerSuccessResponse(registration);
     }
 
+    async getStudentsCount(){
+        const count = await RegistrationModel.find({admissionStatus:'Accepted'});
+        return count.length;
+    }
 
+    async getPendingCount(){
+        const count = await RegistrationModel.find({status:'Pending'});
+        return count.length;
+    }
+
+    
 
 }

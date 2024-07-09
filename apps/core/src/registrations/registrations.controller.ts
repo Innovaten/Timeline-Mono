@@ -4,6 +4,7 @@ import { RegistrationsService } from './registrations.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IRegistrationDoc } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
+import { Types } from 'mongoose';
 
 
 @Controller({
@@ -73,8 +74,6 @@ export class RegistrationsController {
         }
 
         const approvedClasses: Array<string> = JSON.parse(rawApprovedClasses);
-
-
         return await this.service.approveRegistration(regId, approvedClasses, approver);
     }
 
@@ -105,7 +104,7 @@ export class RegistrationsController {
 
     @Get(':_id')
     async getRegistrationByUser(
-        @Param('_id') regId: string
+        @Param('_id') regId: Types.ObjectId
     ){
         const registrant = await this.service.getRegistration(regId);
         if(!registrant){
@@ -121,35 +120,35 @@ export class RegistrationsController {
     async acceptRegistration(
         @Query('_id') regId: string, 
     ){
-        return await this.service.approveAdmission(regId);
+        try{
+            return await this.service.approveAdmission(regId);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
     }
+        
+    
 
     @Get('deny')
     async denyRegistration(
         @Query('_id') regId: string, 
     ){
-        return await this.service.denyAdmission(regId);
-    }
-
-    @UseGuards(AuthGuard)
-    @Get('students/count')
-    async getStudentsCount( ){
         try{
-            const student_count = await this.service.getStudentsCount()
-
-            return ServerSuccessResponse<number>(student_count);
-
+            return await this.service.denyAdmission(regId);
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);
-        }
+        } 
     }
+       
 
+
+    @UseGuards(AuthGuard)
     @Get('pending/count')
     async getPendingCount( ){
         try{
-            const pending_count = await this.service.getPendingCount()
-
-            return ServerSuccessResponse<number>(pending_count);
+            const count = await this.service.getPendingCount()
+            return ServerSuccessResponse(count);
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);

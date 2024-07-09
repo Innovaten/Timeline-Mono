@@ -183,12 +183,14 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard)
-    @Get('admins/count')
-    async getAdminCount( ){
+    @Get('count')
+    async getUserCount( 
+        @Query('filter') roleFilter: string
+    ){
         try{
-            const admin_count = await this.user.getAdminCount()
-
-            return ServerSuccessResponse<number>(admin_count);
+            let filter = roleFilter ? JSON.parse(roleFilter) : {}
+            const user_count = await this.user.getUserCount(filter)
+            return ServerSuccessResponse(user_count);
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);

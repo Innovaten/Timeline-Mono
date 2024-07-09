@@ -8,7 +8,7 @@ import { generate } from 'generate-password'
 import bcrypt from 'bcrypt'
 import { Roles } from "../enums/roles.enum";
 import { KafkaService } from "./kafka.service";
-import { IRegistration } from "../../../../../packages/models/src/registration/index.types";
+import { IRegistrationDoc } from "@repo/models";
 
 @Injectable()
 export class UserService {
@@ -139,7 +139,7 @@ export class UserService {
         return user;
     }
 
-    async createStudent(userData: IRegistration){
+    async createStudent(userData: IRegistrationDoc){
 
         if(userData.status !== "Accepted"){
             throw new Error("Registration not accepted yet")
@@ -197,9 +197,9 @@ export class UserService {
     }
 }
 
-async getAdminCount(){
-    const count = await UserModel.find({role:'ADMIN'});
-    return count.length;
+async getUserCount(filter?: Record<string, any>){
+    const count = await UserModel.countDocuments(filter);
+    return count;
 }
 
 }

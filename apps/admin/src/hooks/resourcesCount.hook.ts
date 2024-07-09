@@ -23,7 +23,7 @@ export function useClassesCount(
                 }
                 setIsLoadingClasses(false);
             })
-        },
+        },[]
 )
 
     return { isLoadingClasses, classesCount }
@@ -40,7 +40,7 @@ export function useAdminsCount(
             setAdminIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/users/admins/count`
+                `/api/v1/users/count?filter=${JSON.stringify({role: { $in: ["ADMIN"]}})}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){
@@ -51,7 +51,7 @@ export function useAdminsCount(
                 }
                 setAdminIsLoading(false);
             })
-        },
+        },[]
 )
 
     return { adminIsLoading, adminCount }
@@ -67,7 +67,7 @@ export function useStudentsCount(
             setStudentIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/registrations/students/count`
+                `/api/v1/users/count?filter=${JSON.stringify({role: { $in: ["STUDENT"]}})}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){
@@ -78,7 +78,7 @@ export function useStudentsCount(
                 }
                 setStudentIsLoading(false);
             })
-        },
+        }, []
 )
 
     return { studentIsLoading, studentCount }
@@ -105,7 +105,7 @@ export function usePendingCount(
                 }
                 setPendingIsLoading(false);
             })
-        },
+        }, []
 )
 
     return { isLoading, pendingCount }

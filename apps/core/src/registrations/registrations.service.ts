@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IRegistrationDoc, RegistrationModel } from '@repo/models';
-import { Types } from 'mongoose';
+import { model, Types } from 'mongoose';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { RegistrationDTO } from './registrations.dto';
 import lodash from 'lodash';
@@ -113,9 +113,8 @@ export class RegistrationsService {
         }
     }
 
-    async getRegistration(_id: string){
-        const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
-
+    async getRegistration(_id: Types.ObjectId){
+        const registration = await RegistrationModel.findOne({ _id})
         if(!registration){
             return ServerErrorResponse(
                 new Error("Specified registration could not be found"),
@@ -127,69 +126,82 @@ export class RegistrationsService {
     }
 
     async approveAdmission(_id: string){
-        const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
-        
-        if(!registration){
-            return ServerErrorResponse(
-                new Error("Specified registration could not be found"),
-                404,
-            )
-        }
+        try{
+            const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
+            if(!registration){
+                return ServerErrorResponse(
+                    new Error("Specified registration could not be found"),
+                    404,
+                )
+            }
+    
+            if(registration.status === 'Rejected'){
+                return ServerErrorResponse(
+                    new Error("Registration has already been rejected"),
+                    403,
+                )
+    
+            }
+            
+            else if(registration.status === 'Approved'){
+                registration.status = 'Accepted'
+                registration.updatedAt = new Date();
+    
+                await registration.save()
+                await this.user.createStudent(registration)
+    
+                return ServerSuccessResponse(registration);
+            }
 
-        if(registration.status === 'Rejected'){
-            return ServerErrorResponse(
-                new Error("Registration has already been rejected"),
-                403,
-            )
-
-        }
-        
-        else if(registration.status === 'Approved'){
-            registration.status = 'Accepted'
-            registration.updatedAt = new Date();
-
-            await registration.save()
-            await this.user.createStudent(registration)
-
-            return ServerSuccessResponse(registration);
-        }
-        
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
     }
+        
 
     async denyAdmission(_id: string){
-        const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
-        if(!registration){
-            return ServerErrorResponse(
-                new Error("Specified registration could not be found"),
-                404,
-            )
-        }
+        
+        try{
+            const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
+            if(!registration){
+                return ServerErrorResponse(
+                    new Error("Specified registration could not be found"),
+                    404,
+                )
+            }
+    
+            if(registration.status === 'Rejected'){
+                return ServerErrorResponse(
+                    new Error("Registration has already been rejected"),
+                    403,
+                )
+    
+            }
+    
+            registration.status = 'Denied';
+            registration.updatedAt = new Date();
+            await registration.save()
+    
+            return ServerSuccessResponse(registration);
 
-        if(registration.status === 'Rejected'){
-            return ServerErrorResponse(
-                new Error("Registration has already been rejected"),
-                403,
-            )
-
-        }
-
-        registration.status = 'Denied';
-        registration.updatedAt = new Date();
-        await registration.save()
-
-        return ServerSuccessResponse(registration);
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    
     }
 
-    async getStudentsCount(){
-        const count = await RegistrationModel.find({admissionStatus:'Accepted'});
-        return count.length;
-    }
+
 
     async getPendingCount(){
-        const count = await RegistrationModel.find({status:'Pending'});
-        return count.length;
+        
+        try{
+            const count = await RegistrationModel.countDocuments({status:"Pending"});
+            return count;
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
     }
 
-    
+ }
 
-}

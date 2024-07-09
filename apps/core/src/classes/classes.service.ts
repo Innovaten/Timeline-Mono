@@ -1,7 +1,7 @@
 import { ClassModel } from "@repo/models";
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import lodash from "lodash";
-import { Types } from "mongoose";
+import { model, Types } from "mongoose";
 
 export class ClassesService {
    
@@ -85,7 +85,7 @@ export class ClassesService {
     }
 
     async getClassesCount(){
-        const count = await ClassModel.find({});
-        return count.length;
+        const count = await ClassModel.countDocuments({});
+        return count;
     }
 }

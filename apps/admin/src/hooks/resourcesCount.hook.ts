@@ -94,7 +94,7 @@ export function usePendingCount(
             setPendingIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/registrations/pending/count`
+                `/api/v1/registrations/count?filter=${JSON.stringify({status: { $in: ["Pending"]}})}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){

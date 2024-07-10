@@ -3,6 +3,7 @@ import { cn } from '@repo/utils'
 
 type ButtonProps = {
     isLoading?: boolean,
+    isDisabled?: boolean,
     type?: 'button' | 'submit' | 'reset',
     className?: string,
     variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'neutral'
@@ -10,7 +11,7 @@ type ButtonProps = {
 
 export default function Button(props: ButtonProps){
 
-    const { isLoading, variant, type, className, ...defaultProps } = props
+    const { isLoading, isDisabled, variant, type, className, ...defaultProps } = props
     
     return (
         <>
@@ -24,7 +25,7 @@ export default function Button(props: ButtonProps){
                     className,
               )}
                 type={ type || 'button'}
-                disabled={typeof isLoading == 'undefined' ? false : isLoading }  
+                disabled={typeof isLoading != 'undefined' ? isLoading : ( isDisabled ?? false ) }  
                 {...defaultProps}
             >
             { !isLoading && defaultProps.children }

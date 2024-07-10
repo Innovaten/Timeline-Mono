@@ -21,6 +21,7 @@ export interface IRegistration {
   rejectedAt: Date;
   acceptedBy: Types.ObjectId;
   acceptedAt: Date;
+  deniedAt: Date;
 
   status: RegistrationStatusType;
 

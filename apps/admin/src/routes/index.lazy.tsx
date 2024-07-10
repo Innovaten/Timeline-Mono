@@ -100,7 +100,7 @@ function IndexPage() {
                 <h4>Latest Registrations</h4>
                 <Link to='/registrations' ><Button className='!h-[25px] px-2' variant='outline'>See All</Button></Link>
               </div>
-              <div className='w-full flex-1 bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
+              <div className='w-full flex-1 bg-blue-50 p-1 rounded-sm shadow-sm mt-2 mb-4'>
                   <div className='bg-white w-full h-full flex flex-col gap-2 rounded'>
                     <div className = 'w-full text-blue-700 py-2 px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
                       <div className='flex items-center gap-4'>
@@ -138,10 +138,12 @@ function IndexPage() {
                               <span className='w-[100px] flex gap-2 items-center justify-end'>
                                 {registrant.status}
                                 <span className={cn(
-                                  "w-2 h-2 rounded-full",
-                                  registrant.status == 'Pending' ? "bg-yellow-600" : "",
-                                  registrant.status == 'Approved' ? "bg-green-600" : "",
-                                  registrant.status == 'Rejected' ? "bg-red-600" : "",
+                                  "w-2 h-2 rounded-full border-[1px] ",
+                                  registrant.status == 'Pending' ? "border-yellow-600" : "",
+                                  registrant.status == 'Approved' ? "border-green-600" : "",
+                                  registrant.status == 'Rejected' ? "border-red-600" : "",
+                                  registrant.status == 'Accepted' ? "bg-green-600 border-green-600" : "",
+                                  registrant.status == 'Denied' ? "bg-red-600 border-red-600" : "",
                                 )}></span>
                               </span>
                               <span className='w-[120px] flex justify-end'>

@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { IRegistrationDoc, RegistrationModel } from '@repo/models';
-import { model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { RegistrationDTO } from './registrations.dto';
-import lodash from 'lodash';
 import { KafkaService } from '../common/services/kafka.service';
 import { CoreConfig } from '../config';
 import { UserService } from '../common/services/user.service';
+import { generateCode } from '../utils';
+import { validPhoneNumber } from '../utils'
 
 @Injectable()
 export class RegistrationsService {
@@ -29,6 +30,23 @@ export class RegistrationsService {
                 404,
             )
         }
+
+        if(registration.status == "Rejected"){
+            return ServerErrorResponse(
+                new Error("Specified registration has been rejected"),
+                400,
+            )
+        }
+
+        const similarRegistrations = await RegistrationModel.find({ email: registration.email, status: "Approved" })
+
+        if(similarRegistrations.length != 0){
+            return ServerErrorResponse(
+                new Error("Cannot have more than one approved registration for the same registrant. Kindly check the existing registrations"),
+                400
+            )
+        }
+
         
         registration.approvedClasses = approvedClasses.map(c => new Types.ObjectId(c));
         registration.approvedAt = new Date();
@@ -48,6 +66,7 @@ export class RegistrationsService {
             }
         )
 
+        console.log("Approved registration:", registration.code);
         return ServerSuccessResponse(registration);
     }
 
@@ -58,6 +77,13 @@ export class RegistrationsService {
             return ServerErrorResponse(
                 new Error("Specified registration could not be found"),
                 404,
+            )
+        }
+
+        if(registration.status != "Pending"){
+            return ServerErrorResponse(
+                new Error("Specified registration could not be rejected."),
+                400,
             )
         }
 
@@ -77,17 +103,19 @@ export class RegistrationsService {
             }
         )
 
+        console.log("Rejected registration:", registration.code);
         return ServerSuccessResponse(registration);
     }
 
     async createNewRegistration(regData: RegistrationDTO){
 
         try {
-            const newCode =  "REG" + lodash.padStart(`${await(RegistrationModel.countDocuments()) + 1}`, 6, "0");
-            
-            const {authToken , ...actualData} = regData
+            const newCode = await generateCode(await RegistrationModel.countDocuments(), "REG");
+
+            const {authToken , phone, ...actualData} = regData
             const registration = new RegistrationModel({
                 ...actualData,
+                phone: `+${validPhoneNumber(phone)}`,
                 code: newCode,
             });
 
@@ -104,17 +132,15 @@ export class RegistrationsService {
             )
 
             console.log(`Created new registration: ${registration.code}`)
-
-
-
             return ServerSuccessResponse<IRegistrationDoc>(registration)
+
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500)
         }
     }
 
     async getRegistration(_id: Types.ObjectId){
-        const registration = await RegistrationModel.findOne({ _id})
+        const registration = await RegistrationModel.findOne({ _id}).populate("approvedClasses")
         if(!registration){
             return ServerErrorResponse(
                 new Error("Specified registration could not be found"),
@@ -125,7 +151,7 @@ export class RegistrationsService {
         return ServerSuccessResponse(registration);
     }
 
-    async approveAdmission(_id: string){
+    async acceptAdmission(_id: string){
         try{
             const registration = await RegistrationModel.findOne({ _id: new Types.ObjectId(_id)})
             if(!registration){
@@ -135,23 +161,32 @@ export class RegistrationsService {
                 )
             }
     
-            if(registration.status === 'Rejected'){
+            if(registration.status === 'Rejected' || registration.status == "Denied"){
                 return ServerErrorResponse(
                     new Error("Registration has already been rejected"),
-                    403,
+                    400,
                 )
     
             }
-            
-            else if(registration.status === 'Approved'){
-                registration.status = 'Accepted'
-                registration.updatedAt = new Date();
-    
-                await registration.save()
-                await this.user.createStudent(registration)
-    
-                return ServerSuccessResponse(registration);
+
+            if(registration.status !== "Approved"){
+                return ServerErrorResponse(
+                    new Error("This registration has not been approved"),
+                    400
+                )
             }
+            
+            registration.status = 'Accepted'
+            registration.updatedAt = new Date();
+            registration.acceptedAt = new Date();
+
+            const relatedUser = await this.user.createStudent(registration)
+            registration.acceptedBy = new Types.ObjectId(`${relatedUser._id}`);
+
+            await registration.save()
+
+            console.log("Accepted registration:", registration.code);
+            return ServerSuccessResponse(registration);
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);
@@ -170,18 +205,33 @@ export class RegistrationsService {
                 )
             }
     
-            if(registration.status === 'Rejected'){
+            if(registration.status === 'Denied'){
                 return ServerErrorResponse(
-                    new Error("Registration has already been rejected"),
+                    new Error("Registration has already been denied"),
+                    400,
+                )
+            }
+
+            if(registration.status === 'Accepted'){
+                return ServerErrorResponse(
+                    new Error("Registration has already been accepted"),
+                    400,
+                )
+            }
+
+            if(registration.status !== "Approved"){
+                return ServerErrorResponse(
+                    new Error("Registration has not been approved"),
                     403,
                 )
-    
             }
     
             registration.status = 'Denied';
+            registration.deniedAt = new Date();
             registration.updatedAt = new Date();
             await registration.save()
     
+            console.log("Denied registration:", registration.code);
             return ServerSuccessResponse(registration);
 
         } catch(err) {
@@ -191,11 +241,10 @@ export class RegistrationsService {
     }
 
 
-
-    async getPendingCount(){
+    async getCount(filter: Record<string, any>){
         
         try{
-            const count = await RegistrationModel.countDocuments({status:"Pending"});
+            const count = await RegistrationModel.countDocuments(filter);
             return count;
 
         } catch(err) {

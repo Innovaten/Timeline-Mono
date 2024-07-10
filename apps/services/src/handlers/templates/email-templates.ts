@@ -47,9 +47,10 @@ export const emailBodyTemplates: Record<string, TemplateExecutor> = {
         "You've been given access to the Timeline Trust Admin Console!",
         "Here are your credentials:",
         "",
+        "Console URL: <strong>${console}</strong>",
         "Email Address: <strong>${email}</strong>",
         "Password: <strong>${password}</strong>",
-        "Admin ID: ${code}",
+        "Admin ID: <strong>${code}</strong>",
         "",
         "Best regards,",
         "Timeline Trust",
@@ -59,12 +60,13 @@ export const emailBodyTemplates: Record<string, TemplateExecutor> = {
         // code
         // email
         // password
+        //console
     ),
     "registration-rejected": lodash.template([
         "Dear ${firstName},",
         "",
         "We hope this email finds you well. We regret to inform you that your application to the Timeline Trust LMS console has been rejected.",
-        "We know this response was not what you hoped for, but we thank you for youre continued interest and wish you the best in your future studies.",
+        "We know this response was not what you hoped for, but we thank you for your continued interest and wish you the best in your future studies.",
         "",
         "Best Regards,",
         "Timeline Trust",
@@ -79,9 +81,10 @@ export const emailBodyTemplates: Record<string, TemplateExecutor> = {
         "You've been given access to the Timeline Trust Student Console!",
         "Here are your credentials:",
         "",
+        "Console URL: <strong>${console}</strong>",
         "Email Address: <strong>${email}</strong>",
         "Password: <strong>${password}</strong>",
-        "Student ID: ${code}",
+        "Student ID: <strong>${code}</strong>",
         "",
         "Best regards,",
         "Timeline Trust",
@@ -91,6 +94,7 @@ export const emailBodyTemplates: Record<string, TemplateExecutor> = {
         // code
         // email
         // password
+        // console
     ),
 }
 

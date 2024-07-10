@@ -319,7 +319,7 @@ function Administrators(){
 
             <div className='flex flex-col w-full h-full'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
-                    <h2 className='text-blue-800'>Administrators</h2>
+                    <h3 className='text-blue-800'>Administrators</h3>
                     <Button className='flex px-2 !h-[35px]' onClick={toggleCreateDialog}> <PlusIcon className='inline w-4 mr-1' /> Add an administrator</Button>
                 </div>
                 <div className='w-full mt-3 flex gap-4'>
@@ -354,15 +354,16 @@ function Administrators(){
                         <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
                     </div>
                 </div>
-                <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow-sm'>
+                <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>
                     <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
                         <div className = 'w-full text-blue-700 py-2 px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
                             <div className='flex items-center gap-4'>
+                                <span  className='w-[70px]'>CODE</span>
                                 <span  className='w-[50px]'>ROLE</span>
                                 <span className='flex-1 font-normal truncate'>NAME</span>
                             </div>
                             <div className='flex gap-4 items-center font-light'>
-                                <span className='w-[150px] flex justify-end'>LAST UPDATED</span>
+                                <span className='w-[150px] flex justify-end'>DATE CREATED</span>
                                 <span className='w-[100px] flex justify-end'>ACTIONS</span>
                             </div>
                         </div>
@@ -380,11 +381,12 @@ function Administrators(){
                             return (
                             <div key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                 <div className='flex items-center gap-4'>
+                                    <small className='font-light w-[70px]'>{admin.code}</small>
                                     <small className='font-light w-[50px]'>{admin.role}</small>
                                     <h5 className='flex-1 font-normal truncate'>{admin.firstName + " " + admin.lastName }</h5>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
-                                    <span className='w-[150px] flex justify-end'>{new Date(admin.updatedAt).toDateString()}</span>
+                                    <span className='w-[150px] flex justify-end'>{new Date(admin.createdAt).toDateString()}</span>
                                     <div className='w-[100px] flex justify-end gap-4'>
                                         <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleUpdateDialog() }}>              
                                             <PencilIcon className='w-4 h-4' />
@@ -400,7 +402,7 @@ function Administrators(){
                         }
                     </div>
                 </div>
-                <div className='flex justify-end text-blue-700 mt-2'>
+                <div className='flex justify-end text-blue-700 mt-2 pb-2'>
                     <p>Showing <span className='font-semibold'>{administrators.length}</span> of <span className='font-semibold'>{administratorsCount}</span></p>
                 </div>
             </div>

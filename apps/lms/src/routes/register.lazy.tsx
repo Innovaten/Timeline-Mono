@@ -31,7 +31,7 @@ type RegistrationObjectType = Pick<IRegistrationDoc,
 
 function RegisterPage(){
     const path = useRouterState().location.pathname
-    const isAdmission = path.includes("/register/accept");
+    const isAdmission = path.startsWith("/register/accept");
     
   const [ newUser, setNewUser ] = useState<RegistrationObjectType>({
     code: "",
@@ -75,12 +75,14 @@ function RegisterPage(){
                       <img className='object-cover h-full' src="/img/login-student-image.jpg" />
                   </div>
                   <div ref={parentRef}  className='w-full sm:w-1/2  p-8'>
-                      { !isAdmission 
-                        && <PersonalDetailsForm componentRef={personalDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
-                        && <ContactDetailsForm componentRef={contactDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
-                        && <CourseDetailsForm componentRef={courseDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
-                        && <SummaryDetailsForm componentRef={summaryDetailsRef} registrationPages={registrationPages} newUser={newUser} setNewUser={setNewUser} />
-                        && <SummaryConfirmationForm componentRef={summaryConfirmationRef} newUser={newUser} />
+                      { !isAdmission &&
+                        <>
+                            <PersonalDetailsForm componentRef={personalDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
+                            <ContactDetailsForm componentRef={contactDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
+                            <CourseDetailsForm componentRef={courseDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
+                            <SummaryDetailsForm componentRef={summaryDetailsRef} registrationPages={registrationPages} newUser={newUser} setNewUser={setNewUser} />
+                            <SummaryConfirmationForm componentRef={summaryConfirmationRef} newUser={newUser} />
+                        </>
                         }
 
                       { isAdmission && <Outlet />}

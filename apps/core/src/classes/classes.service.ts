@@ -1,7 +1,7 @@
 import { ClassModel } from "@repo/models";
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
-import lodash from "lodash";
-import { model, Types } from "mongoose";
+import { Types } from "mongoose";
+import { generateCode } from "../utils";
 
 export class ClassesService {
    
@@ -17,10 +17,9 @@ export class ClassesService {
     async createClass(classData: CreateClassDto, creator: string){
 
         const { authToken, ...actualData } = classData;
-        const codePrefix = "CLS"
 
         const newClass = new ClassModel({
-            code: codePrefix + lodash.padStart(`${await(ClassModel.countDocuments()) + 1}`, 6, "0"),
+            code: await generateCode(await ClassModel.countDocuments(), "CLS"),
             ...actualData,
             status: "Active",
             administrators: [],
@@ -84,8 +83,8 @@ export class ClassesService {
 
     }
 
-    async getClassesCount(){
-        const count = await ClassModel.countDocuments({});
+    async getClassesCount(filter: Record<string, any>){
+        const count = await ClassModel.countDocuments(filter);
         return count;
     }
 }

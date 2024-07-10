@@ -4,11 +4,11 @@ import {  UserModel } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import lodash from "lodash";
 import { Types } from "mongoose";
-import { generate } from 'generate-password'
 import bcrypt from 'bcrypt'
 import { Roles } from "../enums/roles.enum";
 import { KafkaService } from "./kafka.service";
 import { IRegistrationDoc } from "@repo/models";
+import { generateCode, generateSecurePassword, validPhoneNumber } from "../../utils";
 
 @Injectable()
 export class UserService {
@@ -30,7 +30,12 @@ export class UserService {
     }
 
     async getUsers(limit?: number, offset?: number, filter?: Record<string, any>){
-        const results = await UserModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1})
+        const results = await UserModel
+            .find(filter ?? {})
+            .populate("classes")
+            .limit(limit ?? 10)
+            .skip(offset ?? 0)
+            .sort({ createdAt: -1})
         return results;
     }
 
@@ -40,23 +45,25 @@ export class UserService {
 
     async createAdmin(userData: CreateUserDto, creator: string){
 
+        const existingAdmin = await UserModel.findOne({email: userData.email });
+
+        if(existingAdmin){
+            throw new Error("A user with the specified email already exists.")
+        }
+
         const codePrefix = userData.role == "SUDO" ? "SDO" : "ADM"
 
-        let randomPassword = generate({ 
-            length: 7, 
-            strict: true 
-        })
-
-        randomPassword = randomPassword + ["!","@","#","$","^","*","&"][ Math.floor(Math.random() * 6) ] + [Math.abs(Math.floor((Math.random() * 149)-97))]
+        const randomPassword = generateSecurePassword()
 
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(randomPassword, salt);
 
-        const { authToken, ...actualData } = userData;
+        const { authToken, phone, ...actualData } = userData;
 
         const user = new UserModel({
-            code: codePrefix + lodash.padStart(`${await(UserModel.countDocuments()) + 1}`, 6, "0"),
+            code: await generateCode(await UserModel.countDocuments({ role: userData.role }), codePrefix),
             ...actualData,
+            phone: `+${validPhoneNumber(phone)}`,
             meta: {
                 isPasswordSet: false,
                 isSuspended: false,
@@ -67,7 +74,7 @@ export class UserService {
             },
             createdBy: new Types.ObjectId(creator),
             createdAt: new Date(),
-            courses: [],
+            classes: [],
         })
 
         await user.save()
@@ -142,30 +149,23 @@ export class UserService {
     async createStudent(userData: IRegistrationDoc){
 
         if(userData.status !== "Accepted"){
-            throw new Error("Registration not accepted yet")
+            throw new Error("Registration has not been accepted")
         }
-        else{
-        const codePrefix = "STU"
 
-        let randomPassword = generate({ 
-            length: 7, 
-            strict: true 
-        })
-  
-        randomPassword = randomPassword + ["!","@","#","$","^","*","&"][ Math.floor(Math.random() * 6) ] + [Math.abs(Math.floor((Math.random() * 149)-97))]
+        const randomPassword = generateSecurePassword()
 
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(randomPassword, salt);
         
 
         const user = new UserModel({
-            code: codePrefix + lodash.padStart(`${await(UserModel.countDocuments()) + 1}`, 6, "0"),
+            code: await generateCode(await UserModel.countDocuments({ role: "STUDENT"}), "STU"),
             role: Roles.STUDENT,
             firstName: userData.firstName,
             otherNames: userData.otherNames,
             lastName: userData.lastName,
             email: userData.email,
-            phone: userData.phone,
+            phone: `+${validPhoneNumber(userData.phone)}`,
             gender: userData.gender,
             
             meta: {
@@ -192,15 +192,15 @@ export class UserService {
                 firstName: user.firstName,
             }
         )
+
+        console.log("Created student", user.code, "from registration", userData.code);
         return user;
-
     }
-}
 
-async getUserCount(filter?: Record<string, any>){
-    const count = await UserModel.countDocuments(filter);
-    return count;
-}
+    async getUserCount(filter?: Record<string, any>){
+        const count = await UserModel.countDocuments(filter);
+        return count;
+    }
 
 }
 

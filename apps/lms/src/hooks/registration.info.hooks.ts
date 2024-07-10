@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { IRegistrationDoc } from "@repo/models";
+import { IClassDoc, IRegistrationDoc } from "@repo/models";
 import { makeUnauthenticatedRequest } from "@repo/utils";
 import { toast } from "sonner";
 
 export function useRegistrant(
     id : string,
 ){
-    const [ registrant, setRegistrant ] = useState<IRegistrationDoc>({} as IRegistrationDoc);
+    const [ registrant, setRegistrant ] = useState< Omit<IRegistrationDoc, "approvedClasses" > & { approvedClasses: IClassDoc[] } >({} as any);
 
     useEffect(
         () =>{

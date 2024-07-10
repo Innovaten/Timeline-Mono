@@ -39,26 +39,3 @@ export function useStudents(
     return { isLoading, students, count }
 
 }
-
-export function useModeOfClassFilter(){
-    const [ filterLabel, setFilterLabel ] = useState<"All" | "In-Person" | "Online">("All");
-    const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
-
-    const resultingFilters = {
-        "All": { modeOfClass: { $in: ["In-Person", "Online"] } },
-        "In-Person": { modeOfClass: { $in: ["In-Person"] } },
-        "Online": { modeOfClass: { $in: ["Online"] } },
-    };
-
-    const filterOptions = Object.keys(resultingFilters);
-    
-    const filter = resultingFilters[filterLabel];
-
-    function changeFilter(arg:  "All" | "In-Person" | "Online"){
-        setFilterChangedFlag(prev => !prev);
-        setFilterLabel(arg);
-    };
-
-    return { filter, changeFilter, filterOptions, filterChangedFlag };
-
-}

@@ -4,7 +4,7 @@ import {
   useRegistrants,
   useRegistrantsFilter,
 } from "../hooks/registrants.hook";
-import { _getToken, cn, makeAuthenticatedRequest, useDialog } from "@repo/utils";
+import { _getToken, cn, makeAuthenticatedRequest, useDialog, useLoading } from "@repo/utils";
 import { toast } from "sonner";
 import { useState } from "react";
 import { FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
@@ -30,6 +30,8 @@ function RegistrationsPage() {
   const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
   const { dialogIsOpen: classesApprovalIsOpen, toggleDialog: toggleClassesApprovalDialog } = useDialog();
   
+  const { isLoading: approvalIsLoading, toggleLoading: toggleApprovalIsLoading } = useLoading()
+
   const { classes: classesUpForApproval, } = useClasses(newStudentIsSelected);
   let [approvedClasses, setApprovedClasses ] = useState<Array<string>>([]);
 
@@ -47,7 +49,8 @@ function RegistrationsPage() {
     classes: [],
   });
 
-  function acceptRegistrant(registrantId: any) {
+  function approveRegistrant(registrantId: any) {
+    toggleApprovalIsLoading()
     makeAuthenticatedRequest(
       "get",
       `/api/v1/registrations/approve?_id=${registrantId}&approved-classes=${JSON.stringify(approvedClasses)}`,
@@ -57,7 +60,7 @@ function RegistrationsPage() {
           manuallyToggleCompositeFilterFlag()
           toast.success(
             <p>
-              Student registered successfully.
+              Student approved successfully.
               <br />A confirmation will be sent via email.
             </p>
           );
@@ -68,7 +71,10 @@ function RegistrationsPage() {
       .catch((err) => {
         console.log(err);
         toast.error(`${err}`);
-      });
+      })
+      .finally(() => {
+        toggleApprovalIsLoading();
+      })
   }
 
   function rejectRegistrant(registrantId: any) {
@@ -79,7 +85,7 @@ function RegistrationsPage() {
       .then((res) => {
         manuallyToggleCompositeFilterFlag()
         if (res.status == 200 && res.data.success) {
-          toast.success("Student has been rejected");
+          toast.success("Student rejected successfully");
         } else {
           toast.error(`${res.data.error.msg}`);
         }
@@ -112,38 +118,38 @@ function RegistrationsPage() {
         description={`Confirm the registration of ${firstName + " " + lastName}`}
       >
         <div className="flex flex-col gap-4 sm:justify-between">
-          <div className='w-full flex-1 bg-blue-50 p-1 rounded-sm shadow-sm'>
+          <div className='w-full flex-1 border-[1.5px] border-blue-900/60 rounded-sm shadow-sm'>
             <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
-              <div className="flex justify-between border-b-[1.5px]" >
-                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >FULL NAME</span>
-                <span className="text-lg text-blue-600 inline p-2" >
+              <div className="flex justify-between border-b-[1.5px] border-blue-900/60" >
+                <span className="text-md w-32 flex flex-shrink-0 items-center border-r-[1.5px] border-blue-900/60 p-2 font-light " >FULL NAME</span>
+                <span className="text-lg inline p-2" >
                   {firstName}
                   {otherNames == "" ? " " : " " + otherNames + " "}
                   {lastName}
                 </span>
               </div>
-              <div className="flex justify-between border-b-[1.5px]" >
-                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >GENDER</span>
-                <span className="text-lg text-blue-600 inline p-2">{gender}</span>
+              <div className="flex justify-between border-b-[1.5px] border-blue-900/60" >
+                <span className="text-md w-32 flex flex-shrink-0 items-center border-r-[1.5px] p-2 border-blue-900/60 font-light " >GENDER</span>
+                <span className="text-lg inline p-2">{gender}</span>
               </div>
-              <div className="flex justify-between border-b-[1.5px]" >
-                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >EMAIL ADDRESS</span>
-                <span className="text-lg text-blue-600 inline  p-2">{email}</span>
+              <div className="flex justify-between border-b-[1.5px] border-blue-900/60" >
+                <span className="text-md w-32 flex flex-shrink-0 items-center border-r-[1.5px] p-2 border-blue-900/60 font-light " >EMAIL ADDRESS</span>
+                <span className="text-lg inline  p-2">{email}</span>
               </div>
-              <div className="flex justify-between border-b-[1.5px]" >
-                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >PHONE NUMBER</span>
-                <span  className="text-lg text-blue-600 inline p-2">{phone}</span>
+              <div className="flex justify-between border-b-[1.5px] border-blue-900/60" >
+                <span className="text-md w-32 flex flex-shrink-0 items-center border-r-[1.5px] border-blue-900/60 p-2 font-light " >PHONE NUMBER</span>
+                <span  className="text-lg inline p-2">{phone}</span>
               </div>
-              <div className="flex justify-between border-b-[1.5px]" >
-                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >MODE OF CLASS</span>
-                <span className="text-lg text-blue-600 inline p-2" >{modeOfClass}</span>
+              <div className="flex justify-between border-b-[1.5px] border-blue-900/60" >
+                <span className="text-md w-32 flex flex-shrink-0 items-center border-r-[1.5px] border-blue-900/60 p-2 font-light " >MODE OF CLASS</span>
+                <span className="text-lg inline p-2" >{modeOfClass}</span>
               </div>
               <div className="flex justify-between" >
-                <span className="text-md w-32 my-auto border-r-[1.5px] inline p-2 font-light " >CLASSES</span>
-                <span className="flex gap-2 p-2">
+                <span className="text-md w-32 flex flex-shrink-0 items-center  border-r-[1.5px] border-blue-900/60 p-2 font-light " >CLASSES</span>
+                <span className="flex gap-2 p-2 flex-wrap justify-end">
                   {classes?.length && classes.map((course, idx) => {
                     return (
-                      <span key={idx} className="text-lg text-blue-600 inline" >
+                      <span key={idx} className="text-lg inline" >
                         {course}
                       </span>
                     );
@@ -197,7 +203,7 @@ function RegistrationsPage() {
               <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="outline" onClick={() => {setIsOpen(true); toggleClassesApprovalDialog() }}>
                 Back to details
               </Button>
-              <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="primary" onClick={() => {toggleClassesApprovalDialog(); acceptRegistrant(registrantId)}}>
+              <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={approvalIsLoading} isDisabled={approvedClasses.length < 1} variant="primary" onClick={() => {toggleClassesApprovalDialog(); approveRegistrant(registrantId)}}>
                 Approve Registrant
               </Button>
             </div>
@@ -216,21 +222,19 @@ function RegistrationsPage() {
         title={`Reject Registration`}
         description={`Are you sure you want to reject ${registrant.firstName + " " + registrant.lastName} ?`}
       >
-        <div className="flex-col gap-4 sm:justify-between">
-          <div className="flex flex-col gap-2">
-              <Button
-                className="px-3 !h-[35px]"
-                type="submit"
-                variant="danger"
-                isLoading={false}
-                onClick={() => {
-                  setConfirmationReject(false);
-                  rejectRegistrant(registrantId);
-                }}
-              >
-                Reject Registrant
-              </Button>
-          </div>
+        <div className="mt-8 ">
+          <Button
+            className="w-fit !h-[35px]"
+            type="submit"
+            variant="danger"
+            isLoading={false}
+            onClick={() => {
+              setConfirmationReject(false);
+              rejectRegistrant(registrantId);
+            }}
+          >
+            Reject Registrant
+          </Button>
         </div>
       </DialogContainer>
     );  
@@ -239,7 +243,7 @@ function RegistrationsPage() {
   return (
     <div className="flex flex-col w-full h-full">
       <div className="mt-2 flex h-fit justify-between items-center">
-        <h2 className="text-blue-800">Registrations</h2>
+        <h3 className="text-blue-800">Registrations</h3>
       </div>
       <div className="w-full mt-3 flex gap-4">
         <Button
@@ -276,7 +280,7 @@ function RegistrationsPage() {
           </div>
       </div>
       <div className="mt-2 w-full flex flex-col flex-1 gap-2 text-blue-600">
-        <div className="w-full min-h-[350px] bg-blue-50 p-1 flex-1 rounded-sm shadow-sm mt-2">
+        <div className="w-full min-h-[350px] bg-blue-50 p-1 flex-1 rounded-sm shadow mt-2">
           <div className="bg-white w-full h-full overflow-auto rounded">
             <div className = 'w-full text-blue-700 py-2 px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
                 <div className='flex items-center gap-4'>
@@ -315,10 +319,13 @@ function RegistrationsPage() {
                       <span className='w-[100px] flex items-center gap-2 justify-end'>
                         {registrant.status}
                         <span className={cn(
-                                  "w-2 h-2 rounded-full",
-                                  registrant.status == 'Pending' ? "bg-yellow-600" : "",
-                                  registrant.status == 'Approved' ? "bg-green-600" : "",
-                                  registrant.status == 'Rejected' ? "bg-red-600" : "",
+                                  "w-2 h-2 rounded-full border-[1px] ",
+                                  registrant.status == 'Pending' ? "border-yellow-600" : "",
+                                  registrant.status == 'Approved' ? "border-green-600" : "",
+                                  registrant.status == 'Rejected' ? "border-red-600" : "",
+                                  registrant.status == 'Accepted' ? "bg-green-600 border-green-600" : "",
+                                  registrant.status == 'Denied' ? "bg-red-600 border-red-600" : "",
+
                                 )}></span>
                       </span>
                       <span className='w-[120px] flex justify-end'>
@@ -337,7 +344,7 @@ function RegistrationsPage() {
           </div>
         </div>
       </div>
-      <div className="flex justify-end text-blue-700 mt-2">
+      <div className="flex justify-end text-blue-700 mt-2 pb-2">
         <p>
           Showing <span className="font-semibold">{registrants.length}</span> of{" "}
           <span className="font-semibold">{registrantsCount}</span>

@@ -179,7 +179,7 @@ export default function SidebarComponent(){
                         </div>
                     }
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 pt-2">
                     <div className="flex flex-col sm:flex-row gap-2">
                         <Link onClick={()=>{_clearToken()}} to="/login" className="w-full flex gap-2 items-center  bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
                             <PowerIcon className="w-5 sm:w-4" />

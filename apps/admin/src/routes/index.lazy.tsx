@@ -101,16 +101,16 @@ function IndexPage() {
                 <Link to='/registrations' ><Button className='!h-[25px] px-2' variant='outline'>See All</Button></Link>
               </div>
               <div className='w-full flex-1 bg-blue-50 p-1 rounded-sm shadow-sm mt-2 mb-4'>
-                  <div className='bg-white hidden  w-full h-full sm:flex flex-col gap-2 rounded'>
-                    <div className = 'w-full text-blue-700 py-2 px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
+                  <div className='bg-white  w-full h-full flex flex-col gap-2 rounded'>
+                    <div className = 'w-full hidden text-blue-700 py-2 px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 sm:flex justify-between items-center gap-2 rounded-sm'>
                       <div className='flex items-center gap-4'>
-                          <span  className='w-[80px]'>CODE</span>
+                          <span  className='w-[70px] sm:w-[80px]'>CODE</span>
                           <span className='flex-1 font-normal truncate'>NAME</span>
                       </div>
                       <div className='flex gap-4 items-center font-light'>
                           <span className='w-[100px] flex justify-end'>STATUS</span>
-                          <span className='w-[120px] flex justify-end'>DATE CREATED</span>
-                          <span className='w-[150px] flex justify-end'></span>
+                          <span className='w-[120px] sm:flex justify-end'>DATE CREATED</span>
+                          <span className='w-[150px] sm:flex justify-end'></span>
                       </div>
                   </div>
                     {
@@ -130,7 +130,7 @@ function IndexPage() {
                             key={idx}
                             className="w-full text-blue-700 py-2 px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10"
                           >
-                            <small className='font-light w-[80px]'>{registrant.code}</small>
+                            <small className='font-light w-[70px] sm:w-[80px]'>{registrant.code}</small>
                             <h5 className="flex-1 font-normal truncate">
                               {registrant.firstName + " " + registrant.lastName}
                             </h5>
@@ -146,10 +146,10 @@ function IndexPage() {
                                   registrant.status == 'Denied' ? "bg-red-600 border-red-600" : "",
                                 )}></span>
                               </span>
-                              <span className='w-[120px] flex justify-end'>
+                              <span className='w-[120px] hidden sm:flex justify-end'>
                                 {new Date(registrant.updatedAt).toLocaleTimeString()}
                               </span>
-                              <span className='w-[150px] flex justify-end'>
+                              <span className='w-[150px] hidden sm:flex justify-end'>
                                 {new Date(registrant.updatedAt).toDateString()}
                               </span>
                             </div>

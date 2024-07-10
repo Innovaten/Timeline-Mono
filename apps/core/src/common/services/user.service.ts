@@ -56,9 +56,6 @@ export class UserService {
 
         const randomPassword = generateSecurePassword()
 
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(randomPassword, salt);
-
         const { authToken, phone, ...actualData } = userData;
 
         const user = new UserModel({
@@ -71,7 +68,7 @@ export class UserService {
                 isDeleted: false,
             },
             auth: {
-                password: passwordHash,
+                password: randomPassword,
             },
             createdBy: new Types.ObjectId(creator),
             createdAt: new Date(),
@@ -156,10 +153,6 @@ export class UserService {
 
         const randomPassword = generateSecurePassword()
 
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(randomPassword, salt);
-        
-
         const user = new UserModel({
             code: await generateCode(await UserModel.countDocuments({ role: "STUDENT"}), "STU"),
             role: Roles.STUDENT,
@@ -176,7 +169,7 @@ export class UserService {
                 isDeleted: false,
             },
             auth: {
-                password: passwordHash,
+                password: randomPassword,
             },
             createdAt: new Date(),
             classes: userData.approvedClasses,

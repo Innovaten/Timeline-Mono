@@ -282,7 +282,7 @@ function RegistrationsPage() {
       <div className="mt-2 w-full flex flex-col flex-1 gap-2 text-blue-600">
         <div className="w-full min-h-[350px] bg-blue-50 p-1 flex-1 rounded-sm shadow mt-2">
           <div className="bg-white w-full h-full overflow-auto rounded">
-            <div className = 'w-full text-blue-700 py-2 px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
+            <div className = 'w-full text-blue-700 py-2 px-1 sm:px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
                 <div className='flex items-center gap-4'>
                     <span  className='w-[80px] hidden sm:inline'>CODE</span>
                     <span className='flex-1 font-normal truncate'>NAME</span>
@@ -303,7 +303,7 @@ function RegistrationsPage() {
                 return (
                   <div
                     key={idx}
-                    className="cursor-pointer w-full text-blue-700 py-2 px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10"
+                    className="cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10"
                     onClick={() => {
                       setRegistrantId(registrant._id);
                       setRegistrant(registrant);

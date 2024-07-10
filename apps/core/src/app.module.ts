@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
+import { OtpModule } from './auth/otp.module';
 import { ClassesModule } from './classes/classes.module'
 import { RegistrationsModule } from './registrations/registrations.module';
 import CustomCommon from './common';
@@ -15,6 +16,7 @@ import CustomCommon from './common';
     }),
     CustomCommon,
     AuthModule,
+    OtpModule,
     UserModule,
     RegistrationsModule,
     ClassesModule

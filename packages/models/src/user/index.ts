@@ -57,6 +57,7 @@ export const UserSchema = new Schema<IUserDoc>({
     required: false,
   },
 
+
   meta: {
     isPasswordSet: {
       type: SchemaTypes.Boolean,
@@ -81,6 +82,10 @@ export const UserSchema = new Schema<IUserDoc>({
       trim: true,
       required: true,
     },
+    otpLastSentAt: {
+      type: SchemaTypes.Date,
+      required: false,
+    },
     otp: {
       type: SchemaTypes.String,
       required: false,
@@ -88,7 +93,8 @@ export const UserSchema = new Schema<IUserDoc>({
     otp_expiry: {
       type: SchemaTypes.Date,
       required: false,
-    }
+    },
+    
   },
 
   locker: {

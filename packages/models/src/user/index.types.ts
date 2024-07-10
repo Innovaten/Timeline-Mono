@@ -27,6 +27,7 @@ export interface IUser {
     password: string;
     otp: string;
     otp_expiry: string;
+    otpLastSentAt: Date;
   };
 
   locker: {

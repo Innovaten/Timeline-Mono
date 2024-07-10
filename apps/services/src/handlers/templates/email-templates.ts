@@ -60,7 +60,7 @@ export const emailBodyTemplates: Record<string, TemplateExecutor> = {
         // code
         // email
         // password
-        //console
+        // console
     ),
     "registration-rejected": lodash.template([
         "Dear ${firstName},",

@@ -9,6 +9,7 @@ import { Roles } from "../enums/roles.enum";
 import { KafkaService } from "./kafka.service";
 import { IRegistrationDoc } from "@repo/models";
 import { generateCode, generateSecurePassword, validPhoneNumber } from "../../utils";
+import { CoreConfig } from "../../config";
 
 @Injectable()
 export class UserService {
@@ -83,6 +84,7 @@ export class UserService {
             "notifications.send-email",
             "admin-credentials",
             {
+                console: CoreConfig.url.admin,
                 email: user.email,
                 code: user.code,
                 password: randomPassword,
@@ -186,6 +188,7 @@ export class UserService {
             "notifications.send-email",
             "student-credentials",
             {
+                console: CoreConfig.url.lms,
                 email: user.email,
                 code: user.code,
                 password: randomPassword,

@@ -1,4 +1,4 @@
-import { Link, createLazyFileRoute } from '@tanstack/react-router'
+import { Link, Outlet, createLazyFileRoute, useRouterState } from '@tanstack/react-router'
 import { _getToken } from '@repo/utils';
 import { Input, Button } from '@repo/ui'
 import { Form, Formik } from 'formik'
@@ -30,7 +30,9 @@ type RegistrationObjectType = Pick<IRegistrationDoc,
 >
 
 function RegisterPage(){
-
+    const path = useRouterState().location.pathname
+    const isAdmission = path.startsWith("/register/accept");
+    
   const [ newUser, setNewUser ] = useState<RegistrationObjectType>({
     code: "",
     firstName: "",
@@ -73,32 +75,17 @@ function RegisterPage(){
                       <img className='object-cover h-full' src="/img/login-student-image.jpg" />
                   </div>
                   <div ref={parentRef}  className='w-full sm:w-1/2  p-8'>
-                      <PersonalDetailsForm
-                        componentRef={registrationPages['personal-details']}
-                        registrationPages={registrationPages}
+                      { !isAdmission &&
+                        <>
+                            <PersonalDetailsForm componentRef={personalDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
+                            <ContactDetailsForm componentRef={contactDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
+                            <CourseDetailsForm componentRef={courseDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
+                            <SummaryDetailsForm componentRef={summaryDetailsRef} registrationPages={registrationPages} newUser={newUser} setNewUser={setNewUser} />
+                            <SummaryConfirmationForm componentRef={summaryConfirmationRef} newUser={newUser} />
+                        </>
+                        }
 
-                        setNewUser={setNewUser}
-                      />
-                      <ContactDetailsForm
-                        componentRef={registrationPages['contact-details']}
-                        registrationPages={registrationPages}
-                        setNewUser={setNewUser} 
-                      />
-                      <CourseDetailsForm
-                        componentRef={registrationPages['course-details']}
-                        registrationPages={registrationPages}
-                        setNewUser={setNewUser} 
-                      />
-                      <SummaryDetailsForm
-                        componentRef={registrationPages['summary-details']}
-                        registrationPages={registrationPages}
-                        newUser={newUser}
-                        setNewUser={setNewUser}
-                      />
-                      <SummaryConfirmationForm
-                        componentRef={registrationPages['registration-complete']}
-                        newUser={newUser}
-                      />
+                      { isAdmission && <Outlet />}
                       <div className='absolute flex sm:hidden bottom-5 flex-col items-center w-[calc(100vw-4rem)] m-auto text-blue-600'>
                           <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
                           <p>Powered By <a>Innovaten</a></p>
@@ -427,7 +414,7 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUs
             }
         })
         .catch( err => {
-            toast.error(err)
+            toast.error(`${err}`)
             toggleLoading()
         })
     }

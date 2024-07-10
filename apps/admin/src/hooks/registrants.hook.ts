@@ -41,21 +41,23 @@ export function useRegistrants(
 }
 
 export function useRegistrantsFilter(){
-    const [ filterLabel, setFilterLabel ] = useState< "All" | "Pending" | "Approved" | "Rejected">("All");
+    const [ filterLabel, setFilterLabel ] = useState< "All" | "Pending" | "Approved" | "Rejected" | "Accepted" | "Denied">("All");
     const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
 
     const resultingFilters = {
+        "All": {},
         "Pending": { status: { $in: ["Pending"] } },
-        "All": { status: { $in: ["Pending", "Approved", "Rejected"] } },
         "Approved": { status: { $in: ["Approved"] } },
         "Rejected": { status: { $in: ["Rejected"] } },
+        "Accepted": { status: { $in: ["Accepted"] } },
+        "Denied": { status: { $in: ["Denied"] } },
     };
 
     const filterOptions = Object.keys(resultingFilters);
     
     const filter = resultingFilters[filterLabel];
 
-    function changeFilter(arg:  "All" | "Pending" | "Approved" | "Rejected"){
+    function changeFilter(arg:  "All" | "Pending" | "Approved" | "Rejected" | "Accepted" | "Denied"){
         setFilterChangedFlag(prev => !prev);
         setFilterLabel(arg);
     };

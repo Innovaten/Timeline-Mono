@@ -1,8 +1,9 @@
 import { AdjustmentsVerticalIcon, CalendarIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
-import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, BuildingLibraryIcon, ComputerDesktopIcon, UserGroupIcon, FolderIcon, HomeIcon, UsersIcon, Bars2Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, BuildingLibraryIcon, ComputerDesktopIcon, UserGroupIcon, FolderIcon, HomeIcon, UsersIcon, PowerIcon, Bars2Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
+import { _clearToken } from "@repo/utils";
 import { useMovileNavigation } from "@repo/utils";
 
 export default function SidebarComponent(){
@@ -179,10 +180,16 @@ export default function SidebarComponent(){
                     }
                 </div>
                 <div className="flex flex-col gap-2">
-                    <Link to='/' className="flex gap-4 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
-                        <InformationCircleIcon className="w-5" />
-                        <p>SUPPORT</p>
-                    </Link>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <Link onClick={()=>{_clearToken()}} to="/login" className="w-full flex gap-2 items-center  bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
+                            <PowerIcon className="w-5 sm:w-4" />
+                            <p>LOGOUT</p>
+                        </Link>
+                        <Link to='/' className="flex w-full gap-2 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
+                            <InformationCircleIcon className="w-5 sm:w-4" />
+                            <p>SUPPORT</p>
+                        </Link>
+                    </div>
                     <Link to='/' className="flex gap-4 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
                         <div className="w-10 aspect-square rounded-full border-[1px] border-blue-600 grid place-items-center">
                             { ( user?.firstName[0] || "N") + (user?.lastName[0] || "A" ) }

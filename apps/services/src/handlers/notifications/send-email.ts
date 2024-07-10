@@ -32,8 +32,7 @@ async function sendRequestToMG(args: RequestToMGArgs) {
         mg.messages.create(ServicesConfig.mail.domain, { // Change to real account when in prod
             //to: ServicesConfig.node_env == 'production' ?  [args.email] : [ServicesConfig.mail.test_email],
             to: [args.email],
-            from: 'Timeline Trust Support <noreply-timeline-support@mg.kodditor.co>',
-            bcc: ['kobbyowusudarko@gmail.com'],
+            from: 'Timeline Trust Support <postmaster@mg.kodditor.co>',
             subject: args.subject,
             html: `
             <html>

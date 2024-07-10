@@ -323,7 +323,7 @@ function Classes(){
                         <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
                     </div>
                 </div>
-                <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow-sm'>
+                <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>
                     <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
                         <div className = 'w-full text-blue-700 py-2 px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
                                 <div className='flex items-center gap-4'>
@@ -378,7 +378,7 @@ function Classes(){
                         }
                     </div>
                 </div>
-                <div className='flex justify-end text-blue-700 mt-2'>
+                <div className='flex justify-end text-blue-700 mt-2 pb-2'>
                     <p>Showing <span className='font-semibold'>{classes.length}</span> of <span className='font-semibold'>{classesCount}</span></p>
                 </div>
             </div>

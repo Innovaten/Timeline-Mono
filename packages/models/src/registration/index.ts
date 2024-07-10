@@ -79,6 +79,10 @@ export const RegistrationSchema = new Schema<IRegistrationDoc>({
         type: SchemaTypes.Date,
     },
 
+    deniedAt: {
+        type: SchemaTypes.Date,
+    },
+
     createdAt: {
         type: SchemaTypes.Date,
         default: new Date()

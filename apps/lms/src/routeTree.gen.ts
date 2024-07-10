@@ -24,6 +24,7 @@ const CalendarLazyImport = createFileRoute('/calendar')()
 const AnnouncementsLazyImport = createFileRoute('/announcements')()
 const IndexLazyImport = createFileRoute('/')()
 const ClassesclassCodeLazyImport = createFileRoute('/classes/${classCode}')()
+const RegisterAcceptIdLazyImport = createFileRoute('/register/accept/$id')()
 const ClassesclassCodeLessonsLazyImport = createFileRoute(
   '/classes/${classCode}/lessons',
 )()
@@ -70,6 +71,13 @@ const ClassesclassCodeLazyRoute = ClassesclassCodeLazyImport.update({
   getParentRoute: () => ClassesLazyRoute,
 } as any).lazy(() =>
   import('./routes/classes.${classCode}.lazy').then((d) => d.Route),
+)
+
+const RegisterAcceptIdLazyRoute = RegisterAcceptIdLazyImport.update({
+  path: '/accept/$id',
+  getParentRoute: () => RegisterLazyRoute,
+} as any).lazy(() =>
+  import('./routes/register.accept.$id.lazy').then((d) => d.Route),
 )
 
 const ClassesclassCodeLessonsLazyRoute =
@@ -147,6 +155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesclassCodeLessonsLazyImport
       parentRoute: typeof ClassesclassCodeLazyImport
     }
+    '/register/accept/$id': {
+      id: '/register/accept/$id'
+      path: '/accept/$id'
+      fullPath: '/register/accept/$id'
+      preLoaderRoute: typeof RegisterAcceptIdLazyImport
+      parentRoute: typeof RegisterLazyImport
+    }
   }
 }
 
@@ -162,7 +177,9 @@ export const routeTree = rootRoute.addChildren({
       ClassesclassCodeLessonsLazyRoute,
     }),
   }),
-  RegisterLazyRoute,
+  RegisterLazyRoute: RegisterLazyRoute.addChildren({
+    RegisterAcceptIdLazyRoute,
+  }),
   SupportLazyRoute,
 })
 
@@ -202,7 +219,10 @@ export const routeTree = rootRoute.addChildren({
       ]
     },
     "/register": {
-      "filePath": "register.lazy.tsx"
+      "filePath": "register.lazy.tsx",
+      "children": [
+        "/register/accept/$id"
+      ]
     },
     "/support": {
       "filePath": "support.lazy.tsx"
@@ -217,6 +237,10 @@ export const routeTree = rootRoute.addChildren({
     "/classes/${classCode}/lessons": {
       "filePath": "classes.${classCode}.lessons.lazy.tsx",
       "parent": "/classes/${classCode}"
+    },
+    "/register/accept/$id": {
+      "filePath": "register.accept.$id.lazy.tsx",
+      "parent": "/register"
     }
   }
 }

@@ -4,7 +4,7 @@ import { Kafka } from "kafkajs";
 import { ServicesConfig } from "../config";
 
 import { emailHandler } from "./handlers/notifications/send-email";
-import { sendOTPHandler } from "./handlers/notifications/send-sms";
+import { sendSMSHandler } from "./handlers/notifications/send-sms";
 
 const kafka = new Kafka({
   clientId: 'timeline-services',
@@ -24,8 +24,8 @@ const streamHandlers = [
         handler: emailHandler,
     },
     {
-        streamKey: 'notifications.send-sms-otp',
-        handler: sendOTPHandler
+        streamKey: 'notifications.send-sms',
+        handler: sendSMSHandler
     }
 ]
 

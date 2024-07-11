@@ -2,9 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
 import {  UserModel } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
-import lodash from "lodash";
 import { Types } from "mongoose";
-import bcrypt from 'bcrypt'
 import { Roles } from "../enums/roles.enum";
 import { KafkaService } from "./kafka.service";
 import { IRegistrationDoc } from "@repo/models";

@@ -28,7 +28,7 @@ export const emailBodyTemplates: Record<string, TemplateExecutor> = {
         "Hi ${firstName}!",
         "",
         "Your registration application to the Timeline Trust Student Console has been approved!",
-        "Please <a href='${link}' target='_blank'>click here</a> to accept your admission",
+        "Kindly <a href='${link}' target='_blank'>click here</a> to accept your admission",
         "",
         "Registration ID: ${code}",
         "",

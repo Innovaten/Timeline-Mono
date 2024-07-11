@@ -7,9 +7,11 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 export const useLMSContext = create<ILMSContextState & ILMSContextAction>((set) => ({
   // State
   user: null,
+  token: null,
   
   // Actions 
   setUser: (user) => set((state: any) => ({ ...state, user: user }) ),
+  setToken: (token) => set((state: any) => ({ ...state, token: token }) ),
 }))
 
 const router = createRouter({ 

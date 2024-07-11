@@ -2,35 +2,37 @@ import { smsBodyTemplates } from "../templates/sms-templates";
 import { ServicesConfig } from "../../../config";
 import { EachMessagePayload } from "kafkajs";
 import { LMSKafkaMessage } from "../..";
+import { validPhoneNumber } from "../../utils";
 
-export async function sendOTPHandler(KafkaArgs: EachMessagePayload) {
+export async function sendSMSHandler(KafkaArgs: EachMessagePayload) {
   try {
 
     const { purpose, data }: LMSKafkaMessage = JSON.parse(KafkaArgs.message.value!.toString())
     
-    const OTPdata = {
-      expiry: 5,
-      length: 6,
-      medium: "sms",
-      message: `${smsBodyTemplates["registration"]({ firstName: data.firstName })}`,
-      number: [`${data.phoneNumber}`],
-      sender_id: "Timeline",
-      type: "numeric",
+    const { phone, ...actualdata} = data;
+
+    const SMSdata = {
+      message: `${smsBodyTemplates[purpose](actualdata)}`,
+      recipients: [`${validPhoneNumber(phone)}`],
+      sender: "Timeline Trust",
     };
+
     const headers = {
       "Content-Type": "application/json",
       "api-key": ServicesConfig.arkesel.api_key,
     };
   
-    fetch("https://sms.arkesel.com/api/otp/generate", {
+    fetch("https://sms.arkesel.com/api/v2/sms/send", {
       method: "POST",
       headers: headers,
-      body: JSON.stringify(OTPdata),
+      body: JSON.stringify(SMSdata),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-      })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+    })
+    
+    console.log("Sent", purpose, "SMS to", phone)
 
   } catch(err){
     console.log('--- Kafka SMS OTP Handler Error ---\n', err)

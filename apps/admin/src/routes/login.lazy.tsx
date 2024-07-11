@@ -1,7 +1,7 @@
 import { createLazyFileRoute, useRouter, useRouteContext } from '@tanstack/react-router'
 import { _getToken, _setUser } from '@repo/utils';
 import { Input, Button } from '@repo/ui'
-import { Form, Formik } from 'formik'
+import { Form, Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import YupPassword from 'yup-password'
 import { _setToken, fadeParentAndReplacePage, makeUnauthenticatedRequest, useLoading } from '@repo/utils'
@@ -23,6 +23,7 @@ function LoginPage(){
 
   const parentRef = useRef<HTMLDivElement>(null)
   const loginRef = useRef<HTMLDivElement>(null)
+  const twoFARef = useRef<HTMLDivElement>(null)
   const forgotRef = useRef<HTMLDivElement>(null)
   const forgotVerificationRef = useRef<HTMLDivElement>(null)
   const forgotNewPasswordRef = useRef<HTMLDivElement>(null)
@@ -30,6 +31,7 @@ function LoginPage(){
   const pages: Record<string, RefObject<HTMLDivElement>> = {
       parent: parentRef,
       login: loginRef,
+			twoFA: twoFARef,
       forgot: forgotRef,
       'forgot-verification': forgotVerificationRef,
       'forgot-new-password':forgotNewPasswordRef,
@@ -48,11 +50,15 @@ function LoginPage(){
                       </div>
                       <div ref={parentRef} className='w-full sm:w-1/2  p-8'>
                         <Login
-                          componentRef={pages['login']}  
+                          componentRef={pages.login}  
+                          pages={pages}
+                        />
+												<TwoFactorAuthentication
+                          componentRef={pages.twoFA}  
                           pages={pages}
                         />
                         <ForgotPassword
-                          componentRef={pages['forgot']}  
+                          componentRef={pages.forgot}  
                           pages={pages}
                         />
                         <ForgotVerification
@@ -87,42 +93,55 @@ type LoginProps = {
 function Login({ componentRef, pages }: LoginProps){
 
   const { isLoading, toggleLoading, resetLoading } = useLoading()
-  const router = useRouter()
-  const context = useRouteContext({ from: '/login' })
-  const { setUser, user } = useLMSContext()
+  const { setUser, setToken } = useLMSContext()
 
-  function handleSubmit(values: { email: string, password: string}){
-      toggleLoading()
- 
-      makeUnauthenticatedRequest(
-          'post', 
-          '/api/v1/auth/login',
-          values,
-      )
-      .then(res => {
-            if(res.data.success){
-              const token = res.data.data.access_token;
-              _setToken(token);
-              
-              const loginUser: HydratedDocument<IUserDoc> = res.data.data.user;
-              setUser(loginUser);
-              _setUser(loginUser);
-              context.user = loginUser;
-              
-              router.navigate({ 
-                to: "/"
-              })
-              toggleLoading()
-          } else {
-              toast.error(res.data.error.msg)
-              toggleLoading()
-          }
-      })
-      .catch( err => {
-          toast.error(`${err}`)
-          toggleLoading()
-      })
-  }
+	function handleSubmit(values: { email: string, password: string}){
+			toggleLoading()
+
+			makeUnauthenticatedRequest(
+				'post', 
+				'/api/v1/auth/login',
+				values,
+			)
+			.then(res => {
+					if(res.data.success){
+							const token = res.data.data.access_token;
+							setToken(token);
+						
+							const loginUser: HydratedDocument<IUserDoc> = res.data.data.user;
+							setUser(loginUser);
+
+							// Automatically send OTP
+							makeUnauthenticatedRequest(
+								"get",
+								`/api/v1/auth/otp/send?email=${loginUser.email}&via=phone`
+							)
+							.then(res => {
+								if(res.data.success){
+									fadeParentAndReplacePage(pages['parent'], pages['login'], pages['twoFA'], 'flex')	
+								} else {
+									console.log(res.data.error.msg)
+									toast.error("We encountered an issue while sending you an OTP. Please try again later")
+								}
+							})
+							.catch( err => {
+									toast.error(`${err}`)  
+							})
+					} else {
+							toast.error(res.data.error.msg)
+					}
+			})
+			.catch( err => {
+				if(err.message){
+					toast.error(`${err.message}`)  
+				} else {
+					toast.error(`${err}`)  
+				}
+			})
+			.finally(()=> {
+					toggleLoading()
+			})
+	}
 
   function handleReset(){
       resetLoading();
@@ -185,6 +204,117 @@ function Login({ componentRef, pages }: LoginProps){
 
 }
 
+type TwoFAProps = {
+    componentRef: RefObject<HTMLDivElement>
+    pages: Record<string, RefObject<HTMLDivElement>>,
+  }
+
+function TwoFactorAuthentication({ componentRef, pages}: TwoFAProps){
+    const { isLoading, toggleLoading, resetLoading } = useLoading()
+    const router = useRouter()
+    const context = useRouteContext({ from: '/login' })
+    const { user, token } = useLMSContext()
+
+    function handleSubmit(values: { otp: string}){
+        toggleLoading()
+   
+        makeUnauthenticatedRequest(
+            'get', 
+            `/api/v1/auth/otp/verify?email=${user?.email}&otp=${values.otp}`
+        )
+        .then(res => {
+              if(res.status == 200 && res.data.success){
+								_setUser(user);
+								_setToken(token!);
+                context.user = user;
+                
+                toast.success("Verification successful!")
+                router.navigate({ 
+                  to: "/"
+                })
+            } else {
+                toast.error(res.data.error.msg)
+            }
+        })
+        .catch( err => {
+						if(err.message){
+							toast.error(`${err.message}`)
+						} else {
+							toast.error(`${err}`)
+						}
+        })
+        .finally(()=> {
+            toggleLoading()
+        })
+    }
+  
+    function handleReset(){
+        resetLoading();
+    }
+  
+    const verifyOtpInitialValues = {
+        otp: "",
+    }
+
+		const verifyOTPValidationSchema = Yup.object({
+			otp: Yup.string().required("Kindly enter the OTP").min(6, "OTP must be exactly 6 numbers").max(6, "OTP must be exactly 6 numbers")
+		})
+
+		return (
+				<>
+						<div ref={componentRef}  className='hidden flex-col gap-4 sm:justify-between'>
+								<Formik
+								initialValues={verifyOtpInitialValues}
+								validationSchema={verifyOTPValidationSchema}
+								onSubmit={handleSubmit}
+								onReset={handleReset}
+								validateOnBlur
+								resetForm
+								>
+									{ props => {
+
+										return (
+											<Form className='flex flex-col gap-6'>
+												<div>
+														<h1 className='text-blue-950 mb-3'>Enter your verification OTP.</h1>
+														<p>We've sent a one-time password to your phone number!</p>
+												</div>
+												<div className='flex justify-center'>
+														<OtpInput
+																value={props.values.otp}
+																onChange={(otp)=>{
+																	props.setFieldValue('otp', otp);
+																}}
+																numInputs={6}
+																renderSeparator={<span className='px-2'></span>}
+																renderInput={(props) => (
+																<input 
+																{...props}
+																		className='p-1 sm:p-2 rounded !w-[calc(15%)] aspect-[0.8] text-3xl sm:!text-4xl border-2 outline-none focus:ring-0 focus:border-blue-400 border-slate-300' 
+																/>)}
+														/>
+												</div>
+												<div className='flex justify-center'>
+													<ErrorMessage
+													 name='otp' 
+													 component='p'
+          									className="text-red-500/60 text-sm"
+													  />
+												</div>
+												<Button
+														variant='primary'
+														isLoading={isLoading}
+														type='submit'
+												>Verify OTP</Button>
+											</Form>
+										)
+									}}
+								</Formik>
+						</div>
+				</>
+		)
+
+}
 
 type ForgotProps = {
   componentRef: RefObject<HTMLDivElement>

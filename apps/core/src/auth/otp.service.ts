@@ -13,6 +13,18 @@ export class OtpService {
     
     ) {}
 
+    private otpSubjectTemplate(): string {
+        return "OTP Code for forget-password"
+    }
+
+    private otpBodyTemplate(otp: string): string {
+        return `
+            <h1>Your OTP Code</h1>
+            <p>Your OTP code is: <strong>${otp}</strong></p>
+            <p>This code will expire in 5 minutes.</p>
+        `;
+    }
+
     async sendOtp(email: string) {
         const user = await this.user.getUserByEmail(email)
         if (!user) {
@@ -30,22 +42,27 @@ export class OtpService {
 
 
         const otp = lodash.random(100000, 999999).toString()
+
         user.auth.otp = otp
         user.auth.otpLastSentAt = currentTime
-
-
         await user.save()
+
+        const emailData = {
+            subject: this.otpSubjectTemplate(),
+            body: this.otpBodyTemplate(otp),
+            to: user.email,
+        }
 
         const messageSent = await this.kafkaService.produceMessage(
             "notifications.send-email",
             "otp",
-            { email: user.email, otp }
+            emailData,
         );
 
         if (!messageSent) {
             return ServerErrorResponse(new Error('Failed to sent OTP email'), 500)
         }
 
-        return ServerSuccessResponse({ email: user.email })
+        return ServerSuccessResponse({ message: 'OTP sent successfully', emailData });
     }
 }

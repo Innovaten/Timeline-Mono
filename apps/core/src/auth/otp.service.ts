@@ -2,8 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { UserService } from "../common/services/user.service";
 import { KafkaService } from "../common/services/kafka.service";
 import { ServerErrorResponse, ServerSuccessResponse } from "../common/entities/responses.entity";
-import * as crypto from 'crypto'
-
+import lodash from 'lodash';
 
 
 @Injectable()
@@ -30,7 +29,7 @@ export class OtpService {
         }
 
 
-        const otp = crypto.randomInt(100000, 999999).toString()
+        const otp = lodash.random(100000, 999999).toString()
         user.auth.otp = otp
         user.auth.otpLastSentAt = currentTime
 
@@ -39,7 +38,7 @@ export class OtpService {
 
         const messageSent = await this.kafkaService.produceMessage(
             "notifications.send-email",
-            "send-email-otp",
+            "otp",
             { email: user.email, otp }
         );
 

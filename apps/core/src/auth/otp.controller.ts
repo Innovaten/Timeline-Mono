@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from "@nestjs/common";
 import { OtpService } from "./otp.service";
+import { ServerErrorResponse } from "../common/entities/responses.entity";
 
 
 @Controller('otp')
@@ -8,6 +9,10 @@ export class OtpController {
 
     @Get('send')
     async sendOtp(@Query('email') email: string) {
-        return this.otpService.sendOtp(email)
+        try {
+            return this.otpService.sendOtp(email)
+        } catch (error) {
+            return ServerErrorResponse(new Error('Cannot send Email'), 500)
+        }    
     }
 }

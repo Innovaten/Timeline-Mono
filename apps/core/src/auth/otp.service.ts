@@ -13,19 +13,8 @@ export class OtpService {
     
     ) {}
 
-    private otpSubjectTemplate(): string {
-        return "OTP Code for forget-password"
-    }
 
-    private otpBodyTemplate(otp: string): string {
-        return `
-            <h1>Your OTP Code</h1>
-            <p>Your OTP code is: <strong>${otp}</strong></p>
-            <p>This code will expire in 5 minutes.</p>
-        `;
-    }
-
-    async sendOtp(email: string) {
+    async sendOtp(email: string, via: string = 'email') {
         const user = await this.user.getUserByEmail(email)
         if (!user) {
             return ServerErrorResponse(new Error('User could not be found'), 404)
@@ -47,22 +36,29 @@ export class OtpService {
         user.auth.otpLastSentAt = currentTime
         await user.save()
 
-        const emailData = {
-            subject: this.otpSubjectTemplate(),
-            body: this.otpBodyTemplate(otp),
-            to: user.email,
+        let topic: string;
+        let data: Record<string, any>;
+
+        if(via === 'phone') {
+            const { smsBodyTemplates } = await import("../../../services/src/handlers/templates/sms-templates.js")
+            topic = "notifications.send-sms",
+            data = { phone: user.phone, otp, body: smsBodyTemplates['otp']({ otp }) }
+        } else {
+            const { emailSubjectTemplates, emailBodyTemplates } = await import("../../../services/src/handlers/templates/email-templates.js")
+            topic = "notifications.send-email";
+            data = { email: user.email, otp, subject: emailSubjectTemplates['otp']({ otp }), body: emailBodyTemplates['otp']({ otp }) }
         }
 
         const messageSent = await this.kafkaService.produceMessage(
             "notifications.send-email",
             "otp",
-            emailData,
+            data,
         );
 
         if (!messageSent) {
             return ServerErrorResponse(new Error('Failed to sent OTP email'), 500)
         }
 
-        return ServerSuccessResponse({ message: 'OTP sent successfully', emailData });
+        return ServerSuccessResponse({ message: 'OTP sent successfully', email: user.email });
     }
 }

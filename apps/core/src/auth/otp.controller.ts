@@ -8,9 +8,9 @@ export class OtpController {
     constructor(private readonly otpService: OtpService) {}
 
     @Get('send')
-    async sendOtp(@Query('email') email: string) {
+    async sendOtp(@Query('email') email: string, @Query('via') via: string = 'email') {
         try {
-            return this.otpService.sendOtp(email)
+            return this.otpService.sendOtp(email, via)
         } catch (error) {
             return ServerErrorResponse(new Error('Cannot send Email'), 500)
         }    

@@ -41,10 +41,10 @@ export class OtpService {
         let data: Record<string, any>;
 
         if(via === 'phone') {
-            topic = "notifications.send-sms",
+            topic = "otp",
             data = { phone: user.phone, otp }
         } else {
-            topic = "notifications.send-email";
+            topic = "otp";
             data = { email: user.email, otp }
         }
 

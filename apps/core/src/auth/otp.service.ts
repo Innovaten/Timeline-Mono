@@ -34,19 +34,18 @@ export class OtpService {
 
         user.auth.otp = otp
         user.auth.otpLastSentAt = currentTime
+        user.auth.otp_expiry = new Date(currentTime.getTime() + 5 * 60000)
         await user.save()
 
         let topic: string;
         let data: Record<string, any>;
 
         if(via === 'phone') {
-            const { smsBodyTemplates } = await import("../../../services/src/handlers/templates/sms-templates.js")
             topic = "notifications.send-sms",
-            data = { phone: user.phone, otp, body: smsBodyTemplates['otp']({ otp }) }
+            data = { phone: user.phone, otp }
         } else {
-            const { emailSubjectTemplates, emailBodyTemplates } = await import("../../../services/src/handlers/templates/email-templates.js")
             topic = "notifications.send-email";
-            data = { email: user.email, otp, subject: emailSubjectTemplates['otp']({ otp }), body: emailBodyTemplates['otp']({ otp }) }
+            data = { email: user.email, otp }
         }
 
         const messageSent = await this.kafkaService.produceMessage(
@@ -56,7 +55,7 @@ export class OtpService {
         );
 
         if (!messageSent) {
-            return ServerErrorResponse(new Error('Failed to sent OTP email'), 500)
+            return ServerErrorResponse(new Error('Failed to send OTP email'), 500)
         }
 
         return ServerSuccessResponse({ message: 'OTP sent successfully', email: user.email });

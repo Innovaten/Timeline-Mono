@@ -26,7 +26,7 @@ export interface IUser {
   auth: {
     password: string;
     otp: string;
-    otp_expiry: string;
+    otp_expiry: Date;
     otpLastSentAt: Date;
   };
 

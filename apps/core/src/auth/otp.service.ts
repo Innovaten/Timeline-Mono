@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../common/services/user.service";
-import { KafkaService } from "../common/services/kafka.service";
+import { KafkaService, KafkaTopic } from "../common/services/kafka.service";
 import { ServerErrorResponse, ServerSuccessResponse } from "../common/entities/responses.entity";
 import lodash from 'lodash';
+import { KafkaMessage } from "kafkajs";
 
 
 @Injectable()
@@ -37,19 +38,19 @@ export class OtpService {
         user.auth.otp_expiry = new Date(currentTime.getTime() + 5 * 60000)
         await user.save()
 
-        let topic: string;
+        let topic: KafkaTopic;
         let data: Record<string, any>;
 
         if(via === 'phone') {
-            topic = "otp",
+            topic = "notifications.send-sms",
             data = { phone: user.phone, otp }
         } else {
-            topic = "otp";
+            topic = "notifications.send-email";
             data = { email: user.email, otp }
         }
 
         const messageSent = await this.kafkaService.produceMessage(
-            "notifications.send-email",
+            topic,
             "otp",
             data,
         );

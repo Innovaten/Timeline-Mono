@@ -9,6 +9,7 @@ export async function sendSMSHandler(KafkaArgs: EachMessagePayload) {
 
     const { purpose, data }: LMSKafkaMessage = JSON.parse(KafkaArgs.message.value!.toString())
     
+    console.log(purpose, data);
     const { phone, ...actualdata} = data;
 
     const SMSdata = {
@@ -38,25 +39,3 @@ export async function sendSMSHandler(KafkaArgs: EachMessagePayload) {
     console.log('--- Kafka SMS OTP Handler Error ---\n', err)
   }
 }
-
-// export async function verifyOTP(phoneNumber:String, otp: String) {
-//     const data = {
-//       code: `${otp}`,
-//       number: `${phoneNumber}`,
-//     };
-
-//     const headers = {
-//       'Content-Type':'application/json',
-//       'api-key':  ServicesConfig.arkesel.api_key,
-//     }
-
-//     fetch('https://sms.arkesel.com/api/otp/verify', {
-//         method: 'POST',
-//         headers: headers,
-//         body: JSON.stringify(data),
-
-//       })
-//       .then(response => response.json())
-//       .then(data => console.log(data))
-//       .catch(error => console.error('Error:', error));
-// }

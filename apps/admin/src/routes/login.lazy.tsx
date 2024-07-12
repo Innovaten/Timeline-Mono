@@ -1,11 +1,11 @@
 import { createLazyFileRoute, useRouter, useRouteContext } from '@tanstack/react-router'
-import { _getToken, _setUser } from '@repo/utils';
+import { _getToken, _setUser, useCountdown } from '@repo/utils';
 import { Input, Button } from '@repo/ui'
 import { Form, Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import YupPassword from 'yup-password'
 import { _setToken, fadeParentAndReplacePage, makeUnauthenticatedRequest, useLoading } from '@repo/utils'
-import { RefObject, useRef, useState } from 'react'
+import { RefObject, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useLMSContext } from '../app'
 import { IUserDoc } from '@repo/models'
@@ -31,7 +31,7 @@ function LoginPage(){
   const pages: Record<string, RefObject<HTMLDivElement>> = {
       parent: parentRef,
       login: loginRef,
-			twoFA: twoFARef,
+	  	twoFA: twoFARef,
       forgot: forgotRef,
       'forgot-verification': forgotVerificationRef,
       'forgot-new-password':forgotNewPasswordRef,
@@ -95,57 +95,63 @@ function Login({ componentRef, pages }: LoginProps){
   const { isLoading, toggleLoading, resetLoading } = useLoading()
   const { setUser, setToken } = useLMSContext()
 
-	function handleSubmit(values: { email: string, password: string}){
-			toggleLoading()
+    function handleSubmit(values: { email: string, password: string}){
+        toggleLoading()
 
-			makeUnauthenticatedRequest(
-				'post', 
-				'/api/v1/auth/login',
-				values,
-			)
-			.then(res => {
-					if(res.data.success){
-							const token = res.data.data.access_token;
-							setToken(token);
-						
-							const loginUser: HydratedDocument<IUserDoc> = res.data.data.user;
-							setUser(loginUser);
+        makeUnauthenticatedRequest(
+            'post', 
+            '/api/v1/auth/login',
+            values,
+        )
+        .then(res => {
+                if(res.data.success){
+                        const token = res.data.data.access_token;
+                        setToken(token);
+                    
+                        const loginUser: HydratedDocument<IUserDoc> = res.data.data.user;
+                        setUser(loginUser);
 
-							// Automatically send OTP
-							makeUnauthenticatedRequest(
-								"get",
-								`/api/v1/auth/otp/send?email=${loginUser.email}&via=phone`
-							)
-							.then(res => {
-								if(res.data.success){
-									fadeParentAndReplacePage(pages['parent'], pages['login'], pages['twoFA'], 'flex')	
-								} else {
-									console.log(res.data.error.msg)
-									toast.error("We encountered an issue while sending you an OTP. Please try again later")
-								}
-							})
-							.catch( err => {
-									toast.error(`${err}`)  
-							})
-					} else {
-							toast.error(res.data.error.msg)
-					}
-			})
-			.catch( err => {
-				if(err.message){
-					toast.error(`${err.message}`)  
-				} else {
-					toast.error(`${err}`)  
-				}
-			})
-			.finally(()=> {
-					toggleLoading()
-			})
+                        // Automatically send OTP
+                        makeUnauthenticatedRequest(
+                            "get",
+                            `/api/v1/auth/otp/send?email=${loginUser.email}&via=phone`
+                        )
+                        .then(res => {
+                            if(res.data.success){
+                                fadeParentAndReplacePage(pages['parent'], pages['login'], pages['twoFA'], 'flex')	
+                            } else {
+                                if(res.data.error.msg){
+                                    toast.error(res.data.error.msg);
+                                } else {
+                                    toast.error("We encountered an issue while sending you an OTP. Please try again later");
+                                }
+                            }
+                            toggleLoading()
+                        })
+                        .catch( err => {
+                                toast.error(`${err}`)
+                        })
+                } else {
+                        toast.error(res.data.error.msg)
+                    }
+                })
+        .catch( err => {
+            if(err.message){
+                toast.error(`${err.message}`)  
+            } else {
+                toast.error(`${err}`)  
+            }
+        })
+        .finally(()=> {
+            toggleLoading()
+            
+        })
 	}
 
   function handleReset(){
       resetLoading();
   }
+
 
   
   const loginInitialValues = {
@@ -209,11 +215,14 @@ type TwoFAProps = {
     pages: Record<string, RefObject<HTMLDivElement>>,
   }
 
-function TwoFactorAuthentication({ componentRef, pages}: TwoFAProps){
+function TwoFactorAuthentication({ componentRef, pages }: TwoFAProps){
     const { isLoading, toggleLoading, resetLoading } = useLoading()
+    const { isLoading:resendIsLoading, toggleLoading: toggleResendIsLoading, resetLoading: resetResendIsLoading } = useLoading()
     const router = useRouter()
     const context = useRouteContext({ from: '/login' })
     const { user, token } = useLMSContext()
+
+    const { count, resetCountdown, timeUp } = useCountdown(90);
 
     function handleSubmit(values: { otp: string}){
         toggleLoading()
@@ -245,6 +254,39 @@ function TwoFactorAuthentication({ componentRef, pages}: TwoFAProps){
         })
         .finally(()=> {
             toggleLoading()
+        })
+    }
+
+    function handleResendSubmit(){
+
+        if(!timeUp){
+            toast.error('OTP sent less than 90s ago.')
+            return
+        }
+
+        toggleResendIsLoading()
+
+        makeUnauthenticatedRequest(
+            "get",
+            `/api/v1/auth/otp/send?email=${user!.email}&via=phone`
+        )
+        .then(res => {
+            if(res.data.success){
+               toast.success("We've resent the OTP.")
+            } else {
+                if(res.data.error.msg){
+                    toast.error(res.data.error.msg);
+                } else {
+                    toast.error("We encountered an issue while sending you an OTP. Please try again later");
+                }
+            }
+        })
+        .catch( err => {
+                toast.error(`${err}`)  
+        })
+        .finally(() => {
+            resetCountdown()
+            toggleResendIsLoading()
         })
     }
   
@@ -301,11 +343,24 @@ function TwoFactorAuthentication({ componentRef, pages}: TwoFAProps){
           									className="text-red-500/60 text-sm"
 													  />
 												</div>
-												<Button
-														variant='primary'
-														isLoading={isLoading}
-														type='submit'
-												>Verify OTP</Button>
+                                                <div className='w-full flex gap-4 justify-between'>
+                                                    <Button
+                                                        variant='primary'
+                                                        isLoading={isLoading}
+                                                        type='submit'
+                                                        className='w-full'
+                                                    >Verify OTP</Button>
+                                                    <Button 
+                                                        type='button'
+                                                        variant='outline'
+                                                        isLoading={resendIsLoading}
+                                                        isDisabled={!timeUp}
+                                                        onClick={handleResendSubmit}
+                                                        className='w-full'
+                                                    >
+                                                        { timeUp ? "Resend OTP Code" : `Can resend after: ${count} seconds` }
+                                                    </Button>
+                                                </div>
 											</Form>
 										)
 									}}

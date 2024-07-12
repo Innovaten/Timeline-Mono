@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function useDialog(isOpen: boolean = false){
+export function useDialog(isOpen: boolean = false){
 
 
     const [ dialogIsOpen, setDialogIsOpen ] = useState(isOpen);

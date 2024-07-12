@@ -25,14 +25,14 @@ export interface IUser {
 
   auth: {
     password: string;
-    otp: string;
-    otp_expiry: Date;
-    otpLastSentAt: Date;
+    otp?: string;
+    otp_expiry?: Date;
+    otpLastSentAt?: Date;
   };
 
   locker: {
-    numTries: number;
-    expiry: Date;
+    numTries?: number;
+    expiry?: Date;
   };
   createdBy: Types.ObjectId;
   createdAt: Date;

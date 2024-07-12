@@ -38,7 +38,8 @@ export class KafkaService implements OnModuleInit {
         const payload = {
             purpose,
             data,
-        } 
+        }
+        console.log(purpose, data, topic); 
         try{
             await this.producer.send({
                 topic,

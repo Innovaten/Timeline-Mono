@@ -12,7 +12,7 @@ export class OtpController {
         try {
             return this.otpService.sendOtp(email, via)
         } catch (error) {
-            return ServerErrorResponse(new Error('Cannot send Email'), 500)
+            return ServerErrorResponse(new Error(`${error}`), 500)
         }    
     }
 }

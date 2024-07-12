@@ -4,10 +4,10 @@ import { CoreConfig } from "../../config";
 
 const kafkaTopics = [
     "notifications.send-email",
-    "notifications.send-sms-otp",
+    "notifications.send-sms",
 ] as const;
 
-type KafkaTopic = typeof kafkaTopics[number];
+export type KafkaTopic = typeof kafkaTopics[number];
 
 
 @Injectable()

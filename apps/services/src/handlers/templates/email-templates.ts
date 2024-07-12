@@ -5,7 +5,8 @@ export const emailSubjectTemplates: Record<string, TemplateExecutor> = {
     "registration-approved": lodash.template("You've been approved ${firstName}!"),
     "admin-credentials": lodash.template("You're in, ${firstName}."),
     "registration-rejected": lodash.template("Updates to your registration application"),
-    "student-credentials": lodash.template("You're in, ${firstName}.")
+    "student-credentials": lodash.template("You're in, ${firstName}."),
+    otp: lodash.template("Your OTP Code")
 }
 
 export const emailBodyTemplates: Record<string, TemplateExecutor> = {
@@ -96,6 +97,17 @@ export const emailBodyTemplates: Record<string, TemplateExecutor> = {
         // password
         // console
     ),
+    otp: lodash.template([
+         "Hi there!",
+         "",
+         "Your OTP code is: <strong>${otp}</strong>",
+         "",
+         "This code will expire in 5 minutes.",
+         "",
+         "Best regards,",
+         "Timeline Trust"   
+        ].join("<br>")
+    )
 }
 
 

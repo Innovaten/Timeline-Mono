@@ -4,7 +4,7 @@ import { Input, Button } from '@repo/ui'
 import { Form, Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import YupPassword from 'yup-password'
-import { _setToken, fadeParentAndReplacePage, makeUnauthenticatedRequest, useLoading } from '@repo/utils'
+import { _setToken, makeUnauthenticatedRequest, useLoading, MultiPage } from '@repo/utils'
 import { RefObject, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useLMSContext } from '../app'
@@ -18,7 +18,6 @@ export const Route = createLazyFileRoute('/login')({
   component: () => <LoginPage />
 })
 
-
 function LoginPage(){
 
   const parentRef = useRef<HTMLDivElement>(null)
@@ -29,14 +28,14 @@ function LoginPage(){
   const forgotNewPasswordRef = useRef<HTMLDivElement>(null)
 
   const pages: Record<string, RefObject<HTMLDivElement>> = {
-      parent: parentRef,
       login: loginRef,
-	  	twoFA: twoFARef,
+	  twoFA: twoFARef,
       forgot: forgotRef,
       'forgot-verification': forgotVerificationRef,
       'forgot-new-password':forgotNewPasswordRef,
-  
   }
+  // Sooo much better
+  const multiPage = MultiPage(parentRef, pages);
 
 
   return (
@@ -49,26 +48,36 @@ function LoginPage(){
                           <img className='object-cover h-full' src="/img/login-teacher-image.jpg" />
                       </div>
                       <div ref={parentRef} className='w-full sm:w-1/2  p-8'>
-                        <Login
-                          componentRef={pages.login}  
-                          pages={pages}
-                        />
-												<TwoFactorAuthentication
-                          componentRef={pages.twoFA}  
-                          pages={pages}
-                        />
-                        <ForgotPassword
-                          componentRef={pages.forgot}  
-                          pages={pages}
-                        />
-                        <ForgotVerification
-                          componentRef={pages['forgot-verification']}  
-                          pages={pages}
-                        />
-                        <ForgotNewPassword
-                          componentRef={pages['forgot-new-password']}  
-                          pages={pages}
-                        />
+                        {
+                            multiPage.currentPage == pages.login ?
+                            <Login
+                              componentRef={pages.login}  
+                              multiPage={multiPage}
+                            />
+                            :
+                            multiPage.currentPage == pages.twoFA ?
+                            <TwoFactorAuthentication
+                              componentRef={pages.twoFA}
+                              multiPage={multiPage}
+                            />
+                            :
+                            multiPage.currentPage == pages.forgot ?
+                            <ForgotPassword
+                              componentRef={pages.forgot}
+                              multiPage={multiPage}
+                            />
+                            :
+                            multiPage.currentPage == pages['forgot-verification'] ?
+                            <ForgotVerification
+                              componentRef={pages['forgot-verification']}
+                              multiPage={multiPage}
+                            />
+                            :
+                            <ForgotNewPassword
+                              componentRef={pages['forgot-new-password']}
+                              multiPage={multiPage}
+                            />
+                        }
                           <div className='absolute flex sm:hidden bottom-10 flex-col items-center w-[calc(100vw-4rem)] m-auto text-blue-600'>
                               <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
                               <p>Powered By <a>Innovaten</a></p>
@@ -85,12 +94,12 @@ function LoginPage(){
   )
 }
 
-type LoginProps = {
+type PageProps = {
   componentRef: RefObject<HTMLDivElement>
-  pages: Record<string, RefObject<HTMLDivElement>>,
+  multiPage: ReturnType<typeof MultiPage>
 }
 
-function Login({ componentRef, pages }: LoginProps){
+function Login({ componentRef, multiPage }: PageProps){
 
   const { isLoading, toggleLoading, resetLoading } = useLoading()
   const { setUser, setToken } = useLMSContext()
@@ -118,7 +127,7 @@ function Login({ componentRef, pages }: LoginProps){
                         )
                         .then(res => {
                             if(res.data.success){
-                                fadeParentAndReplacePage(pages['parent'], pages['login'], pages['twoFA'], 'flex')	
+                                multiPage.goTo('twoFA')
                             } else {
                                 if(res.data.error.msg){
                                     toast.error(res.data.error.msg);
@@ -177,8 +186,8 @@ function Login({ componentRef, pages }: LoginProps){
   })
 
   return (
-      <>
-          <div ref={componentRef}  className='flex flex-col gap-4 sm:justify-between'>
+      <div ref={componentRef} className='w-full h-full'>
+          <div className='flex flex-col gap-4 sm:justify-between'>
               <Formik
               initialValues={loginInitialValues}
               validationSchema={loginValidationSchema}
@@ -192,7 +201,7 @@ function Login({ componentRef, pages }: LoginProps){
                       <Input id='email' name='email' type='email' iconType='email' label='Email Address'  placeholder="kwabena@kodditor.com" hasValidation />
                       <Input id='p' name='password' type='password' iconType='password' label='Password' placeholder="********" hasValidation />
                       <div className='hidden sm:flex gap-1 justify-end w-full'>
-                          <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['forgot'], 'flex') }}>Forgot your password?</p>
+                          <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { multiPage.goTo('forgot') }}>Forgot your password?</p>
                       </div>
                       <Button
                           variant='primary'
@@ -200,22 +209,18 @@ function Login({ componentRef, pages }: LoginProps){
                           type='submit'
                       >Login</Button>
                       <div className='sm:hidden flex items-center gap-1 justify-between w-full'>
-                          <p className='text-blue-700 underline-offset-2 text-right cursor-pointer underline' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['forgot'], 'flex') }}>Forgot your password?</p>
+                          <p className='text-blue-700 underline-offset-2 text-right cursor-pointer underline' onClick={() => { multiPage.goTo('forgot') }}>Forgot your password?</p>
                       </div>
                   </Form>
               </Formik>
           </div>
-      </>
+      </div>
   )
 
 }
 
-type TwoFAProps = {
-    componentRef: RefObject<HTMLDivElement>
-    pages: Record<string, RefObject<HTMLDivElement>>,
-  }
 
-function TwoFactorAuthentication({ componentRef, pages }: TwoFAProps){
+function TwoFactorAuthentication({ componentRef }: PageProps){
     const { isLoading, toggleLoading, resetLoading } = useLoading()
     const { isLoading:resendIsLoading, toggleLoading: toggleResendIsLoading, resetLoading: resetResendIsLoading } = useLoading()
     const router = useRouter()
@@ -304,7 +309,7 @@ function TwoFactorAuthentication({ componentRef, pages }: TwoFAProps){
 
 		return (
 				<>
-						<div ref={componentRef}  className='hidden flex-col gap-4 sm:justify-between'>
+						<div ref={componentRef}  className='flex flex-col gap-4 sm:justify-between'>
 								<Formik
 								initialValues={verifyOtpInitialValues}
 								validationSchema={verifyOTPValidationSchema}
@@ -371,24 +376,18 @@ function TwoFactorAuthentication({ componentRef, pages }: TwoFAProps){
 
 }
 
-type ForgotProps = {
-  componentRef: RefObject<HTMLDivElement>
-  pages: Record<string, RefObject<HTMLDivElement>>
-}
-
-
-function ForgotPassword({ componentRef, pages }: ForgotProps){
+function ForgotPassword({ componentRef, multiPage }: PageProps){
 
   const { isLoading, toggleLoading, resetLoading } = useLoading()
 
   function handleSubmit(values: { email: string }){
-      fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-verification'], 'flex')
+      multiPage.goToNext()
       return
       makeUnauthenticatedRequest('get', `/api/v1/auth/forgot-password?email=${values.email}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('e', values.email);
-              fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-verification'], 'flex')
+              multiPage.goToNext()
           } else {
               toast.error(res.data.error.msg)
           }
@@ -418,8 +417,8 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
   })
 
   return (
-      <>
-          <div ref={componentRef}  className='hidden flex-col gap-4 sm:justify-between'>
+      <div ref={componentRef} className='w-full h-full' >
+          <div  className='flex flex-col gap-4 sm:justify-between'>
               <Formik
               initialValues={forgotInitialValues}
               validationSchema={forgotValidationSchema}
@@ -435,7 +434,7 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
                       </div>
                       <Input id='e' name='email' type='email' label='Email Address' iconType='email'  placeholder="kwabena@example.com" hasValidation />
                       <div className='hidden sm:flex justify-end w-full'>
-                          <p className='text-blue-700 underline-offset-2 cursor-pointer underline' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['login'], 'flex') }}>Already have an account?</p>
+                          <p className='text-blue-700 underline-offset-2 cursor-pointer underline' onClick={multiPage.goToStart}>Already have an account?</p>
                       </div>
                       <Button
                           variant='primary'
@@ -443,22 +442,16 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
                           type='submit'
                       >Send OTP</Button>
                       <div className='sm:hidden flex justify-center w-full'>
-                          <p className='text-blue-700 underline-offset-2 cursor-pointer underline' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['login'], 'flex') }}>Already have an account?</p>
+                          <p className='text-blue-700 underline-offset-2 cursor-pointer underline' onClick={multiPage.goToStart}>Already have an account?</p>
                       </div>
                   </Form>
               </Formik>
           </div>
-      </>
+      </div>
   )
 }
 
-type ForgotVerificationProps = {
-  componentRef: RefObject<HTMLDivElement>
-  pages: Record<string, RefObject<HTMLDivElement>>
-}
-
-
-function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
+function ForgotVerification({componentRef, multiPage}: PageProps){
 
   const { isLoading, toggleLoading, resetLoading } = useLoading()
   const [ OTP, setOTP ] = useState<string>('')
@@ -477,14 +470,14 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
       } 
 
       setOTPHasError(false)
-      fadeParentAndReplacePage(pages['parent'], pages['forgot-verification'], pages['forgot-new-password'], 'flex')
+      multiPage.goToNext()
       return 
 
       makeUnauthenticatedRequest('get', `/api/v1/auth/verify-otp?email=${email}&otp=${OTP}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('o', OTP);
-              fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-new-password'], 'flex')
+              multiPage.goToNext()
           } else {
               toast.error(res.data.error.msg)
           }
@@ -502,8 +495,8 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
   }
 
   return (
-      <>
-          <div ref={componentRef}  className='hidden flex-col gap-4 sm:justify-between'>
+    <div ref={componentRef} className='w-full h-full' >
+          <div  className='flex flex-col gap-4 sm:justify-between'>
                   <form onSubmit={handleSubmit} onReset={handleReset} className='flex flex-col gap-6'>
                       <div>
                           <h1 className='text-blue-950 mb-3'>Enter your OTP.</h1>
@@ -530,19 +523,14 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
                       >Verify OTP</Button>
                   </form>
           </div>
-      </>
+      </div>
   )
 
 
 
 }
 
-type ForgotNewPasswordProps = {
-  componentRef: RefObject<HTMLDivElement>
-  pages: Record<string, RefObject<HTMLDivElement>>
-}
-
-function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
+function ForgotNewPassword({componentRef, multiPage }: PageProps){
 
   const { isLoading, toggleLoading, resetLoading } = useLoading()
   const router = useRouter()
@@ -604,8 +592,8 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
   })
 
   return (
-      <>
-          <div ref={componentRef}  className='hidden flex-col gap-4 sm:justify-between'>
+    <div ref={componentRef} className='w-full h-full' >
+          <div  className='flex flex-col gap-4 sm:justify-between'>
               <Formik
               initialValues={newPasswordInitialValues}
               validationSchema={newPasswordValidationSchema}
@@ -626,6 +614,6 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
                   </Form>
               </Formik>
           </div>
-      </>
+    </div>
   )
 }

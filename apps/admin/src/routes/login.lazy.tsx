@@ -135,7 +135,6 @@ function Login({ componentRef, multiPage }: PageProps){
                                     toast.error("We encountered an issue while sending you an OTP. Please try again later");
                                 }
                             }
-                            toggleLoading()
                         })
                         .catch( err => {
                                 toast.error(`${err}`)
@@ -152,8 +151,7 @@ function Login({ componentRef, multiPage }: PageProps){
             }
         })
         .finally(()=> {
-            toggleLoading()
-            
+            setTimeout(toggleLoading, 250)
         })
 	}
 
@@ -349,12 +347,6 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
 													  />
 												</div>
                                                 <div className='w-full flex gap-4 justify-between'>
-                                                    <Button
-                                                        variant='primary'
-                                                        isLoading={isLoading}
-                                                        type='submit'
-                                                        className='w-full'
-                                                    >Verify OTP</Button>
                                                     <Button 
                                                         type='button'
                                                         variant='outline'
@@ -365,6 +357,12 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
                                                     >
                                                         { timeUp ? "Resend OTP Code" : `Can resend after: ${count} seconds` }
                                                     </Button>
+                                                    <Button
+                                                        variant='primary'
+                                                        isLoading={isLoading}
+                                                        type='submit'
+                                                        className='w-full'
+                                                    >Verify OTP</Button>
                                                 </div>
 											</Form>
 										)

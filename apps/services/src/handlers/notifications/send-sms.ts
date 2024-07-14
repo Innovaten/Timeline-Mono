@@ -12,26 +12,36 @@ export async function sendSMSHandler(KafkaArgs: EachMessagePayload) {
     console.log(purpose, data);
     const { phone, ...actualdata} = data;
 
-    const SMSdata = {
-      message: `${smsBodyTemplates[purpose](actualdata)}`,
-      recipients: [`${validPhoneNumber(phone)}`],
-      sender: "Timeline Trust",
-    };
+    // SMS API V1
 
-    const headers = {
-      "Content-Type": "application/json",
-      "api-key": ServicesConfig.arkesel.api_key,
-    };
+    // SEND SMS
+    fetch(`https://sms.arkesel.com/sms/api?action=send-sms&api_key=${ServicesConfig.arkesel.api_key}&to=${validPhoneNumber(phone)}&from=${"Timeline"}&sms=${smsBodyTemplates[purpose](actualdata)}`)
+    .then(response => console.log(response))
+    .catch(error => console.log(error));
+
+    // SMS API V2
+    // const SMSdata = {
+    //   message: `${smsBodyTemplates[purpose](actualdata)}`,
+    //   recipients: [`${validPhoneNumber(phone)}`],
+    //   sender: "Timeline",
+    // };
+
+    // const headers = {
+    //   "Content-Type": "application/json",
+    //   "api-key": ServicesConfig.arkesel.api_key,
+    // };
   
-    fetch("https://sms.arkesel.com/api/v2/sms/send", {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(SMSdata),
-    })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data);
-    })
+    // fetch("https://sms.arkesel.com/api/v2/sms/send", {
+    //   method: "POST",
+    //   headers: headers,
+    //   body: JSON.stringify(SMSdata),
+    // })
+    // .then((response) => response.json())
+    // .then((data) => {
+    //   console.log(data);
+    // })
+
+
     
     console.log("Sent", purpose, "SMS to", phone)
 

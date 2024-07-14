@@ -3,7 +3,6 @@ import { UserService } from "../common/services/user.service";
 import { KafkaService, KafkaTopic } from "../common/services/kafka.service";
 import { ServerErrorResponse, ServerSuccessResponse } from "../common/entities/responses.entity";
 import lodash from 'lodash';
-import { KafkaMessage } from "kafkajs";
 
 
 @Injectable()
@@ -98,13 +97,11 @@ export class OtpService {
         }
 
         // reset values
-        // @ts-ignore
-        user.auth = {
-            ...user.auth,
-            otp: undefined,
-            otpLastSentAt: undefined,
-            otp_expiry: undefined,
-        }
+        user.auth.otp = undefined
+        user.auth.otpLastSentAt = undefined
+        user.auth.otp_expiry = undefined
+
+        await user.save()
 
         console.log("Verified OTP for user", user.code);
         return ServerSuccessResponse("OTP verified successfully");

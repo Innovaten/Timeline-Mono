@@ -15,10 +15,14 @@ export class UserService {
         private kafka: KafkaService
     ) { }
 
-    async verifyPassword(email: string, password: string) {
-        const user = await UserModel.findOne({ email });
+    async verifyPassword(email: string, password: string, extraFilter: Record<string, any> = {}) {
+        const filter = { email, ...extraFilter }
+        const user = await UserModel.findOne(filter);
+        console.log(password, user?.auth.password)
         if(!user) return null;
-        if( await compare(password, user.auth.password)){
+        const isSamePassword = await compare(password, user.auth.password)
+        console.log(isSamePassword);
+        if(isSamePassword){
             return user;
         } else { return null };
     }

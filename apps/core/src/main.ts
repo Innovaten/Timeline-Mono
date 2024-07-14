@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import mongoose from 'mongoose';
 import { VersioningType } from '@nestjs/common';
 import { CoreConfig } from './config';
 import { NextFunction, Request, Response } from 'express';

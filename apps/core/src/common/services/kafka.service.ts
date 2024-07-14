@@ -39,7 +39,7 @@ export class KafkaService implements OnModuleInit {
             purpose,
             data,
         }
-        console.log(purpose, data, topic); 
+        // console.log(purpose, data, topic); 
         try{
             await this.producer.send({
                 topic,

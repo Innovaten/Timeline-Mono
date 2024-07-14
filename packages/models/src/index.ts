@@ -12,7 +12,7 @@ import { IClassDoc } from "./class/index.types";
         dbName: process.env.MONGODB_DATABASE
     });
     console.log('--- MongoDB Connected ---');
-    console.log('URI: ', process.env.MONGODB_URI, "  DB: ", process.env.MONGODB_DATABASE)
+    // console.log('URI: ', process.env.MONGODB_URI, "  DB: ", process.env.MONGODB_DATABASE)
 })()
 
 export {

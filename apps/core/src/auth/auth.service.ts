@@ -2,17 +2,24 @@ import { Injectable } from "@nestjs/common";
 import { JwtService } from "../common/services/jwt.service";
 import { UserService } from "../common/services/user.service";
 import { ServerErrorResponse, ServerSuccessResponse } from "../common/entities/responses.entity";
+import { CoreConfig } from "../config";
 
 @Injectable()
 export class AuthService {
     constructor(
         private jwt: JwtService,
-        private users: UserService ,
+        private users: UserService,
     ) {}
 
-    async login(email: string, password: string) {
+    async login(email: string, password: string, origin: string) {
         try {
-            const user = await this.users.verifyPassword(email, password)
+            let roles = []
+            if(origin == CoreConfig.url.admin){
+                roles = ["ADMINISTRATOR", "SUDO"] 
+            } else {
+                roles = ["STUDENT"]
+            }
+            const user = await this.users.verifyPassword(email, password, {role: {$in: roles} })
             if(!user){
                 return ServerErrorResponse(new Error(`Invalid email or password`), 401)
             }
@@ -26,10 +33,6 @@ export class AuthService {
         }
     }
 
-    // forgot-password
-    // verify-otp?email=${email}otp=${otp}
     // update-password
 
-
-    // register
 }

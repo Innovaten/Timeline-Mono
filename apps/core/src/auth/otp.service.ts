@@ -3,7 +3,6 @@ import { UserService } from "../common/services/user.service";
 import { KafkaService, KafkaTopic } from "../common/services/kafka.service";
 import { ServerErrorResponse, ServerSuccessResponse } from "../common/entities/responses.entity";
 import lodash from 'lodash';
-import { KafkaMessage } from "kafkajs";
 
 
 @Injectable()
@@ -15,7 +14,7 @@ export class OtpService {
     ) {}
 
 
-    async sendOtp(email: string, via: string = 'email') {
+    async sendOtp(email: string, via: string) {
         const user = await this.user.getUserByEmail(email)
         if (!user) {
             return ServerErrorResponse(new Error('User could not be found'), 404)
@@ -40,7 +39,7 @@ export class OtpService {
 
         let topic: KafkaTopic;
         let data: Record<string, any>;
-
+        
         if(via === 'phone') {
             topic = "notifications.send-sms",
             data = { phone: user.phone, otp }
@@ -60,5 +59,52 @@ export class OtpService {
         }
 
         return ServerSuccessResponse({ message: 'OTP sent successfully', email: user.email });
+    }
+
+    async verifyOtp(email: string, otp: string){
+
+        const user = await this.user.getUserByEmail(email)
+        if (!user) {
+            return ServerErrorResponse(
+                new Error('Specified user could not be found'), 
+                404
+            );
+        }
+
+        const currentTime = new Date();
+
+        // all these fields have to be set in the send func.
+        if(!user.auth.otp || !user.auth.otp_expiry || !user.auth.otpLastSentAt){ 
+            return ServerErrorResponse(
+                new Error("User has not requested an OTP"), 
+                400
+            );
+        }
+
+        if(currentTime.getTime() > new Date(user.auth.otp_expiry).getTime()){
+            return ServerErrorResponse(
+                new Error('Your OTP has expired'), 
+                400
+            );
+        }
+
+
+        if(otp !== user.auth.otp){
+            return ServerErrorResponse(
+                new Error('Invalid OTP'),
+                400
+            )
+        }
+
+        // reset values
+        user.auth.otp = undefined
+        user.auth.otpLastSentAt = undefined
+        user.auth.otp_expiry = undefined
+
+        await user.save()
+
+        console.log("Verified OTP for user", user.code);
+        return ServerSuccessResponse("OTP verified successfully");
+        
     }
 }

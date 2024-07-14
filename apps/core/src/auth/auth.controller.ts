@@ -1,4 +1,5 @@
-import { Controller, Post, Body, Get, Headers } from '@nestjs/common';
+import { Controller, Post, Body, Get, Headers, Request } from '@nestjs/common';
+import type { Request as ERequest } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '../common/services/jwt.service';
@@ -44,7 +45,14 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() loginBody: LoginDto) {
-    return this.authService.login(loginBody.email, loginBody.password);
+  async login(
+    @Body() loginBody: LoginDto,
+    @Request() req: ERequest,
+  ) {
+    try {
+      return this.authService.login(loginBody.email, loginBody.password, req.headers.origin ?? "" );
+    } catch (err) {
+      return ServerErrorResponse(new Error(`${err}`), 500)
+    }
   }
 }

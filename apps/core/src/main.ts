@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import mongoose from 'mongoose';
 import { VersioningType } from '@nestjs/common';
 import { CoreConfig } from './config';
 import { NextFunction, Request, Response } from 'express';
+import expressListRoutes from 'express-list-routes';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { logger: false });
   app.enableCors({
     origin: '*',
   })
@@ -25,5 +25,9 @@ async function bootstrap() {
   await app.listen(CoreConfig.ports.core, () => {
     console.log(`Running CORE on port {${CoreConfig.ports.core}}`)
   });
+
+  const server = app.getHttpServer();
+  const router = server._events.request._router;
+  expressListRoutes(router);
 }
 bootstrap();

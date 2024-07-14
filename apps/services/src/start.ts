@@ -31,14 +31,14 @@ const streamHandlers = [
 
 
 export async function start(){
-    const consumer = kafka.consumer({ 
-        groupId: 'timeline-services:' + os.hostname + ":" + (cluster.worker?.id ?? process.pid ) 
-    })
-
-    streamHandlers.forEach( async ({ streamKey, handler}) => {
+    streamHandlers.forEach( async ({ streamKey, handler}, idx) => {
+        const consumer = kafka.consumer({ 
+            groupId: 'timeline-services:' + os.hostname + ":" + idx + ":" + (cluster.worker?.id ?? process.pid ) 
+        })
         try{
             await consumer.subscribe({ topic: streamKey })
-            consumer.run({
+            await consumer.run({
+                autoCommit: true,
                 eachMessage: handler
             })            
         } catch(err) { 

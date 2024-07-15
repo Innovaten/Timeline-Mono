@@ -15,7 +15,7 @@ export class AuthService {
         try {
             let roles = []
             if(origin == CoreConfig.url.admin){
-                roles = ["ADMINISTRATOR", "SUDO"] 
+                roles = ["ADMIN", "SUDO"] 
             } else {
                 roles = ["STUDENT"]
             }

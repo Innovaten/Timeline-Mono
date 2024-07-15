@@ -4,7 +4,6 @@ import { KafkaService, KafkaTopic } from "../common/services/kafka.service";
 import { ServerErrorResponse, ServerSuccessResponse } from "../common/entities/responses.entity";
 import lodash from 'lodash';
 
-
 @Injectable()
 export class OtpService {
     constructor(
@@ -99,12 +98,11 @@ export class OtpService {
         // reset values
         user.auth.otp = undefined
         user.auth.otpLastSentAt = undefined
-        user.auth.otp_expiry = undefined
 
         await user.save()
 
         console.log("Verified OTP for user", user.code);
         return ServerSuccessResponse("OTP verified successfully");
         
-    }
+    }  
 }

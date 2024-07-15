@@ -207,7 +207,6 @@ export class UsersController {
         } 
     }
 
-    @UseGuards(AuthGuard)
     @Patch('update-password')
     async updatedPassword(
         @Query('id') id: string,

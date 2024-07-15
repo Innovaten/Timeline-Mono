@@ -27,12 +27,12 @@ export class UserService {
     }
 
     async getUserByEmail(email: string){
-        return UserModel.findOne({ email });
+        return await UserModel.findOne({ email });
 
     }
 
     async getUserById(id: string) {
-        return UserModel.findOne({ id })
+        return await UserModel.findById({ id })
     }
     
 
@@ -215,12 +215,9 @@ export class UserService {
             return ServerErrorResponse(new Error('Invalid OTP'), 400)
         }
 
-        if (!user.auth?.otp_expiry || new Date() > new Date(user.auth?.otp_expiry)) {
-            return ServerErrorResponse(new Error('OTP has expired'), 400)
-        }
 
-        const newPassword = generateSecurePassword()
-        user.auth.password = newPassword
+
+        user.auth.password = password;
 
 
         user.auth.otp = undefined

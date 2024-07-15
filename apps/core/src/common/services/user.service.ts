@@ -8,6 +8,7 @@ import { KafkaService } from "./kafka.service";
 import { IRegistrationDoc } from "@repo/models";
 import { generateCode, generateSecurePassword, validPhoneNumber } from "../../utils";
 import { CoreConfig } from "../../config";
+import { ServerErrorResponse, ServerSuccessResponse } from "../entities/responses.entity";
 
 @Injectable()
 export class UserService {
@@ -26,9 +27,14 @@ export class UserService {
     }
 
     async getUserByEmail(email: string){
-        return UserModel.findOne({ email });
+        return await UserModel.findOne({ email });
 
     }
+
+    async getUserById(id: string) {
+        return await UserModel.findById({ id })
+    }
+    
 
     async getUsers(limit?: number, offset?: number, filter?: Record<string, any>){
         const results = await UserModel
@@ -198,5 +204,29 @@ export class UserService {
         return count;
     }
 
+    
+    async updatePassword (id: string, password: string, otp: string) {
+        const user = await this.getUserById(id)
+        if (!user) {
+            return ServerErrorResponse(new Error('User could not be found'), 404)
+        }
+
+        if (otp !== user.auth?.otp) {
+            return ServerErrorResponse(new Error('Invalid OTP'), 400)
+        }
+
+
+
+        user.auth.password = password;
+
+
+        user.auth.otp = undefined
+        user.auth.otpLastSentAt = undefined
+        user.auth.otp_expiry = undefined
+        await user.save()
+
+        return ServerSuccessResponse({ message: 'Password updated successfully' })
+
+    }
 }
 

@@ -96,8 +96,8 @@ export class OtpService {
         }
 
         // reset values
-        user.auth.otp = undefined
         user.auth.otp_expiry = undefined
+        user.auth.otpLastSentAt = undefined
         await user.save()
 
         console.log("Verified OTP for user", user.code);

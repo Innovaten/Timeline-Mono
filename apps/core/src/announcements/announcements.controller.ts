@@ -1,15 +1,18 @@
-import { Controller, Get, Patch, Post, Query, UseGuards, Request, Param, Body, Delete } from '@nestjs/common';
+import { Controller, Get, Patch, Post, UseGuards, Request, Query, Param, Body, Delete } from '@nestjs/common';
 import { sendInternalServerError } from '../utils';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { Roles } from '../common/enums/roles.enum';
 import { AnnouncementsService } from './announcements.service';
 import { JwtService } from '../common/services/jwt.service';
-import { createAnnouncementDto , updateAnnouncementDto} from './announcements.dto';
+import { DeleteAnnouncementDto, CreateAnnouncementDto , UpdateAnnouncementDto} from './announcements.dto';
 import { ClassesService } from '../classes/classes.service';
 import { Types } from 'mongoose';
 
-@Controller('announcements')
+@Controller({
+    path: 'announcements',
+    version: "1"
+})
 export class AnnouncementsController {
 
     constructor(
@@ -21,6 +24,9 @@ export class AnnouncementsController {
     @UseGuards(AuthGuard)
     @Get()
     async listAnnouncements(
+        @Query('limit') rawLimit: string,
+        @Query('offset') rawOffset: string,
+        @Query('filter') rawFilter: string,
         @Request() req: Request,
     ) {
         try {
@@ -41,14 +47,25 @@ export class AnnouncementsController {
                 )
             }
 
-            const announcements = await this.service.getAnnouncements();
-            const count = await this.service.getAnnouncementsCount();
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+            let limit;
+            let offset;
+    
+            if(rawLimit){
+                limit = parseInt(rawLimit);
+            }
+    
+            if(rawOffset){
+                offset = parseInt(rawOffset)
+            } 
+
+            const announcements = await this.service.listAnnouncements(limit, offset, filter);
+            const count = await this.service.getAnnouncementsCount(filter);
 
             return ServerSuccessResponse({
                 announcements,
                 count
             })
-
 
         } catch(err){
             return sendInternalServerError(err);
@@ -58,7 +75,7 @@ export class AnnouncementsController {
 
     @Post()
     async createAnnouncement(
-        @Body() announcementData: createAnnouncementDto 
+        @Body() announcementData: CreateAnnouncementDto 
     ){
         try {
             const creator = await this.jwt.validateToken(announcementData.authToken);
@@ -72,14 +89,21 @@ export class AnnouncementsController {
 
             const relatedClass = await this.classes.getClass({ _id: new Types.ObjectId(announcementData.class) }) 
 
-            if(creator.role != Roles.SUDO && !relatedClass?.administrators.includes(new Types.ObjectId(creator._id as Types.ObjectId)) ){
+            if(!relatedClass) {
+                return ServerErrorResponse(
+                    new Error("Specified class does not exist"),
+                    400
+                )
+            }
+
+            if(creator.role != Roles.SUDO && !relatedClass.administrators.includes(new Types.ObjectId(creator._id as Types.ObjectId)) ){
                 return ServerErrorResponse(
                     new Error('You are not permitted to perform this action'),
                     401
                 )
             }
 
-            const announcement = await this.service.createAnnouncement(relatedClass?._id, `${creator._id}`, announcementData);
+            const announcement = await this.service.createAnnouncement(relatedClass?.annoucementSet._id, creator._id, announcementData);
 
             return ServerSuccessResponse(announcement);
 
@@ -92,12 +116,12 @@ export class AnnouncementsController {
     @Patch(":_id")
     async updateAnnouncement(
         @Param("_id") _id: string,
-        @Body() announcementData: updateAnnouncementDto 
+        @Body() announcementData: UpdateAnnouncementDto 
     ) {
         try {
-            const creator = await this.jwt.validateToken(announcementData.authToken);
+            const updator = await this.jwt.validateToken(announcementData.authToken);
             
-            if(!creator){
+            if(!updator){
                 return ServerErrorResponse(
                     new Error('Unauthenticated Request'),
                     401
@@ -106,14 +130,21 @@ export class AnnouncementsController {
 
             const relatedClass = await this.classes.getClass({ _id: new Types.ObjectId(announcementData.class) }) 
 
-            if(creator.role != Roles.SUDO && !relatedClass?.administrators.includes(new Types.ObjectId(creator._id as Types.ObjectId)) ){
+            if(!relatedClass) {
+                return ServerErrorResponse(
+                    new Error("Specified class does not exist"),
+                    400
+                )
+            }
+
+            if(updator.role != Roles.SUDO && !relatedClass?.administrators.includes(new Types.ObjectId(updator._id as Types.ObjectId)) ){
                 return ServerErrorResponse(
                     new Error('You are not permitted to perform this action'),
                     401
                 )
             }
 
-            const updatedAnnouncement = await this.service.updateAnnouncement(_id, `${creator._id}`, announcementData);
+            const updatedAnnouncement = await this.service.updateAnnouncement(_id, `${updator._id}`, announcementData);
 
             return ServerSuccessResponse(updatedAnnouncement);
 
@@ -124,12 +155,13 @@ export class AnnouncementsController {
 
     @Delete(":_id")
     async deleteAnnouncement(
-        @Param("_id") _id: string
+        @Param("_id") _id: string,
+        @Body() announcementData: DeleteAnnouncementDto
     ) {
         try {
-            const creator = await this.jwt.validateToken(announcementData.authToken);
+            const deletor = await this.jwt.validateToken(announcementData.authToken);
             
-            if(!creator){
+            if(!deletor){
                 return ServerErrorResponse(
                     new Error('Unauthenticated Request'),
                     401
@@ -138,7 +170,14 @@ export class AnnouncementsController {
 
             const relatedClass = await this.classes.getClass({ _id: new Types.ObjectId(announcementData.class) }) 
 
-            if(creator.role != Roles.SUDO && !relatedClass?.administrators.includes(new Types.ObjectId(creator._id as Types.ObjectId)) ){
+            if(!relatedClass) {
+                return ServerErrorResponse(
+                    new Error("Specified class does not exist"),
+                    400
+                )
+            }
+
+            if(deletor.role != Roles.SUDO && !relatedClass?.administrators.includes(new Types.ObjectId(deletor._id as Types.ObjectId)) ){
                 return ServerErrorResponse(
                     new Error('You are not permitted to perform this action'),
                     401
@@ -160,7 +199,7 @@ export class AnnouncementsController {
         @Param("_id") _id: string
     ) {
         try {
-            const announcement = await this.service.getAnnouncement({ _id: id})
+            const announcement = await this.service.getAnnouncement({ _id })
 
             return ServerSuccessResponse(announcement);
 

@@ -21,6 +21,7 @@ export const AnnouncementSchema = new Schema<IAnnouncement>({
     announcementSet: {
         type: SchemaTypes.ObjectId,
         required: true,
+        ref: "AnnouncementSets"
     },
 
     isDraft: {
@@ -41,6 +42,7 @@ export const AnnouncementSchema = new Schema<IAnnouncement>({
     createdBy: {
         type: SchemaTypes.ObjectId,
         required: true,
+        ref: "Users"
     },
 
     createdAt: {
@@ -53,7 +55,8 @@ export const AnnouncementSchema = new Schema<IAnnouncement>({
     },
     updatedBy: {
         type: SchemaTypes.ObjectId,
-        default: new Date()
+        required: true,
+        ref: "Users",
     },
 })
 

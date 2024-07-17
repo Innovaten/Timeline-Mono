@@ -1,6 +1,6 @@
 import { IsBoolean, IsString } from "class-validator";
 
-export class createAnnouncementDto {
+export class CreateAnnouncementDto {
     @IsString()
     title: string;
 
@@ -17,7 +17,7 @@ export class createAnnouncementDto {
     authToken: string;
 }
 
-export class updateAnnouncementDto {
+export class UpdateAnnouncementDto {
     @IsString()
     title: string;
     
@@ -32,4 +32,12 @@ export class updateAnnouncementDto {
     
     @IsString()
     authToken: string;
+}
+
+export class DeleteAnnouncementDto {
+    @IsString()
+    authToken: string;
+
+    @IsString()
+    class: string;
 }

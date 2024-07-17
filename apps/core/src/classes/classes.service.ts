@@ -1,4 +1,4 @@
-import { ClassModel, IAnnouncementSetDoc } from "@repo/models";
+import { AnnouncementModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, UserModel } from "@repo/models";
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
 import { generateCode } from "../utils";
@@ -59,13 +59,20 @@ export class ClassesService {
     }
 
     async assignAdministrator(classId: string, adminId: string) {
-        const classDoc = await ClassModel.findById(classId)
+        const classDoc = await ClassModel.findById(classId);
+        const adminDoc = await UserModel.findById(adminId);
+
+        if(!adminDoc){
+            throw new Error("Specified administrator could not be found")
+        }
 
         if (!classDoc) {
             throw new Error("Specified class not found")
         }
 
-        classDoc.administrators.push(new Types.ObjectId(adminId))
+        classDoc.administrators.push(new Types.ObjectId(`${adminDoc._id}`))
+        adminDoc.classes.push(new Types.ObjectId(`${classDoc._id}`));
+
 
         classDoc.updatedAt = new Date();
         await classDoc.save()
@@ -93,5 +100,18 @@ export class ClassesService {
     async getClassesCount(filter: Record<string, any>){
         const count = await ClassModel.countDocuments(filter);
         return count;
+    }
+
+    async getAnnouncementsByClass(classId: string): Promise<IAnnouncementDoc[]> {
+
+        const classDoc = await ClassModel.findById(classId);
+
+        if(!classDoc){
+            throw new Error("Specified class could not be found");
+        }
+
+        const announcements = await AnnouncementModel.find({ announcementSet: classDoc.announcementSet}).populate("createdBy updatedBy");
+
+        return announcements;
     }
 }

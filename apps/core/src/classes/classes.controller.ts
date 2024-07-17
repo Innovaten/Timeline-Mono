@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete } from '@nestjs/common';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
-import { IClassDoc, } from '@repo/models';
+import { ClassModel, IAnnouncementSetDoc, IClassDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { CreateClassDto, DeleteClassDto, UpdateClassDto } from './classes.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { ClassesService } from './classes.service';
+import { Roles } from '../common/enums/roles.enum';
 
 
 @Controller({
@@ -211,8 +212,46 @@ export class ClassesController {
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);
-        }
+        }   
+    }
+    @UseGuards(AuthGuard)
+    @Get(':_id/announcements')
+    async getAnnouncementsByClass(
+        @Param('_id') classId: string,
+        @Request() req: Request,
+    ) {
+        try {
+            // @ts-ignore
+            const user = req["user"];
 
-        
+            const relatedClass = await ClassModel.findById(classId).populate<{ announcementSet: IAnnouncementSetDoc }>("announcementSet");
+
+            if(!relatedClass){
+                return ServerErrorResponse(
+                    new Error("Specified class could not be found"),
+                    404,
+                )
+            }
+
+            if(
+                user.role !== Roles.SUDO && 
+                !user.classes.includes(relatedClass._id)
+            ){
+                return ServerErrorResponse(
+                    new Error("You are not permitted to perform this action"),
+                    403,
+                )
+            }
+
+            const announcements = await this.service.getAnnouncementsByClass(classId);
+
+            return ServerSuccessResponse(announcements);
+
+        } catch(err) {
+            return ServerErrorResponse(
+                new Error(`${err}`), 
+                500
+            );
+        }  
     }
 }

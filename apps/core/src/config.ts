@@ -21,8 +21,8 @@ export const CoreConfig = {
             process.env.KAFKA_BROKER ?? ""
         ]
     },
-    arkesel: {
-        api_key: process.env.ARKESEL_API_KEY ?? "",
+    mnotify: {
+        api_key: process.env.MNOTIFY_API_KEY ?? "",
     },
 }
 

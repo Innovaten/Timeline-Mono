@@ -16,7 +16,7 @@ export async function sendSMSHandler(KafkaArgs: EachMessagePayload) {
 
     // SEND SMS
     fetch(`https://sms.arkesel.com/sms/api?action=send-sms&api_key=${ServicesConfig.arkesel.api_key}&to=${validPhoneNumber(phone)}&from=${"Timeline"}&sms=${smsBodyTemplates[purpose](actualdata)}`)
-    .then(response => console.log(response))
+    //.then(response => console.log(response))
     .catch(error => console.log(error));
 
     // SMS API V2

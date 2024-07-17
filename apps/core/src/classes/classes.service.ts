@@ -1,10 +1,17 @@
-import { ClassModel } from "@repo/models";
+import { ClassModel, IAnnouncementSetDoc } from "@repo/models";
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
 import { generateCode } from "../utils";
 
 export class ClassesService {
    
+    async getClass(filter: Record<string, any> = {}){
+
+        const result = await ClassModel.findOne(filter).populate<{ annoucementSet: IAnnouncementSetDoc }>("announcementSet");
+        return result
+
+    }
+
     async getClasses(limit?: number, offset?: number, filter?: Record<string, any>){
         const results = await ClassModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0).sort({ updatedAt: -1})
         return results;

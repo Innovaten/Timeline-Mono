@@ -10,6 +10,7 @@
     "lint": "eslint src/"
   },
   "dependencies": {
+    "@lexical/react": "^0.16.1",
     "@repo/models": "*",
     "@repo/ui": "*",
     "@repo/utils": "*",

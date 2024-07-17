@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { ClassesModule } from './classes/classes.module'
 import { RegistrationsModule } from './registrations/registrations.module';
+import { AnnouncementsModule } from './announcements/announcements.module';
 import CustomCommon from './common';
 
 @Module({
@@ -17,7 +18,8 @@ import CustomCommon from './common';
     AuthModule,
     UserModule,
     RegistrationsModule,
-    ClassesModule
+    ClassesModule,
+    AnnouncementsModule
   ],
   controllers: [AppController],
   providers: [AppService, CustomCommon],

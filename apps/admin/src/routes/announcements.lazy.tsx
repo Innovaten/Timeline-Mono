@@ -1,16 +1,78 @@
+import { Button } from '@repo/ui';
+import { useDialog } from '@repo/utils'
 import { createLazyFileRoute } from '@tanstack/react-router'
+import { PlusIcon, ArrowPathIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { useCompositeFilterFlag } from '../hooks';
 
 export const Route = createLazyFileRoute('/announcements')({
-  component: () => <Announcements />
+  component: Announcements
 })
 
 function Announcements({}){
 
+  const {toggleDialog: toggleCreateDialog, dialogIsOpen: createDialogIsOpen } = useDialog();
+  const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
+  const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
+  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag ])
+  
+
   return (
-    <>
-      Hi from Annoucements. <br />
-      Implement Me.
-    </>
+    <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
+          <div className='mt-2 flex h-fit justify-between items-center'>
+              <h3 className='text-blue-800'>My Announcements</h3>
+              <Button className='flex px-2 !h-[35px]' onClick={toggleCreateDialog}> <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;an Announcement</span></Button>
+          </div>
+          <div className='w-full mt-3 flex flex-wrap gap-4'>
+                    <Button
+                        onClick={toggleFiltersAreShown}
+                        variant='outline'
+                        className='!h-[35px] px-2 flex items-center gap-2'
+                    >
+                        <FunnelIcon className='w-4' />
+                        { filterIsShown ? "Close" : "Show"} Filters    
+                    </Button>
+              
+              <div className='flex flex-col gap-2 justify-end'>
+                  <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
+              </div>
+          </div>
+          <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>
+                    <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
+                        <div className = 'w-full text-blue-700 py-2 px-1 sm:px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
+                            <div className='flex items-center gap-4'>
+                                <span  className='hidden sm:inline w-[70px]'>CODE</span>
+                                <span className='flex-1 font-normal truncate'>TITLE</span>
+                            </div>
+                            <div className='flex gap-4 items-center font-light'>
+                                <span className='w-[150px] hidden sm:flex justify-end'>AUTHOR</span>
+                                <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
+                                <span className='w-[100px] flex justify-end'>ACTIONS</span>
+                            </div>
+                        </div>
+                        {
+                            true && 
+                            <div className='w-full h-full m-auto mt-4'>
+
+                                <div
+                                    className='w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin' 
+                                ></div>
+                            </div>
+                        } 
+                        { 
+                        !false && [].map((admin, idx) => {
+                            return (
+                            <div key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                               
+                            </div>
+                            )
+                        })
+                        }
+                    </div>
+                </div>
+                <div className='flex justify-end text-blue-700 mt-2 pb-2'>
+                    <p>Showing <span className='font-semibold'>0</span> of <span className='font-semibold'>10</span></p>
+                </div>
+    </div>
   )
 
 }

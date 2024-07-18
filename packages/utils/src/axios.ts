@@ -1,5 +1,6 @@
 import axios, { AxiosPromise, AxiosResponse } from "axios";
 import { backOff } from "exponential-backoff";
+import { toast } from "sonner";
 import { UtilsConfig } from "../config";
 import { _getToken } from "./auth-token";
 
@@ -57,4 +58,80 @@ export async function makeAuthenticatedRequest(
     }
   )
 
+}
+
+export async function abstractUnauthenticatedRequest(
+  method: "get" | "post" | "put" | "patch" | "delete",
+  url: string,
+  body?: Record<string, any>,
+  headers?: Record<string, string>,
+  callbacks?: {
+    onSuccess: (data: any) => void,
+    onFailure: (err: any) => void,
+    finally: () => void,
+  }
+) {
+
+  return makeUnauthenticatedRequest(
+    method,
+    url,
+    body,
+    headers
+  ).then(res => {
+    if(res.data.success){
+      callbacks?.onSuccess && callbacks.onSuccess(res.data.data);
+    } else {
+      callbacks?.onFailure && callbacks.onFailure(res.data.error)
+    }
+  })
+  .catch(err => {
+    if(err.message){
+      toast.error(err.message)
+    } else {
+      toast.error(`${err}`)
+    }
+  })
+  .finally(() => {
+    callbacks?.finally && callbacks.finally();
+  })
+}
+
+
+export async function abstractAuthenticatedRequest(
+  method: "get" | "post" | "put" | "patch" | "delete",
+  url: string,
+  body?: Record<string, any>,
+  headers?: Record<string, string>,
+  callbacks?: {
+    onSuccess: (data: any) => void,
+    onFailure?: (err: any) => void,
+    finally?: () => void,
+  }
+) {
+
+  return makeUnauthenticatedRequest(
+    method,
+    url,
+    body,
+    {
+      ...headers,
+      authorization: "Bearer " + _getToken()
+    }
+  ).then(res => {
+    if(res.data.success){
+      callbacks?.onSuccess && callbacks.onSuccess(res.data.data);
+    } else {
+      callbacks?.onFailure && callbacks.onFailure(res.data.error)
+    }
+  })
+  .catch(err => {
+    if(err.message){
+      toast.error(err.message)
+    } else {
+      toast.error(`${err}`)
+    }
+  })
+  .finally(() => {
+    callbacks?.finally && callbacks.finally();
+  })
 }

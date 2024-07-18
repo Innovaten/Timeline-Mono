@@ -4,7 +4,7 @@ import { cn } from "./cn";
 import { useLoading, useDialog, useMovileNavigation, useCountdown } from "./hooks";
 
 import { fadeParent, fadeParentAndReplacePage, MultiPage } from "./frontend-shenanigans";
-import { makeUnauthenticatedRequest, makeAuthenticatedRequest } from "./axios";
+import { makeUnauthenticatedRequest, makeAuthenticatedRequest, abstractAuthenticatedRequest, abstractUnauthenticatedRequest } from "./axios";
 import { validPhoneNumber } from "./phone";
 
 export {
@@ -40,4 +40,7 @@ export {
   // Fetch Requests 
   makeUnauthenticatedRequest,
   makeAuthenticatedRequest,
+  abstractAuthenticatedRequest,
+  abstractUnauthenticatedRequest,
+  
 };

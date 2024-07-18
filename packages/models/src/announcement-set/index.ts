@@ -18,7 +18,7 @@ export const AnnouncementSetSchema = new Schema<IAnnouncementSet>({
         default: 0,
     },
   
-    annoucements: {
+    announcements: {
         type: [SchemaTypes.ObjectId]
     },
     updatedBy: {

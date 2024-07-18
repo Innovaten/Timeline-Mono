@@ -5,7 +5,7 @@ export interface IAnnouncementSet {
   class: Types.ObjectId;
   totalAnnouncements: number;
 
-  annoucements: Types.ObjectId[]
+  announcements: Types.ObjectId[]
 
   updatedBy: Types.ObjectId;
 

@@ -103,3 +103,12 @@ export function useClassesAssignedStatusFilter(){
     return { filter, changeFilter, filterOptions, filterChangedFlag };
 
 }
+
+export function useClassesByAdmin(
+    flag?: boolean, 
+    filter: Record<string, any> = {},
+    limit: number = 10, 
+    offset: number = 0, 
+) {
+
+}

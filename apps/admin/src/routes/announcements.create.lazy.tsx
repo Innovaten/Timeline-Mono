@@ -1,6 +1,6 @@
 import { Button, Input, TextEditor } from '@repo/ui'
 import { createLazyFileRoute, Navigate } from '@tanstack/react-router'
-import { Formik, Form, useFormik } from 'formik'
+import { Formik, Form, ErrorMessage } from 'formik'
 import {$generateHtmlFromNodes} from '@lexical/html';
 import * as Yup from 'yup'
 import { useState } from 'react';
@@ -15,22 +15,19 @@ export const Route = createLazyFileRoute('/announcements/create')({
 
 function CreateAnnouncement(){
 
-    const [editor, setEditor] = useState<LexicalEditor | null>(null)
     const { isLoading, toggleLoading, resetLoading } = useLoading()
 
     function handleCreateAnnouncment(values: { 
         title: string,
+        content: string
     }) {
-        if(!editor) return;
-
-        const editorContent = $generateHtmlFromNodes(editor);
 
         abstractUnauthenticatedRequest(
             "post",
             "/api/v1/announcements",
             {
                 title: values.title,
-                content: editorContent,
+                content: values.content,
                 isDraft: false,
                 authToken: _getToken(),
             },
@@ -38,7 +35,7 @@ function CreateAnnouncement(){
             {
                 onStart: toggleLoading,
                 onSuccess: (data)=>{ toast.success("Announcement created successfully")},
-                onFailure: (err) =>{ toast.error(`${err}`) },
+                onFailure: (err) =>{ toast.error(`${err.msg}`) },
                 finally: resetLoading,
             }
         )
@@ -47,18 +44,15 @@ function CreateAnnouncement(){
 
     function saveAsDraft(values: { 
         title: string,
+        content: string,
     }) {
-
-        if(!editor) return;
-
-        const editorContent = $generateHtmlFromNodes(editor);
 
         abstractUnauthenticatedRequest(
             "post",
             "/api/v1/announcements",
             {
                 title: values.title,
-                content: editorContent,
+                content: values.content,
                 isDraft: true,
                 authToken: _getToken(),
             },
@@ -66,7 +60,7 @@ function CreateAnnouncement(){
             {
                 onStart: toggleLoading,
                 onSuccess: (data)=>{ toast.success("Announcement created successfully")},
-                onFailure: (err) =>{ toast.error(`${err}`) },
+                onFailure: (err) =>{ toast.error(`${err.msg}`) },
                 finally: resetLoading,
             }
         )
@@ -93,8 +87,10 @@ function CreateAnnouncement(){
                                         <Form className='flex flex-col gap-6 w-full h-full'>
                                             <Input name='title'  label='Title' hasValidation />
                                             <div className='flex flex-col mt-1 flex-1'>
-                                                <TextEditor onChange={(editorState, editor) => {
-                                                    setEditor(editor)
+                                                <TextEditor hasValidation name="content" onChange={(editorState, editor) => {
+                                                    editor.update(() => {
+                                                        form.setFieldValue("content", $generateHtmlFromNodes(editor, null))
+                                                    })
                                                 }} />
                                             </div>
                                         </Form>
@@ -116,8 +112,10 @@ function CreateAnnouncement(){
 
 const createAnnouncementInitialValues  = {
     title: "",
+    content: ""
 }
 
 const createAnnouncementValidationSchema = Yup.object({
     title: Yup.string().required("Title is required").min(4, "Title is too short").max(256, "Title is too long"),
+    content: Yup.string().required("Content is required"),
 })

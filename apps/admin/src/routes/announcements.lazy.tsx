@@ -6,6 +6,7 @@ import { useCompositeFilterFlag, useAnnouncements, useSpecificEntity } from '../
 import dayjs from 'dayjs';
 import { IAnnouncementDoc } from '@repo/models';
 import { toast } from 'sonner';
+import { useLMSContext } from '../app';
 
 export const Route = createLazyFileRoute('/announcements')({
   component: Announcements
@@ -18,13 +19,18 @@ function Announcements({ }){
     return <Outlet />
   } 
 
+  const { user } = useLMSContext()
+
   const { toggleDialog: toggleDeleteDialog, dialogIsOpen: deleteDialogIsOpen } = useDialog();
   const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
   const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag ])
   const { isLoading: deleteIsLoading, resetLoading: resetDeleteIsLoading, toggleLoading: toggleDeleteIsloading } = useLoading()
 
-  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag)
+  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0, {
+    user,
+  })
+  
   const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
 
 
@@ -74,7 +80,6 @@ function Announcements({ }){
                         <FunnelIcon className='w-4' />
                         { filterIsShown ? "Close" : "Show"} Filters    
                     </Button>
-              
               <div className='flex flex-col gap-2 justify-end'>
                   <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
               </div>

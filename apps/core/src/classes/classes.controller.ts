@@ -116,7 +116,7 @@ export class ClassesController {
                 );
             }
 
-            const updatedClass = await this.service.assignAdministrator(classId, adminId);
+            const updatedClass = await this.service.assignAdministrator(classId, adminId, user._id);
             console.log("Assigned administrator", adminId, "to", classId);
             return ServerSuccessResponse(updatedClass);
 
@@ -150,7 +150,7 @@ export class ClassesController {
                 );
             }
     
-            if(!["SUDO", "ADMINISTRATOR"].includes(updator.role)){
+            if(!["SUDO", "ADMIN"].includes(updator.role)){
                 return ServerErrorResponse(
                     new Error("Unauthorized"),
                     403
@@ -160,7 +160,7 @@ export class ClassesController {
             if(!updatedClass){
                 throw new Error("Specified class could not be found.")
             }
-            console.log("Updated class", updatedClass._id);
+            console.log("Updated class", updatedClass.code);
             return ServerSuccessResponse(updatedClass);
 
         } catch (err){

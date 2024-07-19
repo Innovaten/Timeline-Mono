@@ -6,6 +6,8 @@ import { AuthGuard } from '../common/guards/jwt.guard';
 import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { Roles } from '../common/enums/roles.enum';
+import { ClassesService } from '../classes/classes.service';
+import { AnnouncementsService } from '../announcements/announcements.service';
 
 @Controller({
     path: 'users',
@@ -16,7 +18,9 @@ export class UsersController {
 
     constructor(
         private user: UserService,
-        private jwt: JwtService
+        private jwt: JwtService,
+        private classes: ClassesService,
+        private announcements: AnnouncementsService
     ) { }
 
     @UseGuards(AuthGuard)
@@ -206,6 +210,87 @@ export class UsersController {
         } 
     }
 
+    @UseGuards(AuthGuard)
+    @Get(":_id/classes")
+    async getClassesByUser(
+        @Param("_id") _id: string,
+        @Request() req: Request, @Query('limit') rawLimit: string,
+        @Query('offset') rawOffset: string,
+        @Query('filter') rawFilter: string,
+    ){  
+        try {
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+            let limit;
+            let offset;
+    
+            if(rawLimit){
+                limit = parseInt(rawLimit);
+            }
+    
+            if(rawOffset){
+                offset = parseInt(rawOffset)
+            } 
+
+            // @ts-ignore
+            const user = req["user"];
+
+            console.log(user);
+
+            const result = await this.classes.getClasses(limit, offset, {...filter, _id: { $in: user.classes } });
+
+            const classIds = result.map(c => c._id);
+
+            const count = await this.classes.getClassesCount({ _id: { $in: classIds } })
+
+            return ServerSuccessResponse({
+                classes: result,
+                count,
+            });
+        
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+
+
+    @UseGuards(AuthGuard)
+    @Get(":_id/announcements")
+    async getAnnouncementsByUser(
+        @Param("_id") _id: string,
+        @Request() req: Request, @Query('limit') rawLimit: string,
+        @Query('offset') rawOffset: string,
+        @Query('filter') rawFilter: string,
+    ){  
+        try {
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+            let limit;
+            let offset;
+    
+            if(rawLimit){
+                limit = parseInt(rawLimit);
+            }
+    
+            if(rawOffset){
+                offset = parseInt(rawOffset)
+            } 
+
+            // @ts-ignore
+            const user = req["user"];
+
+            const result = await this.announcements.getAnnouncementsByUser(user._id, limit, offset, filter);
+            const count = result.length
+
+            return ServerSuccessResponse({
+                announcements: result,
+                count,
+            });
+        
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
 
 
 }

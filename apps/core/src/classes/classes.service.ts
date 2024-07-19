@@ -1,4 +1,4 @@
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, UserModel } from "@repo/models";
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, UserModel } from "@repo/models";
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
 import { generateCode } from "../utils";
@@ -22,13 +22,13 @@ export class ClassesService {
         return ClassModel.countDocuments(filter)
     }
 
-    async createClass(classData: CreateClassDto, creator: string){
-
+    async createClass(classData: CreateClassDto, creator: string): Promise<IClassDoc>{
         const timestamp = new Date();
-
+        
         const { authToken, ...actualData } = classData;
 
         const anmtSetPrefix = "ASET";
+
         const newAnnouncementSet = new AnnouncementSetModel({
             code: await generateCode(await AnnouncementSetModel.countDocuments(), anmtSetPrefix),
             totalAnnouncements: 0,
@@ -56,10 +56,10 @@ export class ClassesService {
         })
 
         newAnnouncementSet.class = new Types.ObjectId(`${newClass._id}`);
-
+        
         newAnnouncementSet.save()
         newClass.save()
-
+        
         return newClass;
     }
 
@@ -77,7 +77,7 @@ export class ClassesService {
         return tClass;
     }
 
-    async assignAdministrator(classId: string, adminId: string) {
+    async assignAdministrator(classId: string, adminId: string, updator: string) {
         const classDoc = await ClassModel.findById(classId);
         const adminDoc = await UserModel.findById(adminId);
 
@@ -89,12 +89,17 @@ export class ClassesService {
             throw new Error("Specified class not found")
         }
 
+        if(classDoc.administrators.includes(adminDoc.id)){
+            throw new Error("Specified admin has already been assigned to this class")
+        }
         classDoc.administrators.push(new Types.ObjectId(`${adminDoc._id}`))
         adminDoc.classes.push(new Types.ObjectId(`${classDoc._id}`));
 
 
         classDoc.updatedAt = new Date();
+        classDoc.updatedBy = new Types.ObjectId(`${updator}`)
         await classDoc.save()
+        await adminDoc.save()
 
         return classDoc
     }

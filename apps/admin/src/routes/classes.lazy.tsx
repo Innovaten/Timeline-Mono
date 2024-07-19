@@ -1,16 +1,18 @@
 import { Button, DialogContainer, Input } from '@repo/ui';
-import { createLazyFileRoute } from '@tanstack/react-router';
-import { PlusIcon, ArrowPathIcon, FunnelIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline'
+import { createLazyFileRoute, Link } from '@tanstack/react-router';
+import { PlusIcon, ArrowPathIcon, FunnelIcon, TrashIcon, EyeIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
-import { _getToken, makeAuthenticatedRequest, useDialog, useLoading } from '@repo/utils';
+import { _getToken, abstractAuthenticatedRequest, makeAuthenticatedRequest, useDialog, useLoading } from '@repo/utils';
 import { Formik, Form } from 'formik'
 import { SelectInput } from '@repo/ui';
 import { toast } from 'sonner'
-import { useClasses, useCompositeFilterFlag } from '../hooks';
+import { useAdministrators, useClasses, useCompositeFilterFlag } from '../hooks';
 import { useClassesAssignedStatusFilter, useClassesModeOfClassFilter, useClassesStatusFilter } from '../hooks/classes.hook';
 import { IClassDoc } from '@repo/models';
 import { useState } from 'react';
 import dayjs from 'dayjs';
+import { IUserDoc } from '@repo/models';
+import { useLMSContext } from '../app';
 
 export const Route = createLazyFileRoute('/classes')({
     component: Classes
@@ -18,6 +20,8 @@ export const Route = createLazyFileRoute('/classes')({
 
 
 function Classes(){
+
+    const { user } = useLMSContext() 
 
     const { filter: AssignedStatusFilter, filterOptions: AssignedStatusFilterOptions, changeFilter: AssignedStatusChangeFilter, filterChangedFlag: AssignedStatusFilterChangedFlag } = useClassesAssignedStatusFilter();
     const { filter: ModeOfClassFilter, filterOptions: ModeOfClassFilterOptions, changeFilter: ModeOfClassChangeFilter, filterChangedFlag: ModeOfClassFilterChangedFlag } = useClassesModeOfClassFilter();
@@ -31,20 +35,25 @@ function Classes(){
       ...AssignedStatusFilter,
       ...ModeOfClassFilter,
       ...StatusFilter,
+        user,
     });
 
     const { dialogIsOpen, toggleDialog } = useDialog();
     const { dialogIsOpen: updateDialogIsOpen, toggleDialog: toggleUpdateDialog } = useDialog();
     const { dialogIsOpen: deleteDialogIsOpen, toggleDialog: toggleDeleteDialog } = useDialog();
+    const { dialogIsOpen: assignDialogIsOpen, toggleDialog: toggleAssignDialog } = useDialog();
 
     const { isLoading: deleteIsLoading, toggleLoading: toggleDeleteIsLoading } = useLoading()
     const { isLoading, toggleLoading, resetLoading } = useLoading()
     const { isLoading: updateIsLoading, toggleLoading: toggleUpdateIsLoading, resetLoading:resetUpdateIsLoading } = useLoading()
+    const { isLoading: assignIsLoading, toggleLoading: toggleAssignIsLoading, resetLoading:resetAssignIsLoading } = useLoading()
+    
     const [ selectedClass, setSelectedClass ] = useState<Partial<IClassDoc>>({
         name: '',
         modeOfClass: 'Active'
     })
-
+    
+    
     const updateClassInitialValues = {
         name: selectedClass.name!,
         modeOfClass: selectedClass.modeOfClass!,
@@ -55,7 +64,7 @@ function Classes(){
         modeOfClass: string
     }){
         toggleLoading()
-
+        
         makeAuthenticatedRequest(
             "post",
             "/api/v1/classes",
@@ -70,7 +79,7 @@ function Classes(){
                 toggleDialog()
                 toggleLoading()
                 manuallyToggleCompositeFilterFlag()
-                toast.success(<p>Class created successfully.</p>)
+                toast.success("Class created successfully.")
             } else {
                 toast.error(`${res.data.error.msg}`)
             }
@@ -108,7 +117,7 @@ function Classes(){
             }
         ).then( res => {
             if(res.status == 200 && res.data.success){
-                toast.success("Administrator Updated Successfully")
+                toast.success("Class Updated Successfully")
                 manuallyToggleCompositeFilterFlag()
             } else {
                 toast.error(`${res.data.error.msg}`)
@@ -155,10 +164,11 @@ function Classes(){
         })
     }
 
+    function CreateDialog(){
 
-    return (
-        <>
-            <DialogContainer 
+        return (
+            <>
+                <DialogContainer 
                 toggleOpen={toggleDialog}
                 isOpen={dialogIsOpen}
                 title='Create a new class'
@@ -196,7 +206,88 @@ function Classes(){
                     </Form>
                 </Formik>
             </DialogContainer>
-            <DialogContainer 
+            </> 
+        )
+    }
+    function AssignDialog(){
+        
+        const [selectedAdmin, setSelectedAdmin ] = useState<IUserDoc | null>(null); 
+        const { administrators, isLoading: administratorsIsLoading } = useAdministrators(true, { role: "ADMIN"}, 100, 0);
+   
+        function handleAssignClass(){
+
+            if(!selectedClass) {
+                toast.error("Kindly select a class")
+                return
+            }
+    
+            if(!selectedAdmin) {
+                toast.error("Kindly select an admin")
+                return
+            }
+    
+    
+            abstractAuthenticatedRequest(
+                "get",
+                `/api/v1/classes/assign-administrator?classId=${selectedClass._id}&adminId=${selectedAdmin._id}`,
+                {},
+                {},
+                {
+                    onStart: ()=>{toggleAssignIsLoading},
+                    onSuccess: (data) => {
+                        toast.success("Admin assigned successfully");
+                        manuallyToggleCompositeFilterFlag();
+                        toggleAssignDialog();
+                    },
+                    onFailure: (err) => {toast.error(`${err.msg}`)},
+                    finally: () => {resetAssignIsLoading}
+                }
+            )
+        }
+
+        return (
+            <>
+                <DialogContainer
+                title='Assign Administrator'
+                description={`Kindly select the administrator you want to assign to ${selectedClass.name}`}
+                isOpen={assignDialogIsOpen}
+                toggleOpen={toggleAssignDialog}
+            >
+                <div className='flex flex-col gap-2'>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-h-48 overflow-y-auto">
+                        {
+                            administratorsIsLoading && 
+                            <div className='col-span-1 sm:col-span-2 flex p-4 items-center justify-center'>
+                                <span className='w-4 h-4 rounded-full border-[1.5px] border-t-blue-600 animate-spin'></span>
+                            </div>
+                        }
+                        {
+                            !administratorsIsLoading && administrators.map((admin, idx) => (<>
+                                <div className={`flex gap-2 items-center rounded p-2 hover:bg-blue-100/40 hover:border-blue-100 cursor-pointer duration-150 border-2 ${ selectedAdmin == admin ? "border-blue-700/40" : "border-transparent"}`} key={idx} onClick={()=>{setSelectedAdmin(admin)}}>
+                                    <div className='rounded-full flex-shrink-0 aspect-square h-full bg-blue-100 text-blue-700 font-light grid place-items-center'>{admin.firstName[0]+admin.lastName[0]}</div>
+                                    <div className='flex flex-col'>
+                                        <p>{admin.firstName} {admin.lastName}</p>
+                                        <small>{admin.email}</small>
+                                    </div>
+                                </div>
+                            </>
+                            ))
+                        }
+                    </div>
+                    <div className='flex w-full justify-end gap-4 mt-4'>
+                        <Button className='!h-[35px] px-2' variant='neutral' isLoading={assignIsLoading} onClick={()=> { toggleAssignDialog(); setSelectedAdmin(null); setSelectedClass({}) }}>Close</Button>
+                        <Button className='!h-[35px] px-2'  isLoading={assignIsLoading} onClick={handleAssignClass}>Assign Administrator</Button>
+                    </div>
+                </div>
+            </DialogContainer>
+            </>
+        )
+    }
+    function UpdateDialog(){
+
+        return (
+            <>
+                 <DialogContainer 
                 toggleOpen={toggleUpdateDialog}
                 isOpen={updateDialogIsOpen}
                 title='Update A Class'
@@ -234,21 +325,44 @@ function Classes(){
                     </Form>
                 </Formik>
             </DialogContainer>
-            <DialogContainer
-                title='Delete Class'
-                description={`Are you sure you want to delete ${selectedClass.name}?`}
-                isOpen={deleteDialogIsOpen}
-                toggleOpen={toggleDeleteDialog}
-            >
-                <div className='flex w-full justify-end gap-4 mt-4'>
-                    <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); setSelectedClass({}) }}>Close</Button>
-                    <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={() => { handleDeleteClass }}>Delete Class</Button>
-                </div>
-            </DialogContainer>
+            </>
+        )
+
+    }
+
+    function DeleteDialog(){
+
+        return (
+            <>
+                <DialogContainer
+                    title='Delete Class'
+                    description={`Are you sure you want to delete ${selectedClass.name}?`}
+                    isOpen={deleteDialogIsOpen}
+                    toggleOpen={toggleDeleteDialog}
+                >
+                    <div className='flex w-full justify-end gap-4 mt-4'>
+                        <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); setSelectedClass({}) }}>Close</Button>
+                        <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={() => { handleDeleteClass }}>Delete Class</Button>
+                    </div>
+                </DialogContainer>
+            </>
+        )
+
+    }
+
+    return (
+        <>
+            <CreateDialog />
+            <AssignDialog />
+            <UpdateDialog />
+            <DeleteDialog />
+
             <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
                     <h2 className='text-blue-800'>Classes</h2>
-                    <Button className='flex px-2 !h-[35px]' onClick={toggleDialog}> <PlusIcon className='inline w-4 mr-1' /> Add a class</Button>
+                    {  user!.role == "SUDO" && 
+                        <Button className='flex px-2 !h-[35px]' onClick={toggleDialog}> <PlusIcon className='inline w-4 mr-1' /> Add a class</Button>
+                    }
                 </div>
                 <div className='w-full flex flex-wrap gap-3 mt-3'>
                     <div  className=''>
@@ -300,6 +414,8 @@ function Classes(){
                                     }
                                 </select>
                             </div>
+                            { 
+                            user!.role == "SUDO" && 
                             <div className='flex flex-row items-center gap-2 '>
                                 <small className='text-blue-700'>Assigned Status</small> 
                                 <select
@@ -318,6 +434,7 @@ function Classes(){
                                     }
                                 </select>
                             </div>
+                            }
                         </>
                     }
                     <div>
@@ -332,10 +449,10 @@ function Classes(){
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
                                   <span className='w-[100px]  hidden sm:flex justify-end'>MODE</span>
-                                  <span className='w-[120px] hidden sm:flex justify-end'>NO. OF ADMINS</span>
+                                  { user!.role == "SUDO" && <span className='w-[120px] hidden sm:flex justify-end'>NO. OF ADMINS</span> }
                                   <span className='w-[100px] hidden sm:flex justify-end'>LAST UPDATED</span>
                                   
-                                  <span className='w-[100px] flex justify-end'>ACTIONS</span>
+                                  <span className='w-[120px] flex justify-end'>ACTIONS</span>
                                 </div>
                             </div>
                         {
@@ -347,7 +464,7 @@ function Classes(){
                             </div>
                         } 
                         { 
-                        !classesIsLoading && classes.map((tClass, idx) => {
+                        !classesIsLoading && classes.length != 0 && classes.map((tClass, idx) => {
                             return (
                             // Onclick trigger a dialog
                             <div 
@@ -359,16 +476,28 @@ function Classes(){
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
                                   <span className='hidden w-[100px] sm:flex justify-end'>{tClass.modeOfClass}</span>
-                                  <span className='w-[120px] hidden sm:flex justify-end'>{tClass.administrators.length} Admins</span>
+                                  { user!.role == "SUDO" && <span className='w-[120px] hidden sm:flex justify-end'>{tClass.administrators.length} Admin(s)</span> }
                                   <span className='w-[100px] hidden sm:flex justify-end'>{dayjs(tClass.updatedAt).format("DD/MM/YY")}</span>
-                                  <div className='w-[100px] flex justify-end gap-4'>
-                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={()=>{ setSelectedClass(tClass), toggleUpdateDialog()}}>              
-                                            <PencilIcon className='w-4 h-4' />
-                                        </span>
-                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedClass(tClass); toggleDeleteDialog() }}>
-                                            <TrashIcon className='w-4 h-4' />
-                                        </span>
-                                    </div>
+                                  <div className='w-[120px] flex justify-end gap-2'>
+                                        <Link to={`/classes/${tClass.code}`}  className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' >
+                                            <EyeIcon className='w-4 h-4' />
+                                        </Link>
+                                        { 
+                                            user!.role == "SUDO" && 
+                                            <> 
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={()=>{ setSelectedClass(tClass), toggleAssignDialog()}}>              
+                                                    <UserPlusIcon className='w-4 h-4' />
+                                                </span>
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={()=>{ setSelectedClass(tClass), toggleUpdateDialog()}}>              
+                                                    <PencilIcon className='w-4 h-4' />
+                                                </span>
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedClass(tClass); toggleDeleteDialog() }}>
+                                                    <TrashIcon className='w-4 h-4' />
+                                                </span>
+                                            </> 
+                                        }
+                                  </div>
+                            
                                 </div>
 
                             </div>

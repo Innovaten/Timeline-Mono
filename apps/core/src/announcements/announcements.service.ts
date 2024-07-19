@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AnnouncementModel, AnnouncementSetModel, IAnnouncementDoc } from '@repo/models';
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, UserModel } from '@repo/models';
 import { CreateAnnouncementDto, UpdateAnnouncementDto } from './announcements.dto';
 import { generateCode } from '../utils';
 import { Types, startSession } from 'mongoose';
@@ -108,6 +108,43 @@ export class AnnouncementsService {
         }
 
         return announcement;
+
+    }
+
+    async getAnnouncementsByUser(
+        userId: string,
+        limit?: number, 
+        offset?: number, 
+        filter: Record<string, any> = {}, 
+    ): Promise<IAnnouncementDoc[]> {
+
+        const user = await UserModel.findById(userId);
+
+        if(!user){{
+            throw new Error("Specified user could not be found")
+        }}
+
+        const classes = await ClassModel.find({ _id: { $in: user.classes }});
+
+        if(!classes){
+            throw new Error("Specified user is not related with any class")
+        }   
+
+        const anouncementSetIds = classes.map(c => c.announcementSet)
+        const announcementSets = await AnnouncementSetModel.find({ _id: { $in: anouncementSetIds }});
+
+        let announcementIds: Types.ObjectId[] = []
+
+        announcementSets.forEach(aset => {
+            announcementIds = [
+                ...announcementIds,
+                ...aset.announcements,
+            ]
+        })
+
+        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }});
+
+        return announcements;
 
     }
 }

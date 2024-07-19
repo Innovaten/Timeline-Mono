@@ -6,17 +6,20 @@ import { toast } from "sonner";
 
 export function useAnnouncements(refreshFlag: boolean = true,limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
 
-    const [ announcements, setAnnouncments ] = useState<(IAnnouncementDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
+    const [ announcements, setAnnouncements ] = useState<(IAnnouncementDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ count, setCount ] = useState<number>(0);
 
+    const { user, ...actualFilter} = filter
+
+    const route = user.role == "SUDO" ? "/announcements" : `/users/${user._id}/announcements`
     useEffect(() => {
         makeAuthenticatedRequest(
             "get",
-            `/api/v1/announcements?filter=${JSON.stringify(filter)}&limit=${limit}&offset=${offset}`,
+            `/api/v1${route}?filter=${JSON.stringify(actualFilter)}&limit=${limit}&offset=${offset}`,
         ).then(res => {
             if(res.status == 200 && res.data.success){
-                setAnnouncments(res.data.data.announcements);
+                setAnnouncements(res.data.data.announcements);
                 setCount(res.data.data.count);
             } else {
                 toast.error(res.data.error?.msg);

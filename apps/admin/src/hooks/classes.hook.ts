@@ -12,12 +12,15 @@ export function useClasses(
     const [ classes, setClasses ] = useState<IClassDoc[]>([]);
     const [ count, setCount ] = useState<number>(0);
 
+    const { user, ...actualFilter } = filter;
+    const route = user.role == "SUDO" ? '/api/v1/classes' : `/api/v1/users/${user._id}/classes`
+
     useEffect(
         () =>{
             setIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/classes?limit=${limit}&offset=${offset}&filter=${JSON.stringify(filter)}`
+                `${route}?limit=${limit}&offset=${offset}&filter=${JSON.stringify(actualFilter)}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){

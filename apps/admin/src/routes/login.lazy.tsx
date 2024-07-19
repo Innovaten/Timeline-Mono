@@ -151,7 +151,7 @@ function Login({ componentRef, multiPage }: PageProps){
             }
         })
         .finally(()=> {
-            setTimeout(toggleLoading, 250)
+            setTimeout(toggleLoading, 500)
         })
 	}
 

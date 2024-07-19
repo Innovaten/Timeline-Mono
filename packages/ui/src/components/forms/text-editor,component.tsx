@@ -16,6 +16,7 @@ import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin';
 import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
 import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
+import { ErrorMessage } from 'formik';
 
 const theme = {
   code: 'editor-code',
@@ -58,11 +59,15 @@ function onError(error: any) {
 }
 
 type TextEditorProps ={
-    onChange: (editorState: EditorState, editor: LexicalEditor) => void
+    onChange: (editorState: EditorState, editor: LexicalEditor) => void,
+    hasValidation?: boolean;
+    name?: string;
 }
 
 export default function TextEditor({
-    onChange
+    onChange,
+    hasValidation,
+    name
 }: TextEditorProps){
     
   const initialConfig = {
@@ -99,6 +104,13 @@ export default function TextEditor({
           <OnChangePlugin onChange={onChange} />
         </div>
       </div>
+      {hasValidation && name && (
+        <ErrorMessage
+          className="text-red-500/60 text-sm mt-1/2 absolute -bottom-5"
+          component="div"
+          name={name}
+        />
+      )}
     </LexicalComposer>
   );
 }

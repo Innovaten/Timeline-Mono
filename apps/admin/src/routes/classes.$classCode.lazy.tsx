@@ -33,7 +33,7 @@ function ClassDetails(){
     },
     {
       label: 'Announcements',
-      value: thisClass?.announcementSet.totalAnnouncements ?? 0,
+      value: thisClass?.announcementSet.announcements.length ?? 0,
       icon: MegaphoneIcon,
     },
     {

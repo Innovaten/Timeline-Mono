@@ -13,10 +13,6 @@ export const AnnouncementSetSchema = new Schema<IAnnouncementSet>({
         type: SchemaTypes.ObjectId,
         required: true,
     },
-    totalAnnouncements: {
-        type: SchemaTypes.Number,
-        default: 0,
-    },
   
     announcements: {
         type: [SchemaTypes.ObjectId]

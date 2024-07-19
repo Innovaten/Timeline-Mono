@@ -3,7 +3,6 @@ import { Document, Types } from "mongoose";
 export interface IAnnouncementSet {
   code: string;
   class: Types.ObjectId;
-  totalAnnouncements: number;
 
   announcements: Types.ObjectId[]
 

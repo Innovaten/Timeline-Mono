@@ -8,13 +8,10 @@ import { Types, startSession } from 'mongoose';
 export class AnnouncementsService {
 
     async listAnnouncements(limit?: number, offset?: number, filter: Record<string, any> = {}, ): Promise<any>{
-        const results = await AnnouncementModel.find(filter)
-        .populate<{ createdBy: IUserDoc, updatedBy: IUserDoc }>({
-            path: "createdBy updatedBy"
-        })
+        const results = await AnnouncementModel.find(filter).populate<{ createdBy: IUserDoc, updatedBy: IUserDoc }>("createdBy updatedBy")
         .limit(limit ?? 10)
         .skip(offset ?? 0)
-        .sort({ updatedAt: -1})
+        .sort({ created: -1})
         return results;
     }
 
@@ -24,7 +21,7 @@ export class AnnouncementsService {
     }
 
     async getAnnouncement(filter: Record<string, any>): Promise<any>{
-        const result = await AnnouncementModel.findOne(filter).populate({ path: "createdBy updatedBy" });
+        const result = await AnnouncementModel.findOne(filter).populate("createdBy updatedBy");
         return result;
     }
 
@@ -60,7 +57,6 @@ export class AnnouncementsService {
         newAnnouncement.save();
 
         relatedAnnouncementSet.announcements.push(newAnnouncement._id);
-        relatedAnnouncementSet.totalAnnouncements += 1;
         relatedAnnouncementSet.save();
         return newAnnouncement;
     }

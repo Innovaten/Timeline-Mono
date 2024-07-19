@@ -26,6 +26,7 @@ const AnnouncementsLazyImport = createFileRoute('/announcements')()
 const AdministratorsLazyImport = createFileRoute('/administrators')()
 const IndexLazyImport = createFileRoute('/')()
 const ClassesclassCodeLazyImport = createFileRoute('/classes/${classCode}')()
+const AnnouncementsCreateLazyImport = createFileRoute('/announcements/create')()
 const ClassesclassCodeLessonsLazyImport = createFileRoute(
   '/classes/${classCode}/lessons',
 )()
@@ -84,6 +85,13 @@ const ClassesclassCodeLazyRoute = ClassesclassCodeLazyImport.update({
   getParentRoute: () => ClassesLazyRoute,
 } as any).lazy(() =>
   import('./routes/classes.${classCode}.lazy').then((d) => d.Route),
+)
+
+const AnnouncementsCreateLazyRoute = AnnouncementsCreateLazyImport.update({
+  path: '/create',
+  getParentRoute: () => AnnouncementsLazyRoute,
+} as any).lazy(() =>
+  import('./routes/announcements.create.lazy').then((d) => d.Route),
 )
 
 const ClassesclassCodeLessonsLazyRoute =
@@ -161,6 +169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupportLazyImport
       parentRoute: typeof rootRoute
     }
+    '/announcements/create': {
+      id: '/announcements/create'
+      path: '/create'
+      fullPath: '/announcements/create'
+      preLoaderRoute: typeof AnnouncementsCreateLazyImport
+      parentRoute: typeof AnnouncementsLazyImport
+    }
     '/classes/${classCode}': {
       id: '/classes/${classCode}'
       path: '/${classCode}'
@@ -183,7 +198,9 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   AdministratorsLazyRoute,
-  AnnouncementsLazyRoute,
+  AnnouncementsLazyRoute: AnnouncementsLazyRoute.addChildren({
+    AnnouncementsCreateLazyRoute,
+  }),
   CalendarLazyRoute,
   ClassesLazyRoute: ClassesLazyRoute.addChildren({
     ClassesclassCodeLazyRoute: ClassesclassCodeLazyRoute.addChildren({
@@ -222,7 +239,10 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "administrators.lazy.tsx"
     },
     "/announcements": {
-      "filePath": "announcements.lazy.tsx"
+      "filePath": "announcements.lazy.tsx",
+      "children": [
+        "/announcements/create"
+      ]
     },
     "/calendar": {
       "filePath": "calendar.lazy.tsx"
@@ -244,6 +264,10 @@ export const routeTree = rootRoute.addChildren({
     },
     "/support": {
       "filePath": "support.lazy.tsx"
+    },
+    "/announcements/create": {
+      "filePath": "announcements.create.lazy.tsx",
+      "parent": "/announcements"
     },
     "/classes/${classCode}": {
       "filePath": "classes.${classCode}.lazy.tsx",

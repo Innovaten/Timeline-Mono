@@ -10,6 +10,7 @@ import { useClasses, useCompositeFilterFlag } from '../hooks';
 import { useClassesAssignedStatusFilter, useClassesModeOfClassFilter, useClassesStatusFilter } from '../hooks/classes.hook';
 import { IClassDoc } from '@repo/models';
 import { useState } from 'react';
+import dayjs from 'dayjs';
 
 export const Route = createLazyFileRoute('/classes')({
     component: Classes
@@ -327,13 +328,12 @@ function Classes(){
                     <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
                         <div className = 'w-full text-blue-700 py-2 px-1 sm:px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
                                 <div className='flex items-center gap-4'>
-                                    <span className='hidden sm:inline w-[70px]'>CODE</span>
                                     <span className='flex-1 font-normal truncate'>NAME</span>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
-                                  <span className='w-[150px]  hidden sm:flex justify-end'>MODE OF CLASS</span>
-                                  <span className='w-[200px] hidden sm:flex justify-end'>NO. OF ADMINISTRATORS</span>
-                                  <span className='w-[150px] hidden sm:flex justify-end'>LAST UPDATED</span>
+                                  <span className='w-[100px]  hidden sm:flex justify-end'>MODE</span>
+                                  <span className='w-[120px] hidden sm:flex justify-end'>NO. OF ADMINS</span>
+                                  <span className='w-[100px] hidden sm:flex justify-end'>LAST UPDATED</span>
                                   
                                   <span className='w-[100px] flex justify-end'>ACTIONS</span>
                                 </div>
@@ -355,13 +355,12 @@ function Classes(){
                                 className = 'w-full text-blue-700 cursor-pointer py-2 px-1 sm:px-3 bg-white border-blue-700/40 border-b-[0.5px] flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
                                 >
                                 <div className='flex items-center gap-4'>
-                                    <small className='hidden sm:inline font-light w-[70px]'>{tClass.code}</small>
                                     <h5 className='flex-1 font-normal truncate'>{tClass.name}</h5>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
-                                  <span className='hidden w-[150px] sm:flex justify-end'>{tClass.modeOfClass}</span>
-                                  <span className='w-[200px] hidden sm:flex justify-end'>{tClass.administrators.length} Administrators</span>
-                                  <span className='w-[150px] hidden sm:flex justify-end'>{new Date(tClass.updatedAt).toDateString()}</span>
+                                  <span className='hidden w-[100px] sm:flex justify-end'>{tClass.modeOfClass}</span>
+                                  <span className='w-[120px] hidden sm:flex justify-end'>{tClass.administrators.length} Admins</span>
+                                  <span className='w-[100px] hidden sm:flex justify-end'>{dayjs(tClass.updatedAt).format("DD/MM/YY")}</span>
                                   <div className='w-[100px] flex justify-end gap-4'>
                                         <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={()=>{ setSelectedClass(tClass), toggleUpdateDialog()}}>              
                                             <PencilIcon className='w-4 h-4' />

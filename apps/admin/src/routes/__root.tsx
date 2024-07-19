@@ -55,7 +55,7 @@ function RootPage(){
 
   return (
     <>
-      <main className='bg-blue-50 w-screen min-h-screen sm:overflow-hidden sm:p-10'>
+      <main className='bg-blue-50 w-screen min-h-screen sm:overflow-hidden scrollbar scrollbar-thin scrollbar-thumb-blue-700/40 scrollbar-track-slate-500 sm:p-10'>
           <div className='min-h-screen sm:min-h-0 sm:h-[calc(100vh-5rem)] w-full sm:w-[calc(100vw-5rem)] sm:flex sm:gap-8'>
               <SidebarComponent />
               <div className='w-full min-h-screen sm:min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-white shadow-sm rounded p-4 pt-10 sm:p-8'>

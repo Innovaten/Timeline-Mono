@@ -24,47 +24,43 @@ export class ClassesService {
 
     async createClass(classData: CreateClassDto, creator: string){
 
-        const newSession = await startSession();
         const timestamp = new Date();
 
-        return await newSession.withTransaction(async (session) => {
+        const { authToken, ...actualData } = classData;
 
-            const { authToken, ...actualData } = classData;
-    
-            const anmtSetPrefix = "ASET";
-            const newAnnouncementSet = new AnnouncementSetModel({
-                code: await generateCode(await AnnouncementSetModel.countDocuments(), anmtSetPrefix),
-                totalAnnouncements: 0,
-                announcements: [],
+        const anmtSetPrefix = "ASET";
+        const newAnnouncementSet = new AnnouncementSetModel({
+            code: await generateCode(await AnnouncementSetModel.countDocuments(), anmtSetPrefix),
+            totalAnnouncements: 0,
+            announcements: [],
 
-                createdAt: timestamp,
-                updatedAt: timestamp,
-                createdBy: new Types.ObjectId(creator),
-                updatedBy: new Types.ObjectId(creator),
-            })
-
-            const newClass = new ClassModel({
-                code: await generateCode(await ClassModel.countDocuments(), "CLS"),
-                ...actualData,
-                status: "Active",
-                administrators: [],
-                lessons: [],
-                resources: [],
-                assignments: [],
-                quizzes: [],
-                announcementSet: newAnnouncementSet._id,
-    
-                createdBy: new Types.ObjectId(creator),
-                updatedBy: new Types.ObjectId(creator),
-            })
-    
-            newAnnouncementSet.class = new Types.ObjectId(`${newClass._id}`);
-
-            newAnnouncementSet.save({ session })
-            newClass.save({ session })
-    
-            return newClass;
+            createdAt: timestamp,
+            updatedAt: timestamp,
+            createdBy: new Types.ObjectId(creator),
+            updatedBy: new Types.ObjectId(creator),
         })
+
+        const newClass = new ClassModel({
+            code: await generateCode(await ClassModel.countDocuments(), "CLS"),
+            ...actualData,
+            status: "Active",
+            administrators: [],
+            lessons: [],
+            resources: [],
+            assignments: [],
+            quizzes: [],
+            announcementSet: newAnnouncementSet._id,
+
+            createdBy: new Types.ObjectId(creator),
+            updatedBy: new Types.ObjectId(creator),
+        })
+
+        newAnnouncementSet.class = new Types.ObjectId(`${newClass._id}`);
+
+        newAnnouncementSet.save()
+        newClass.save()
+
+        return newClass;
     }
 
     

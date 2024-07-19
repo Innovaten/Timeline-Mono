@@ -59,7 +59,7 @@ export class AnnouncementsService {
     
             newAnnouncement.save({ session });
 
-            relatedAnnouncementSet.annoucements.push(newAnnouncement._id);
+            relatedAnnouncementSet.announcements.push(newAnnouncement._id);
             relatedAnnouncementSet.totalAnnouncements += 1;
             relatedAnnouncementSet.save({ session });
             return newAnnouncement;

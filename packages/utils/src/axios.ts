@@ -66,11 +66,14 @@ export async function abstractUnauthenticatedRequest(
   body?: Record<string, any>,
   headers?: Record<string, string>,
   callbacks?: {
-    onSuccess: (data: any) => void,
-    onFailure: (err: any) => void,
-    finally: () => void,
+    onStart?: ()=> void,
+    onSuccess?: (data: any) => void,
+    onFailure?: (err: any) => void,
+    finally?: () => void,
   }
 ) {
+
+  callbacks?.onStart && callbacks.onStart();
 
   return makeUnauthenticatedRequest(
     method,
@@ -103,11 +106,14 @@ export async function abstractAuthenticatedRequest(
   body?: Record<string, any>,
   headers?: Record<string, string>,
   callbacks?: {
+    onStart?: ()=> void,
     onSuccess: (data: any) => void,
     onFailure?: (err: any) => void,
     finally?: () => void,
   }
 ) {
+
+  callbacks?.onStart && callbacks.onStart();
 
   return makeUnauthenticatedRequest(
     method,

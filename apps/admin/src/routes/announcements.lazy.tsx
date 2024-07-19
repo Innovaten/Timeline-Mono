@@ -1,6 +1,6 @@
 import { Button, DialogContainer } from '@repo/ui';
 import { abstractAuthenticatedRequest, useDialog, useLoading } from '@repo/utils'
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useCompositeFilterFlag, useAnnouncements, useSpecificEntity } from '../hooks';
 import dayjs from 'dayjs';
@@ -11,9 +11,13 @@ export const Route = createLazyFileRoute('/announcements')({
   component: Announcements
 })
 
-function Announcements({}){
+function Announcements({ }){
+  const routerState = useRouterState();
 
-  const { toggleDialog: toggleCreateDialog, dialogIsOpen: createDialogIsOpen } = useDialog();
+  if(routerState.location.pathname !== "/announcements"){
+    return <Outlet />
+  } 
+
   const { toggleDialog: toggleDeleteDialog, dialogIsOpen: deleteDialogIsOpen } = useDialog();
   const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
   const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
@@ -22,7 +26,7 @@ function Announcements({}){
 
   const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag)
   const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
-  
+
 
   function handleDeleteAnnouncement(){
     if(!selectedAnnouncement) return 
@@ -57,7 +61,9 @@ function Announcements({}){
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
           <div className='mt-2 flex h-fit justify-between items-center'>
               <h3 className='text-blue-800'>My Announcements</h3>
-              <Button className='flex px-2 !h-[35px]' onClick={toggleCreateDialog}> <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;an Announcement</span></Button>
+              <Link to={'/announcements/create'}>
+                <Button className='flex px-2 !h-[35px]' > <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;an Announcement</span></Button>
+              </Link>
           </div>
           <div className='w-full mt-3 flex flex-wrap gap-4'>
                     <Button

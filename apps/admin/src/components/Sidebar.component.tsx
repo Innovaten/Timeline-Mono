@@ -125,7 +125,7 @@ export default function SidebarComponent(){
                 }
             </div>
             <div className={` ${ !navIsOpen && "hidden" } bg-blue-50 px-4 sm:p-0 z-40 fixed sm:static h-full sm:flex flex-col gap-2 sm:justify-between w-full sm:w-[150px] xl:w-[250px]`}>
-                <div className="sm:flex-1 sm:overflow-auto">
+                <div className="sm:flex-1 sm:overflow-auto scrollbar-thin scrollbar-thumb-blue-700/40 scrollbar-track-slate-500">
                     <img className="h-[40px] m-auto" src="/img/timeline-logo.png" />
                     <div className="mt-12 sm:mt-6">
                         <small className="text-blue-600">MENU</small>

@@ -137,7 +137,7 @@ export class AnnouncementsController {
                 )
             }
 
-            if(updator.role != Roles.SUDO && !relatedClass?.administrators.map(a => a._id).includes(new Types.ObjectId(updator._id as Types.ObjectId)) ){
+            if(updator.role != Roles.SUDO && !relatedClass?.administrators.map(a => `${a._id}`).includes(`${updator._id}`)){
                 return ServerErrorResponse(
                     new Error('You are not permitted to perform this action'),
                     401
@@ -177,7 +177,7 @@ export class AnnouncementsController {
                 )
             }
 
-            if(deletor.role != Roles.SUDO && !relatedClass?.administrators.map(a => a._id).includes(new Types.ObjectId(deletor._id as Types.ObjectId)) ){
+            if(deletor.role != Roles.SUDO && !relatedClass?.administrators.map(a => `${a._id}`).includes(`${deletor._id}`)){
                 return ServerErrorResponse(
                     new Error('You are not permitted to perform this action'),
                     401

@@ -23,7 +23,8 @@ export const AnnouncementSetSchema = new Schema<IAnnouncementSet>({
     },
     updatedBy: {
         type: SchemaTypes.ObjectId,
-        required: true
+        required: true,
+        ref: "Users"
     },
 
     createdAt: {

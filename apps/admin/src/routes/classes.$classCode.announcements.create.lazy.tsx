@@ -8,7 +8,7 @@ import { LexicalEditor } from 'lexical'
 import { _getToken, abstractUnauthenticatedRequest, useLoading } from '@repo/utils';
 import { toast } from 'sonner';
 
-export const Route = createLazyFileRoute('/announcements/create')({
+export const Route = createLazyFileRoute('/classes/$classCode/announcements/create')({
     component: CreateAnnouncement
 })
 
@@ -16,8 +16,9 @@ export const Route = createLazyFileRoute('/announcements/create')({
 function CreateAnnouncement(){
 
     const { isLoading, toggleLoading, resetLoading } = useLoading()
-
-    function handleCreateAnnouncment(values: { 
+    const { classCode } = Route.useParams()
+    const navigate = Route.useNavigate()
+    function handleCreateAnnouncement(values: { 
         title: string,
         content: string
     }) {
@@ -28,13 +29,19 @@ function CreateAnnouncement(){
             {
                 title: values.title,
                 content: values.content,
+                classCode: classCode,
                 isDraft: false,
                 authToken: _getToken(),
             },
             {},
             {
                 onStart: toggleLoading,
-                onSuccess: (data)=>{ toast.success("Announcement created successfully")},
+                onSuccess: (data)=>{ 
+                    toast.success("Announcement created successfully")
+                    navigate({
+                        to: `/classes/${classCode}/announcements`
+                    })
+                },
                 onFailure: (err) =>{ toast.error(`${err.msg}`) },
                 finally: resetLoading,
             }
@@ -53,6 +60,7 @@ function CreateAnnouncement(){
             {
                 title: values.title,
                 content: values.content,
+                classCode: classCode,
                 isDraft: true,
                 authToken: _getToken(),
             },
@@ -76,7 +84,7 @@ function CreateAnnouncement(){
                 <Formik
                     initialValues={createAnnouncementInitialValues}
                     validationSchema={createAnnouncementValidationSchema}
-                    onSubmit={handleCreateAnnouncment}
+                    onSubmit={handleCreateAnnouncement}
 
                 >
                     { form => {

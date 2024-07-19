@@ -27,7 +27,11 @@ export const ClassSchema = new Schema<IClassDoc>({
     },
 
     administrators: {
-        type: [ SchemaTypes.ObjectId],
+        type: [ { type: SchemaTypes.ObjectId, ref: "Users" }],
+        default: []
+    },
+    students: {
+        type: [ { type: SchemaTypes.ObjectId, ref: "Users" }],
         default: []
     },
     lessons: {
@@ -73,6 +77,7 @@ export const ClassSchema = new Schema<IClassDoc>({
 
     createdBy: {
         type: SchemaTypes.ObjectId,
+        ref: "Users",
         required: true,
     },
 
@@ -86,7 +91,8 @@ export const ClassSchema = new Schema<IClassDoc>({
     },
     updatedBy: {
         type: SchemaTypes.ObjectId,
-        default: new Date()
+        default: new Date(),
+        ref: "Users"
     },
 })
 

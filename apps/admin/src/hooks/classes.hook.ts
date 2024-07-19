@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { makeAuthenticatedRequest } from "@repo/utils";
-import { IClassDoc } from "@repo/models";
+import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
+import { IClassDoc, IUserDoc, IAnnouncementSetDoc } from "@repo/models";
+import { toast } from "sonner";
 
 export function useClasses(
     flag?: boolean, 
@@ -107,11 +108,29 @@ export function useClassesAssignedStatusFilter(){
 
 }
 
-export function useClassesByAdmin(
-    flag?: boolean, 
-    filter: Record<string, any> = {},
-    limit: number = 10, 
-    offset: number = 0, 
-) {
+export function useClass(flag: boolean, specifier: string, isId:boolean) {
 
+
+    const [ thisClass, setClass ] = useState<Omit<IClassDoc, "createdBy" | "administrators" | "announcementSet"> & { createdBy: IUserDoc, administrators: IUserDoc[], announcementSet: IAnnouncementSetDoc} | null>(null)
+    const { isLoading, toggleLoading, resetLoading} = useLoading();
+
+    const route =  `?isId=${( isId ?? true )}`
+
+    useEffect(() => {
+        abstractAuthenticatedRequest(
+            "get",
+            `/api/v1/classes/${specifier}${route}`,
+            {},
+            {},
+            {
+                onStart: toggleLoading,
+                onSuccess: (data) => {setClass(data)},
+                onFailure: (err) => {toast.error(`${err.msg}`)},
+                finally: resetLoading
+            }
+        )
+
+    }, [flag])
+
+    return { thisClass, isLoading}
 }

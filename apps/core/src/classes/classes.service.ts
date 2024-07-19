@@ -1,16 +1,19 @@
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, UserModel } from "@repo/models";
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel } from "@repo/models";
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
 import { generateCode } from "../utils";
-import { startSession } from 'mongoose'
 
 export class ClassesService {
    
     async getClass(filter: Record<string, any> = {}){
 
-        const result = await ClassModel.findOne(filter).populate<{ annoucementSet: IAnnouncementSetDoc }>("announcementSet");
-        return result
+        const result = await ClassModel.findOne(filter).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[]}>("announcementSet createdBy administrators");
+        return result;
+    }
 
+    async getClassById(_id: string){
+        const result = await ClassModel.findById(_id).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[]}>("announcementSet createdBy administrators");
+        return result;
     }
 
     async getClasses(limit?: number, offset?: number, filter?: Record<string, any>){

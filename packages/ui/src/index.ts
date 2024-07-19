@@ -4,6 +4,7 @@ import {
     DialogContainer,
     SelectInput,
     TextEditor,
+    StatCard,
 
 } from './components'
 
@@ -15,4 +16,6 @@ export {
     TextEditor,
     
     DialogContainer,
+    StatCard,
+    
 }

@@ -87,7 +87,7 @@ export class AnnouncementsController {
                 )
             }
 
-            const relatedClass = await this.classes.getClass({ _id: new Types.ObjectId(announcementData.class) }) 
+            const relatedClass = await this.classes.getClass({ code: announcementData.classCode }) 
 
             if(!relatedClass) {
                 return ServerErrorResponse(
@@ -96,14 +96,14 @@ export class AnnouncementsController {
                 )
             }
 
-            if(creator.role != Roles.SUDO && !relatedClass.administrators.includes(new Types.ObjectId(creator._id as Types.ObjectId)) ){
+            if(creator.role != Roles.SUDO && !relatedClass.administrators.map(a => `${a._id}`).includes(`${creator._id}`) ){
                 return ServerErrorResponse(
                     new Error('You are not permitted to perform this action'),
                     401
                 )
             }
 
-            const announcement = await this.service.createAnnouncement(relatedClass?.annoucementSet._id, creator._id, announcementData);
+            const announcement = await this.service.createAnnouncement(relatedClass?.announcementSet._id, creator._id, announcementData);
 
             return ServerSuccessResponse(announcement);
 
@@ -128,7 +128,7 @@ export class AnnouncementsController {
                 )
             }
 
-            const relatedClass = await this.classes.getClass({ _id: new Types.ObjectId(announcementData.class) }) 
+            const relatedClass = await this.classes.getClass({ code: announcementData.classCode }) 
 
             if(!relatedClass) {
                 return ServerErrorResponse(
@@ -137,7 +137,7 @@ export class AnnouncementsController {
                 )
             }
 
-            if(updator.role != Roles.SUDO && !relatedClass?.administrators.includes(new Types.ObjectId(updator._id as Types.ObjectId)) ){
+            if(updator.role != Roles.SUDO && !relatedClass?.administrators.map(a => a._id).includes(new Types.ObjectId(updator._id as Types.ObjectId)) ){
                 return ServerErrorResponse(
                     new Error('You are not permitted to perform this action'),
                     401
@@ -168,7 +168,7 @@ export class AnnouncementsController {
                 )
             }
 
-            const relatedClass = await this.classes.getClass({ _id: new Types.ObjectId(announcementData.class) }) 
+            const relatedClass = await this.classes.getClass({ code: announcementData.classCode }) 
 
             if(!relatedClass) {
                 return ServerErrorResponse(
@@ -177,7 +177,7 @@ export class AnnouncementsController {
                 )
             }
 
-            if(deletor.role != Roles.SUDO && !relatedClass?.administrators.includes(new Types.ObjectId(deletor._id as Types.ObjectId)) ){
+            if(deletor.role != Roles.SUDO && !relatedClass?.administrators.map(a => a._id).includes(new Types.ObjectId(deletor._id as Types.ObjectId)) ){
                 return ServerErrorResponse(
                     new Error('You are not permitted to perform this action'),
                     401

@@ -8,14 +8,15 @@ import { IAnnouncementDoc } from '@repo/models';
 import { toast } from 'sonner';
 import { useLMSContext } from '../app';
 
-export const Route = createLazyFileRoute('/announcements')({
+export const Route = createLazyFileRoute('/classes/$classCode/announcements')({
   component: Announcements
 })
 
 function Announcements({ }){
   const routerState = useRouterState();
+  const { classCode } = Route.useParams()
 
-  if(routerState.location.pathname !== "/announcements"){
+  if(routerState.location.pathname !== `/classes/${classCode}/announcements`){
     return <Outlet />
   } 
 
@@ -39,7 +40,7 @@ function Announcements({ }){
 
     abstractAuthenticatedRequest(
       "delete",
-      `/api/v1/announcements/${selectedAnnouncement._id}`,
+      `/api/v1/announcements/${selectedAnnouncement.code}`,
       {},
 
       {},
@@ -66,7 +67,10 @@ function Announcements({ }){
         </DialogContainer>
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
           <div className='mt-2 flex h-fit justify-between items-center'>
-              <h3 className='text-blue-800'>All Announcements</h3>
+              <h3 className='text-blue-800'>Class Announcements</h3>
+              <Link to={`/classes/${classCode}/announcements/create`}>
+                <Button className='flex px-2 !h-[35px]' > <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;an Announcement</span></Button>
+              </Link>
           </div>
           <div className='w-full mt-3 flex flex-wrap gap-4'>
                     <Button

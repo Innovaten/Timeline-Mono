@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete } from '@nestjs/common';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
-import { ClassModel, IAnnouncementSetDoc, IClassDoc, } from '@repo/models';
+import { ClassModel, IAnnouncementSetDoc, IClassDoc, IUserDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { CreateClassDto, DeleteClassDto, UpdateClassDto } from './classes.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { ClassesService } from './classes.service';
 import { Roles } from '../common/enums/roles.enum';
+import { HydratedDocument, Types } from 'mongoose';
 
 
 @Controller({
@@ -214,6 +215,48 @@ export class ClassesController {
             return ServerErrorResponse(new Error(`${err}`), 500);
         }   
     }
+
+    @UseGuards(AuthGuard)
+    @Get(":specifier")
+    async getClass( 
+        @Param("specifier") specifier: string,
+        @Query('isId') isId: boolean = true,
+        @Request() req: Request,
+    ) {
+
+        try {
+            // @ts-ignore
+            const user = req["user"]
+
+            if(!user){
+                return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
+            }
+
+            let thisClass: any | null = null;
+            
+
+            if(isId == true){
+                thisClass = await this.service.getClassById(specifier)
+            } else {
+                thisClass = await this.service.getClass({ code: specifier })
+            }
+        
+            if(!thisClass){
+                return ServerErrorResponse(
+                    new Error("Specified class could not be found"),
+                    404,
+                )
+            }
+
+            return ServerSuccessResponse(thisClass);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+
+    }
+
+
     @UseGuards(AuthGuard)
     @Get(':_id/announcements')
     async getAnnouncementsByClass(

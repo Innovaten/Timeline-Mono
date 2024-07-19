@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import {  UserModel } from "@repo/models";
+import {  ClassModel, UserModel } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -174,6 +174,12 @@ export class UserService {
             createdAt: new Date(),
             classes: userData.approvedClasses,
         })
+
+        await ClassModel.updateMany({ _id: { $in: userData.approvedClasses }}, {
+            $push: {
+                students: user._id,
+            }
+        } )
 
         await user.save()
 

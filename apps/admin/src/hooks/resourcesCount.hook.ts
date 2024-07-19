@@ -3,6 +3,7 @@ import { makeAuthenticatedRequest } from "@repo/utils";
 import { toast } from "sonner";
 
 export function useClassesCount(
+    filter: Record<string,any> = {}
 ){
     const [ isLoadingClasses, setIsLoadingClasses ] = useState<boolean>(true);
     const [ classesCount, setClassesCount ] = useState<number>(0);
@@ -12,7 +13,7 @@ export function useClassesCount(
             setIsLoadingClasses(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/classes/count`
+                `/api/v1/classes/count?filter=${JSON.stringify(filter)}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){
@@ -58,6 +59,7 @@ export function useAdminsCount(
 }
 
 export function useStudentsCount(
+    filter: Record<string,any> = {}
 ){
     const [ studentIsLoading, setStudentIsLoading ] = useState<boolean>(true);
     const [ studentCount, setStudentCount ] = useState<number>(0);
@@ -67,7 +69,7 @@ export function useStudentsCount(
             setStudentIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/users/count?filter=${JSON.stringify({role: { $in: ["STUDENT"]}})}`
+                `/api/v1/users/count?filter=${JSON.stringify({ ...filter, role: { $in: ["STUDENT"]}})}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){

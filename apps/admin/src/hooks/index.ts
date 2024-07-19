@@ -1,6 +1,6 @@
 import { useAdministratorsFilter, useAdministrators } from "./administrators.hook"
 import { useRegistrations } from "./registrations.hook"
-import { useClasses } from "./classes.hook"
+import { useClasses, useClass } from "./classes.hook"
 import { useAdminsCount, useClassesCount, usePendingCount, useStudentsCount} from "./resourcesCount.hook"
 import useCompositeFilterFlag from "./composite-filter.hook"
 import { useMovileNavigation } from "@repo/utils"
@@ -12,6 +12,7 @@ export {
     useAdministrators,
     useAdministratorsFilter,
     useClasses,
+    useClass,
     useCompositeFilterFlag,
     useMovileNavigation,
     useAdminsCount,

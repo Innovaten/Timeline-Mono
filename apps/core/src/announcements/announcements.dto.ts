@@ -11,7 +11,7 @@ export class CreateAnnouncementDto {
     isDraft: boolean
 
     @IsString()
-    class: string;
+    classCode: string;
 
     @IsString()
     authToken: string;
@@ -28,7 +28,7 @@ export class UpdateAnnouncementDto {
     isDraft: boolean
 
     @IsString()
-    class: string;
+    classCode: string;
     
     @IsString()
     authToken: string;
@@ -39,5 +39,5 @@ export class DeleteAnnouncementDto {
     authToken: string;
 
     @IsString()
-    class: string;
+    classCode: string;
 }

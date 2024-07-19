@@ -1,5 +1,5 @@
 import { Button, DialogContainer, Input } from '@repo/ui';
-import { createLazyFileRoute, Link } from '@tanstack/react-router';
+import { createLazyFileRoute, Link, useRouterState, Outlet } from '@tanstack/react-router';
 import { PlusIcon, ArrowPathIcon, FunnelIcon, TrashIcon, EyeIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
 import { _getToken, abstractAuthenticatedRequest, makeAuthenticatedRequest, useDialog, useLoading } from '@repo/utils';
@@ -20,6 +20,11 @@ export const Route = createLazyFileRoute('/classes')({
 
 
 function Classes(){
+    const routerState = useRouterState();
+
+    if(routerState.location.pathname !== "/classes"){
+        return <Outlet />
+      } 
 
     const { user } = useLMSContext() 
 

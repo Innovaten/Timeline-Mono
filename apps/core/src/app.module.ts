@@ -7,6 +7,8 @@ import { UserModule } from './user/user.module';
 import { ClassesModule } from './classes/classes.module'
 import { RegistrationsModule } from './registrations/registrations.module';
 import CustomCommon from './common';
+import { ModulesModule } from './modules/module.module';
+import { LessonsModule } from './lessons/lessons.module';
 
 @Module({
   imports: [
@@ -17,7 +19,9 @@ import CustomCommon from './common';
     AuthModule,
     UserModule,
     RegistrationsModule,
-    ClassesModule
+    ClassesModule,
+    ModulesModule,
+    LessonsModule,
   ],
   controllers: [AppController],
   providers: [AppService, CustomCommon],

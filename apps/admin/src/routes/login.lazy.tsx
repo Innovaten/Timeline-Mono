@@ -381,7 +381,7 @@ function ForgotPassword({ componentRef, multiPage }: PageProps){
   function handleSubmit(values: { email: string }){
       multiPage.goToNext()
       return
-      makeUnauthenticatedRequest('get', `/api/v1/auth/forgot-password?email=${values.email}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send?email=${values.email}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('e', values.email);

@@ -1,4 +1,5 @@
-import { ClassModel } from "@repo/models";
+import { ClassModel, IModulesDoc, ModuleModel } from "@repo/models";
+
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
 import { generateCode } from "../utils";
@@ -23,7 +24,7 @@ export class ClassesService {
             ...actualData,
             status: "Active",
             administrators: [],
-            lessons: [],
+            modules: [],
             resources: [],
             assignments: [],
             quizzes: [],
@@ -86,5 +87,21 @@ export class ClassesService {
     async getClassesCount(filter: Record<string, any>){
         const count = await ClassModel.countDocuments(filter);
         return count;
+    }
+
+
+    // This is the function that gets all the modules asscociated with a specific class (the classId needs to be passes as a parameter)
+    async getModuleByClassId(classId: string, userRole: string): Promise<IModulesDoc[]> {
+        const classDoc = await ClassModel.findById(classId)
+        if (!classDoc) {
+            throw new Error("Class not found")
+        }
+
+        if (userRole !== 'SUDO' && userRole !== 'ADMIN' ) {
+            throw new Error("Unauthorized")
+        }
+
+        const modules = await ModuleModel.find({ _id: { $in: classDoc.modules } })
+        return modules
     }
 }

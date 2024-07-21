@@ -215,4 +215,15 @@ export class ClassesController {
 
         
     }
+
+    @Get(':_id/modules')
+    async getModulesByClassId(@Param('_id') _id: string, @Request() req: any) {
+        try {
+            const userRole = req.user.role
+            return this.service.getModuleByClassId(_id, userRole)
+        } catch (error) {
+            return ServerErrorResponse(new Error(`${error}`), 500)
+        }
+
+    }
 }

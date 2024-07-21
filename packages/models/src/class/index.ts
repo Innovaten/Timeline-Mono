@@ -30,9 +30,10 @@ export const ClassSchema = new Schema<IClassDoc>({
         type: [ SchemaTypes.ObjectId],
         default: []
     },
-    lessons: {
+    modules: {
         type: [ SchemaTypes.ObjectId],
-        default: []
+        default: [],
+        ref: "Modules",
     },
     resources:  {
         type: [ SchemaTypes.ObjectId],

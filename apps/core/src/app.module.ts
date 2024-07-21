@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { ClassesModule } from './classes/classes.module'
 import { RegistrationsModule } from './registrations/registrations.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
+import { AssetsModule } from './assets/assets.module';
 import CustomCommon from './common';
 
 @Module({
@@ -19,7 +20,8 @@ import CustomCommon from './common';
     UserModule,
     RegistrationsModule,
     ClassesModule,
-    AnnouncementsModule
+    AnnouncementsModule,
+    AssetsModule
   ],
   controllers: [AppController],
   providers: [AppService, CustomCommon],

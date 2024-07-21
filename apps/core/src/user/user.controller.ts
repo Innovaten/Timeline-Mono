@@ -290,5 +290,19 @@ export class UsersController {
         } 
     }
 
+    @Patch('update-password')
+    async updatedPassword(
+        @Query('id') id: string,
+        @Query('otp') otp: string,
+        @Query('password') newPassword: string,
+    ) {
+        try {
+            const response = await this.user.updatePassword(id, otp, newPassword)
+            return response
+        } catch (error) {
+            return ServerErrorResponse(new Error(`${error}`), 500)
+        }
+    }
+
 
 }

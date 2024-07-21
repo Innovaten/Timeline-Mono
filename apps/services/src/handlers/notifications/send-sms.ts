@@ -15,23 +15,22 @@ export async function sendSMSHandler(KafkaArgs: EachMessagePayload) {
     // SMS API V1
 
     // SEND SMS
-    fetch(`https://sms.arkesel.com/sms/api?action=send-sms&api_key=${ServicesConfig.arkesel.api_key}&to=${validPhoneNumber(phone)}&from=${"Timeline"}&sms=${smsBodyTemplates[purpose](actualdata)}`)
-    //.then(response => console.log(response))
+    fetch(`https://apps.mnotify.net/smsapi?key=${ServicesConfig.mnotify.api_key}&to=${validPhoneNumber(phone)}&msg=${smsBodyTemplates[purpose](actualdata)}&sender_id=${"Timeline"}`)
+    .then(response => console.log(response))
     .catch(error => console.log(error));
 
     // SMS API V2
     // const SMSdata = {
     //   message: `${smsBodyTemplates[purpose](actualdata)}`,
-    //   recipients: [`${validPhoneNumber(phone)}`],
+    //   recipient: [`${phoneNumber}`],
     //   sender: "Timeline",
     // };
 
     // const headers = {
     //   "Content-Type": "application/json",
-    //   "api-key": ServicesConfig.arkesel.api_key,
     // };
   
-    // fetch("https://sms.arkesel.com/api/v2/sms/send", {
+    // fetch("https://api.mnotify.com/api/sms/quick?key=${ServicesConfig.mnotify.api_key}", {
     //   method: "POST",
     //   headers: headers,
     //   body: JSON.stringify(SMSdata),

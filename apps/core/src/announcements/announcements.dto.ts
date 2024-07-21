@@ -33,11 +33,3 @@ export class UpdateAnnouncementDto {
     @IsString()
     authToken: string;
 }
-
-export class DeleteAnnouncementDto {
-    @IsString()
-    authToken: string;
-
-    @IsString()
-    classCode: string;
-}

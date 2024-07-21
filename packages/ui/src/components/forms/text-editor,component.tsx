@@ -17,6 +17,8 @@ import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin';
 import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
 import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
 import { ErrorMessage } from 'formik';
+import { EditorRefPlugin } from '@lexical/react/LexicalEditorRefPlugin';
+import { MutableRefObject, RefObject } from 'react';
 
 const theme = {
   code: 'editor-code',
@@ -62,12 +64,14 @@ type TextEditorProps ={
     onChange: (editorState: EditorState, editor: LexicalEditor) => void,
     hasValidation?: boolean;
     name?: string;
+    editorRef: MutableRefObject<LexicalEditor|undefined>;
 }
 
 export default function TextEditor({
     onChange,
     hasValidation,
-    name
+    name,
+    editorRef
 }: TextEditorProps){
     
   const initialConfig = {
@@ -84,6 +88,7 @@ export default function TextEditor({
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
+      <EditorRefPlugin editorRef={editorRef} />
       <div className="editor-container">
         <ToolbarPlugin />
         <div className="editor-inner">

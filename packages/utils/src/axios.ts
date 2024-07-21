@@ -115,7 +115,7 @@ export async function abstractAuthenticatedRequest(
 
   callbacks?.onStart && callbacks.onStart();
 
-  return makeUnauthenticatedRequest(
+  return makeAuthenticatedRequest(
     method,
     url,
     body,

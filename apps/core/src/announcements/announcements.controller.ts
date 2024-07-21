@@ -5,9 +5,10 @@ import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/r
 import { Roles } from '../common/enums/roles.enum';
 import { AnnouncementsService } from './announcements.service';
 import { JwtService } from '../common/services/jwt.service';
-import { DeleteAnnouncementDto, CreateAnnouncementDto , UpdateAnnouncementDto} from './announcements.dto';
+import { CreateAnnouncementDto , UpdateAnnouncementDto} from './announcements.dto';
 import { ClassesService } from '../classes/classes.service';
 import { Types } from 'mongoose';
+import { IAnnouncementDoc } from '@repo/models';
 
 @Controller({
     path: 'announcements',
@@ -87,23 +88,38 @@ export class AnnouncementsController {
                 )
             }
 
-            const relatedClass = await this.classes.getClass({ code: announcementData.classCode }) 
+            let announcement: IAnnouncementDoc
 
-            if(!relatedClass) {
-                return ServerErrorResponse(
-                    new Error("Specified class does not exist"),
-                    400
-                )
+            if(announcementData.classCode == "*") { // Sudo request to announce to everyone
+
+                if(creator.role != Roles.SUDO){
+                    return ServerErrorResponse(
+                        new Error('You are not permitted to perform this action'),
+                        401
+                    )
+                }
+
+                announcement = await this.service.createAnnouncement(true, creator._id, announcementData);
+                
+            } else {
+                const relatedClass = await this.classes.getClass({ code: announcementData.classCode }) 
+    
+                if(!relatedClass) {
+                    return ServerErrorResponse(
+                        new Error("Specified class does not exist"),
+                        400
+                    )
+                }
+    
+                if(creator.role != Roles.SUDO && !relatedClass.administrators.map(a => `${a._id}`).includes(`${creator._id}`) ){
+                    return ServerErrorResponse(
+                        new Error('You are not permitted to perform this action'),
+                        401
+                    )
+                }
+                announcement = await this.service.createAnnouncement(false, creator._id, announcementData, relatedClass?.announcementSet._id);
+                
             }
-
-            if(creator.role != Roles.SUDO && !relatedClass.administrators.map(a => `${a._id}`).includes(`${creator._id}`) ){
-                return ServerErrorResponse(
-                    new Error('You are not permitted to perform this action'),
-                    401
-                )
-            }
-
-            const announcement = await this.service.createAnnouncement(relatedClass?.announcementSet._id, creator._id, announcementData);
 
             return ServerSuccessResponse(announcement);
 
@@ -153,13 +169,16 @@ export class AnnouncementsController {
         }
     }
 
+    @UseGuards(AuthGuard)
     @Delete(":_id")
     async deleteAnnouncement(
         @Param("_id") _id: string,
-        @Body() announcementData: DeleteAnnouncementDto
+        @Query("classCode") classCode: string,
+        @Request() req: Request,
     ) {
         try {
-            const deletor = await this.jwt.validateToken(announcementData.authToken);
+            // @ts-ignore
+            const deletor = req["user"]
             
             if(!deletor){
                 return ServerErrorResponse(
@@ -168,7 +187,7 @@ export class AnnouncementsController {
                 )
             }
 
-            const relatedClass = await this.classes.getClass({ code: announcementData.classCode }) 
+            const relatedClass = await this.classes.getClass({ code: classCode }) 
 
             if(!relatedClass) {
                 return ServerErrorResponse(
@@ -184,7 +203,7 @@ export class AnnouncementsController {
                 )
             }
 
-            const deletedAnnouncement = await this.service.deleteAnnouncement(_id);
+            const deletedAnnouncement = await this.service.deleteAnnouncement(_id, `${deletor._id}`);
 
             return ServerSuccessResponse(deletedAnnouncement);
 
@@ -194,13 +213,60 @@ export class AnnouncementsController {
     }
 
     @UseGuards(AuthGuard)
-    @Get(":_id")
-    async getAnnouncement(
-        @Param("_id") _id: string
+    @Get(":specifier/publish")
+    async publishDraftedAnnouncement(
+        @Param('specifier') specifier: string,
+        @Query("classCode") classCode: string,
+        @Query("isId") isId: boolean = true,
+        @Request() req: Request
     ) {
         try {
-            const announcement = await this.service.getAnnouncement({ _id })
+            // @ts-ignore
+            const updator = req["user"];
+            
+            if(!updator){
+                return ServerErrorResponse(
+                    new Error('Unauthenticated Request'),
+                    401
+                )
+            }
 
+            const relatedClass = await this.classes.getClass({ code: classCode }) 
+
+            if(!relatedClass) {
+                return ServerErrorResponse(
+                    new Error("Specified class does not exist"),
+                    400
+                )
+            }
+
+            if(updator.role != Roles.SUDO && !relatedClass?.administrators.map(a => `${a._id}`).includes(`${updator._id}`)){
+                return ServerErrorResponse(
+                    new Error('You are not permitted to perform this action'),
+                    401
+                )
+            }
+
+            const announcement = await this.service.publishAnnouncement(specifier, isId, `${updator._id}`)
+
+            return ServerSuccessResponse(announcement);
+            
+        } catch (err) {
+            return sendInternalServerError(err);
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Get(":specifier")
+    async getAnnouncement(
+        @Param("specifier") specifier: string,
+        @Query("isId") isId: string,
+    ) {
+        try {
+            const isIdFlag = isId != 'false';
+            const filter = isIdFlag ? { _id: new Types.ObjectId(specifier) } : { code: specifier }
+
+            const announcement = await this.service.getAnnouncement(filter)
             return ServerSuccessResponse(announcement);
 
         } catch (err) {

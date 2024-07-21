@@ -3,7 +3,7 @@ import { createLazyFileRoute, Navigate } from '@tanstack/react-router'
 import { Formik, Form, ErrorMessage } from 'formik'
 import {$generateHtmlFromNodes} from '@lexical/html';
 import * as Yup from 'yup'
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { LexicalEditor } from 'lexical'
 import { _getToken, abstractUnauthenticatedRequest, useLoading } from '@repo/utils';
 import { toast } from 'sonner';
@@ -18,6 +18,9 @@ function CreateAnnouncement(){
     const { isLoading, toggleLoading, resetLoading } = useLoading()
     const { classCode } = Route.useParams()
     const navigate = Route.useNavigate()
+
+    const editorRef = useRef<LexicalEditor>();
+
     function handleCreateAnnouncement(values: { 
         title: string,
         content: string
@@ -67,7 +70,7 @@ function CreateAnnouncement(){
             {},
             {
                 onStart: toggleLoading,
-                onSuccess: (data)=>{ toast.success("Announcement created successfully")},
+                onSuccess: (data)=>{ toast.success("Announcement saved successfully")},
                 onFailure: (err) =>{ toast.error(`${err.msg}`) },
                 finally: resetLoading,
             }
@@ -95,7 +98,7 @@ function CreateAnnouncement(){
                                         <Form className='flex flex-col gap-6 w-full h-full'>
                                             <Input name='title'  label='Title' hasValidation />
                                             <div className='flex flex-col mt-1 flex-1'>
-                                                <TextEditor hasValidation name="content" onChange={(editorState, editor) => {
+                                                <TextEditor hasValidation name="content" editorRef={editorRef} onChange={(editorState, editor) => {
                                                     editor.update(() => {
                                                         form.setFieldValue("content", $generateHtmlFromNodes(editor, null))
                                                     })

@@ -8,10 +8,12 @@ import { Types, startSession } from 'mongoose';
 export class AnnouncementsService {
 
     async listAnnouncements(limit?: number, offset?: number, filter: Record<string, any> = {}, ): Promise<any>{
-        const results = await AnnouncementModel.find(filter).populate<{ createdBy: IUserDoc, updatedBy: IUserDoc }>("createdBy updatedBy")
+        console.log(filter)
+        const results = await AnnouncementModel.find(filter)
         .limit(limit ?? 10)
         .skip(offset ?? 0)
-        .sort({ created: -1})
+        .sort({ updatedAt: -1})
+        .populate<{ createdBy: IUserDoc, updatedBy: IUserDoc }>("createdBy updatedBy")
         return results;
     }
 
@@ -20,31 +22,53 @@ export class AnnouncementsService {
         return count;
     }
 
-    async getAnnouncement(filter: Record<string, any>): Promise<any>{
+    async getAnnouncement(filter: Record<string, any>): Promise<IAnnouncementDoc|null>{
         const result = await AnnouncementModel.findOne(filter).populate("createdBy updatedBy");
         return result;
     }
 
     async createAnnouncement(
-        announcementSetId: unknown, 
+        isToEveryOne: boolean,
         creatorId: unknown, 
-        announcementData: CreateAnnouncementDto 
+        announcementData: CreateAnnouncementDto,
+        announcementSetId?: unknown, 
     ): Promise<IAnnouncementDoc> {
         const timestamp = new Date();
         const prefix = "ANMT"
         
         const { authToken, classCode: relatedClassCode, ...actualData } = announcementData;
 
-        const relatedAnnouncementSet = await AnnouncementSetModel.findById(`${announcementSetId}`);
-
-        if(!relatedAnnouncementSet){
-            throw new Error('Specified Announcement Set could not be found.');
+        if(!isToEveryOne){
+            const relatedAnnouncementSet = await AnnouncementSetModel.findById(`${announcementSetId}`);
+    
+            if(!relatedAnnouncementSet){
+                throw new Error('Specified Announcement Set could not be found.');
+            }
+            
+            const newAnnouncement = new AnnouncementModel({
+                code: await generateCode(await AnnouncementModel.countDocuments(), prefix),
+                ...actualData,
+                announcementSet: relatedAnnouncementSet._id,
+                meta: {
+                    isDeleted: false
+                },
+                createdBy: new Types.ObjectId(`${creatorId}`),
+                updatedBy: new Types.ObjectId(`${creatorId}`),
+                createdAt: timestamp,
+                updatedAt: timestamp,
+            })
+    
+            newAnnouncement.save();
+    
+            relatedAnnouncementSet.announcements.push(newAnnouncement._id);
+            relatedAnnouncementSet.save();
+            return newAnnouncement;
         }
-        
-        const newAnnouncement = new AnnouncementModel({
+
+        const newAnnouncementToEveryOne = new AnnouncementModel({
             code: await generateCode(await AnnouncementModel.countDocuments(), prefix),
             ...actualData,
-            announcementSet: relatedAnnouncementSet._id,
+            announcementSet: "*",
             meta: {
                 isDeleted: false
             },
@@ -54,11 +78,16 @@ export class AnnouncementsService {
             updatedAt: timestamp,
         })
 
-        newAnnouncement.save();
+        await AnnouncementSetModel.updateMany({},{
+            $push: {
+                announcements: newAnnouncementToEveryOne._id
+            }
+        })
 
-        relatedAnnouncementSet.announcements.push(newAnnouncement._id);
-        relatedAnnouncementSet.save();
-        return newAnnouncement;
+        await newAnnouncementToEveryOne.save()
+
+        return newAnnouncementToEveryOne;
+
     }
 
     async updateAnnouncement(
@@ -88,13 +117,18 @@ export class AnnouncementsService {
 
     async deleteAnnouncement(
         _id: string,
+        deletor: string,
 
     ): Promise<IAnnouncementDoc> {
+        const timestamp = new Date();
+
         const announcement = await AnnouncementModel.findByIdAndUpdate(_id, {
             $set: {
                 meta: {
                     isDeleted: true,
-                }
+                },
+                updatedAt: timestamp,
+                updatedBy: new Types.ObjectId(deletor)
             }
         }, { new: true })
 
@@ -137,9 +171,37 @@ export class AnnouncementsService {
             ]
         })
 
-        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }});
+        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }, ...filter }).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1 }).populate("createdBy updatedBy");
 
         return announcements;
 
+    }
+
+    async publishAnnouncement(
+        specifier: string,
+        isId: boolean,
+        updator: string,
+    ) {
+        let announcement;
+        const timestamp = new Date();
+
+        if(isId == false){
+            announcement = await this.getAnnouncement({ code: specifier })
+        } else {
+            announcement = await this.getAnnouncement({ _id: new Types.ObjectId(specifier) })
+        }
+
+        if(!announcement){
+            throw new Error("Specified Announcement could not be found");
+        }
+
+        announcement.isDraft = false;
+        announcement.updatedAt = timestamp;
+
+        announcement.updatedBy = new Types.ObjectId(updator);
+
+        announcement.save()
+        
+        return announcement;
     }
 }

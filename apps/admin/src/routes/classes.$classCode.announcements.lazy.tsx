@@ -1,5 +1,5 @@
 import { Button, DialogContainer } from '@repo/ui';
-import { abstractAuthenticatedRequest, useDialog, useLoading } from '@repo/utils'
+import { _getToken, abstractAuthenticatedRequest, useDialog, useLoading } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useCompositeFilterFlag, useAnnouncements, useSpecificEntity } from '../hooks';
@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { IAnnouncementDoc } from '@repo/models';
 import { toast } from 'sonner';
 import { useLMSContext } from '../app';
+import { useAnnouncementStateFilter } from '../hooks/announcements.hook,';
 
 export const Route = createLazyFileRoute('/classes/$classCode/announcements')({
   component: Announcements
@@ -25,13 +26,17 @@ function Announcements({ }){
   const { toggleDialog: toggleDeleteDialog, dialogIsOpen: deleteDialogIsOpen } = useDialog();
   const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
   const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
-  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag ])
   const { isLoading: deleteIsLoading, resetLoading: resetDeleteIsLoading, toggleLoading: toggleDeleteIsloading } = useLoading()
+  
+  const { changeFilter, filter, filterChangedFlag, filterOptions} = useAnnouncementStateFilter()
+  
+  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag, filterChangedFlag ])
 
   const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0, {
-    user,
-  })
-  
+      ...filter,
+      user,
+    })
+    
   const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
 
 
@@ -40,14 +45,19 @@ function Announcements({ }){
 
     abstractAuthenticatedRequest(
       "delete",
-      `/api/v1/announcements/${selectedAnnouncement.code}`,
+      `/api/v1/announcements/${selectedAnnouncement._id}?classCode=${classCode}`,
       {},
-
       {},
       {
+        onStart: toggleDeleteIsloading,
         onSuccess: (data) => {
+          resetSelected()
+          toggleDeleteDialog()
+          toggleRefreshFlag()
           toast.success(`Announcement ${data.code ?? ""} deleted successfully`)
         },
+        onFailure: (err) => { toast.error(`${err.msg}`)},
+        finally: resetDeleteIsLoading
       }
     )
   }
@@ -62,7 +72,7 @@ function Announcements({ }){
         >
             <div className='flex justify-end gap-4 mt-8'>
                 <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); resetSelected() }}>Close</Button>
-                <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={() => { handleDeleteAnnouncement }}>Delete Announcement</Button>
+                <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={handleDeleteAnnouncement}>Delete Announcement</Button>
             </div>
         </DialogContainer>
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
@@ -81,6 +91,29 @@ function Announcements({ }){
                         <FunnelIcon className='w-4' />
                         { filterIsShown ? "Close" : "Show"} Filters    
                     </Button>
+                    { 
+                        filterIsShown && 
+                        <>
+                            <div className='flex flex-row items-center gap-2 '>
+                                <small className='text-blue-700'>Status</small>
+                                <select
+                                    className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
+                                    onChange={(e) => { 
+                                        // @ts-ignore
+                                        changeFilter(e.target.value)
+                                    }}
+                                >
+                                    { 
+                                        filterOptions.map((f, idx) =>{ 
+                                            return (
+                                                <option key={idx} value={f}>{f}</option>
+                                            )
+                                        })
+                                    }
+                                </select> 
+                            </div>
+                        </>
+                    }
               <div className='flex flex-col gap-2 justify-end'>
                   <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
               </div>
@@ -109,23 +142,23 @@ function Announcements({ }){
                         { 
                             !announcementsIsLoading && announcements.map((announcement, idx) => {
                                 return (
-                                <div key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                                <Link to={`/classes/${classCode}/announcements/${announcement.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                     <div className='flex items-center gap-4'>
                                         <span className='flex-1 font-normal truncate'>{announcement.title}</span>
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
                                         <span className='w-[150px] hidden sm:flex justify-end'>{announcement.createdBy.firstName + " " + announcement.createdBy.lastName}</span>
                                         <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(announcement.createdAt).format("HH:mm - DD/MM/YY")}</span>
-                                        <span className='w-[100px] flex justify-end'>
-                                            {/* <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleUpdateDialog() }}>              
+                                        <span className='w-[100px] flex gap-2 justify-end'>
+                                            <Link to={`/classes/${classCode}/announcements/${announcement.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
                                                 <PencilIcon className='w-4 h-4' />
-                                            </span> */}
-                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAnnouncement(announcement); toggleDeleteDialog() }}>
+                                            </Link>
+                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAnnouncement(announcement); toggleDeleteDialog() }}>
                                                 <TrashIcon className='w-4 h-4' />
                                             </span>
                                         </span>
                                     </div>
-                                </div>
+                                </Link>
                                 )
                             })
                         }

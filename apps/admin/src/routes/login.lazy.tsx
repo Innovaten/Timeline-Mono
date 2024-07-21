@@ -123,7 +123,7 @@ function Login({ componentRef, multiPage }: PageProps){
                         // Automatically send OTP
                         makeUnauthenticatedRequest(
                             "get",
-                            `/api/v1/auth/otp/send?email=${loginUser.email}&via=phone`
+                            `/api/v1/auth/otp/send?email=${encodeURIComponent(loginUser.email)}&via=phone`
                         )
                         .then(res => {
                             if(res.data.success){
@@ -151,7 +151,7 @@ function Login({ componentRef, multiPage }: PageProps){
             }
         })
         .finally(()=> {
-            setTimeout(toggleLoading, 250)
+            setTimeout(toggleLoading, 500)
         })
 	}
 
@@ -232,7 +232,7 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
    
         makeUnauthenticatedRequest(
             'get', 
-            `/api/v1/auth/otp/verify?email=${user?.email}&otp=${values.otp}`
+            `/api/v1/auth/otp/verify?email=${encodeURIComponent(user?.email ?? "")}&otp=${values.otp}`
         )
         .then(res => {
               if(res.status == 200 && res.data.success){

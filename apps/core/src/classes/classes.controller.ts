@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete } from '@nestjs/common';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
-import { IClassDoc, } from '@repo/models';
+import { ClassModel, IAnnouncementSetDoc, IClassDoc, IUserDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { CreateClassDto, DeleteClassDto, UpdateClassDto } from './classes.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { ClassesService } from './classes.service';
+import { Roles } from '../common/enums/roles.enum';
+import { HydratedDocument, Types } from 'mongoose';
 
 
 @Controller({
@@ -115,7 +117,7 @@ export class ClassesController {
                 );
             }
 
-            const updatedClass = await this.service.assignAdministrator(classId, adminId);
+            const updatedClass = await this.service.assignAdministrator(classId, adminId, user._id);
             console.log("Assigned administrator", adminId, "to", classId);
             return ServerSuccessResponse(updatedClass);
 
@@ -149,7 +151,7 @@ export class ClassesController {
                 );
             }
     
-            if(!["SUDO", "ADMINISTRATOR"].includes(updator.role)){
+            if(!["SUDO", "ADMIN"].includes(updator.role)){
                 return ServerErrorResponse(
                     new Error("Unauthorized"),
                     403
@@ -159,7 +161,7 @@ export class ClassesController {
             if(!updatedClass){
                 throw new Error("Specified class could not be found.")
             }
-            console.log("Updated class", updatedClass._id);
+            console.log("Updated class", updatedClass.code);
             return ServerSuccessResponse(updatedClass);
 
         } catch (err){
@@ -211,8 +213,88 @@ export class ClassesController {
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);
-        }
+        }   
+    }
 
+    @UseGuards(AuthGuard)
+    @Get(":specifier")
+    async getClass( 
+        @Param("specifier") specifier: string,
+        @Query('isId') isId: boolean = true,
+        @Request() req: Request,
+    ) {
+
+        try {
+            // @ts-ignore
+            const user = req["user"]
+
+            if(!user){
+                return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
+            }
+
+            let thisClass: any | null = null;
+            
+
+            if(isId == true){
+                thisClass = await this.service.getClassById(specifier)
+            } else {
+                thisClass = await this.service.getClass({ code: specifier })
+            }
         
+            if(!thisClass){
+                return ServerErrorResponse(
+                    new Error("Specified class could not be found"),
+                    404,
+                )
+            }
+
+            return ServerSuccessResponse(thisClass);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+
+    }
+
+
+    @UseGuards(AuthGuard)
+    @Get(':_id/announcements')
+    async getAnnouncementsByClass(
+        @Param('_id') classId: string,
+        @Request() req: Request,
+    ) {
+        try {
+            // @ts-ignore
+            const user = req["user"];
+
+            const relatedClass = await ClassModel.findById(classId).populate<{ announcementSet: IAnnouncementSetDoc }>("announcementSet");
+
+            if(!relatedClass){
+                return ServerErrorResponse(
+                    new Error("Specified class could not be found"),
+                    404,
+                )
+            }
+
+            if(
+                user.role !== Roles.SUDO && 
+                !user.classes.includes(relatedClass._id)
+            ){
+                return ServerErrorResponse(
+                    new Error("You are not permitted to perform this action"),
+                    403,
+                )
+            }
+
+            const announcements = await this.service.getAnnouncementsByClass(classId);
+
+            return ServerSuccessResponse(announcements);
+
+        } catch(err) {
+            return ServerErrorResponse(
+                new Error(`${err}`), 
+                500
+            );
+        }  
     }
 }

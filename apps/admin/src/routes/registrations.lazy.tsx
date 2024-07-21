@@ -10,12 +10,17 @@ import { useState } from "react";
 import { FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { IRegistrationDoc } from "@repo/models";
 import { useClasses, useCompositeFilterFlag } from "../hooks";
+import { useLMSContext } from "../app";
 
 export const Route = createLazyFileRoute("/registrations")({
   component: RegistrationsPage,
 });
 
 function RegistrationsPage() {
+
+  
+  const { user } = useLMSContext() 
+
   const { dialogIsOpen: newStudentIsSelected, toggleDialog: toggleNewStudentIsSelected} = useDialog();
   const { filter, filterOptions, changeFilter, filterChangedFlag } =
     useRegistrantsFilter();
@@ -26,13 +31,13 @@ function RegistrationsPage() {
     isLoading: registrantsIsLoading,
     registrants,
     count: registrantsCount,
-  } = useRegistrants(compositeFilterFlag, filter);
+  } = useRegistrants(compositeFilterFlag, {...filter});
   const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
   const { dialogIsOpen: classesApprovalIsOpen, toggleDialog: toggleClassesApprovalDialog } = useDialog();
   
   const { isLoading: approvalIsLoading, toggleLoading: toggleApprovalIsLoading } = useLoading()
 
-  const { classes: classesUpForApproval, } = useClasses(newStudentIsSelected);
+  const { classes: classesUpForApproval, } = useClasses(newStudentIsSelected, { user });
   let [approvedClasses, setApprovedClasses ] = useState<Array<string>>([]);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -186,7 +191,7 @@ function RegistrationsPage() {
         <div className="flex flex-col gap-4 sm:justify-between min-h-[200px]">
           <div className="flex gap-x-4 mt-4 ">
             {
-              classesUpForApproval.map((c, idx) => <div 
+              classesUpForApproval.map((c, idx) => <div key={idx}
                 className={ cn(
                   approvedClasses.includes(c._id as string) ? "bg-blue-700 text-white hover:bg-blue-700/70" : "bg-blue-50 hover:bg-blue-200",
                   'px-4 py-2 rounded-full border-[1.5px] border-blue-700/60  cursor-pointer duration-150', 

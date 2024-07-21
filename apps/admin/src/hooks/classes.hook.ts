@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { makeAuthenticatedRequest } from "@repo/utils";
-import { IClassDoc } from "@repo/models";
+import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
+import { IClassDoc, IUserDoc, IAnnouncementSetDoc } from "@repo/models";
+import { toast } from "sonner";
 
 export function useClasses(
     flag?: boolean, 
@@ -12,12 +13,15 @@ export function useClasses(
     const [ classes, setClasses ] = useState<IClassDoc[]>([]);
     const [ count, setCount ] = useState<number>(0);
 
+    const { user, ...actualFilter } = filter;
+    const route = user.role == "SUDO" ? '/api/v1/classes' : `/api/v1/users/${user._id}/classes`
+
     useEffect(
         () =>{
             setIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/classes?limit=${limit}&offset=${offset}&filter=${JSON.stringify(filter)}`
+                `${route}?limit=${limit}&offset=${offset}&filter=${JSON.stringify(actualFilter)}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){
@@ -102,4 +106,31 @@ export function useClassesAssignedStatusFilter(){
 
     return { filter, changeFilter, filterOptions, filterChangedFlag };
 
+}
+
+export function useClass(flag: boolean, specifier: string, isId:boolean) {
+
+
+    const [ thisClass, setClass ] = useState<Omit<IClassDoc, "createdBy" | "administrators" | "announcementSet"> & { createdBy: IUserDoc, administrators: IUserDoc[], announcementSet: IAnnouncementSetDoc} | null>(null)
+    const { isLoading, toggleLoading, resetLoading} = useLoading();
+
+    const route =  `?isId=${( isId ?? true )}`
+
+    useEffect(() => {
+        abstractAuthenticatedRequest(
+            "get",
+            `/api/v1/classes/${specifier}${route}`,
+            {},
+            {},
+            {
+                onStart: toggleLoading,
+                onSuccess: (data) => {setClass(data)},
+                onFailure: (err) => {toast.error(`${err.msg}`)},
+                finally: resetLoading
+            }
+        )
+
+    }, [flag])
+
+    return { thisClass, isLoading}
 }

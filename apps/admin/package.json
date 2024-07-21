@@ -10,6 +10,7 @@
     "lint": "eslint src/"
   },
   "dependencies": {
+    "@lexical/react": "^0.16.1",
     "@repo/models": "*",
     "@repo/ui": "*",
     "@repo/utils": "*",
@@ -24,6 +25,7 @@
     "@types/react": "^18.2.62",
     "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.2.1",
+    "tailwind-scrollbar": "^3.1.0",
     "typescript": "^5.3.3",
     "vite": "^5.1.4"
   }

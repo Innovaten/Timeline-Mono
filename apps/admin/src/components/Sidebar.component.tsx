@@ -28,6 +28,11 @@ export default function SidebarComponent(){
             path: "/calendar",
             icon: CalendarIcon,
         },
+        {
+            label: "Classes",
+            path: "/classes",
+            icon: BookOpenIcon,
+        },
     ]
     : // SUDO
     [
@@ -62,54 +67,6 @@ export default function SidebarComponent(){
             icon: ComputerDesktopIcon,
         },
     ]
-
-    
-    const classes = [
-        {
-            id: 'clasnaksd39jf90j',
-            code: "SAT00001",
-            title: "SAT"
-        },
-        {
-            id: 'kalsdfkalskdn',
-            code: "GMAT00002",
-            title: "GMAT"
-        },
-        {
-            id: 'woijoi3j09jjfvio',
-            code: "ACT00003",
-            title: "ACT"
-        },
-        
-    ]
-    
-    const classesTabs = [
-        {
-            title: "Lessons",
-            path: "lessons",
-            icon: BookOpenIcon,    
-        },
-        {
-            title: "Resources",
-            path: "resources",
-            icon: FolderIcon,    
-        },
-        {
-            title: "Assignments",
-            path: "assignments",
-            icon: PaperClipIcon,    
-        },
-        {
-            title: "Quizzes",
-            path: "quizzes",
-            icon: PencilSquareIcon,    
-        },
-        {
-            title: "Settings",
-            path: "settings",
-            icon: AdjustmentsVerticalIcon,
-        },
-    ]
     
     return (
         <>
@@ -125,7 +82,7 @@ export default function SidebarComponent(){
                 }
             </div>
             <div className={` ${ !navIsOpen && "hidden" } bg-blue-50 px-4 sm:p-0 z-40 fixed sm:static h-full sm:flex flex-col gap-2 sm:justify-between w-full sm:w-[150px] xl:w-[250px]`}>
-                <div className="sm:flex-1 sm:overflow-auto">
+                <div className="sm:flex-1 sm:overflow-auto scrollbar-thin scrollbar-thumb-blue-700/20 scrollbar-track-slate-300">
                     <img className="h-[40px] m-auto" src="/img/timeline-logo.png" />
                     <div className="mt-12 sm:mt-6">
                         <small className="text-blue-600">MENU</small>
@@ -144,40 +101,6 @@ export default function SidebarComponent(){
                             }
                         </div>
                     </div>
-                    { 
-                    ["ADMIN"].includes(userRole) &&
-                        <div className="mt-4">
-                            <small className="text-blue-600">CLASSES</small>
-                            <div className="mt-2 flex flex-col gap-2">
-                                {
-                                    classes.map(({title, code }, index) => {
-                                        
-                                        return (
-                                            <div className="group duration-150" key={index}>
-                                                <Link to={`/classes/${code}`} 
-                                                    className={`flex gap-4 items-center ${ routePathIsEqual(`/classes/${code}`) ? 'bg-blue-700 text-white hover:bg-blue-600' : 'bg-white hover:bg-blue-400/10 text-blue-600' } duration-150 pl-4 py-4 rounded shadow-sm`}>
-                                                    <BookOpenIcon className="w-5" />
-                                                    <p>{title}</p>
-                                                </Link>
-                                                <div className="h-0 rounded-b shadow-sm overflow-hidden group-hover:h-fit bg-white/50 flex flex-col duration-150">
-                                                    { classesTabs.map(({ title: tabTitle, path, icon }, idx) => {
-                                                        const TabIcon = icon;
-
-                                                        return (
-                                                            <Link to={`/classes/${code}/${path}`} key={idx} className={`flex pl-4 py-2 ${ routePathIsEqual(`/classes/${code}/${path}`) ? 'bg-blue-700 text-white border-b-[1px] border-bg-blue-600 hover:bg-blue-600' : 'bg-white border-b-[1px] border-b-blue-400/10 hover:bg-blue-400/10 text-blue-600' } duration-150 items-center gap-4 truncate`}>
-                                                                <TabIcon className="w-4" />
-                                                                {tabTitle}
-                                                            </Link>
-                                                        )
-                                                    })}
-                                                </div>
-                                            </div>
-                                        )
-                                    })
-                                }
-                            </div>
-                        </div>
-                    }
                 </div>
                 <div className="flex flex-col gap-2 pt-2">
                     <div className="flex flex-col sm:flex-row gap-2">

@@ -46,9 +46,8 @@ export const UserSchema = new Schema<IUserDoc>({
   },
 
   classes: {
-    type: [SchemaTypes.ObjectId],
+    type: [{ type: SchemaTypes.ObjectId, ref: "Classes" }],
     required: false,
-    ref: 'Classes'
   },
 
   modeOfClass: {
@@ -109,7 +108,8 @@ export const UserSchema = new Schema<IUserDoc>({
   },
 
   createdBy: {
-    type: SchemaTypes.ObjectId
+    type: SchemaTypes.ObjectId,
+    ref: "Users"
   },
 
   createdAt: {

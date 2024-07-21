@@ -234,8 +234,6 @@ export class UsersController {
             // @ts-ignore
             const user = req["user"];
 
-            console.log(user);
-
             const result = await this.classes.getClasses(limit, offset, {...filter, _id: { $in: user.classes } });
 
             const classIds = result.map(c => c._id);

@@ -16,6 +16,12 @@ export const ResourceSchema = new Schema<IResourceDoc>({
         default: "Other"
     },
 
+    link: {
+        type: SchemaTypes.String,
+        required: false,
+        default: ""
+    },
+
     meta: {
         type: new Schema({
             isDeleted: {

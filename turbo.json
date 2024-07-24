@@ -15,7 +15,9 @@
       "KAFKA_BROKER",
       "MAILGUN_API_KEY",
       "MAILGUN_DOMAIN",
-      "MNOTIFY_API_KEY"
+      "MNOTIFY_API_KEY",
+      "S3_BUCKET",
+      "S3_REGION"
     ],
   "tasks": {
     "build": {

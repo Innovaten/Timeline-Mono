@@ -13,6 +13,8 @@ export interface IResource {
   title: string;
   type: resourceType;
   
+  link: string;
+
   meta: {
     isDeleted: boolean;
   };

@@ -35,7 +35,6 @@ export class AssetsController {
             })
         ) files: Array<Express.Multer.File>
     ){
-
         try {
             new ImageFileValidationPipe().transform(files)
             console.log(files)
@@ -48,14 +47,13 @@ export class AssetsController {
     
             await Promise.all(
                 files.map(file => {
-    
                     const title = req.headers.get("Original-File-Name");
                     const extension = req.headers.get("Original-File-Ext")
     
                     if(!title || !extension){
                         throw new BadRequestException("Invalid Headers")
                     }
-                    return this.service.uploadFiles(`${uploader._id}`, title, extension)
+                    return this.service.uploadFiles(`${uploader._id}`, title, extension, file)
                 })
             )
     

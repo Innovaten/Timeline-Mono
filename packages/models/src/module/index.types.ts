@@ -4,7 +4,7 @@ export interface IModules {
     title: string
     lessonSet: Types.ObjectId[]
 
-    isDone: boolean
+    moduleId: Types.ObjectId
 
     meta: {
         isDeleted: boolean

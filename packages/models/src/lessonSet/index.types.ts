@@ -2,10 +2,9 @@ import { Document, Types } from "mongoose";
 
 export interface ILessonSet {
     class: Types.ObjectId
-    totalLessons: number
     lessons: Types.ObjectId[]
-    code: string
-
+    module: Types.ObjectId
+    title: String
     updatedBy: Types.ObjectId
 
     createdAt: Date

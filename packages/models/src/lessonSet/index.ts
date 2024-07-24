@@ -7,33 +7,23 @@ export const LessonSetSchema = new Schema<ILessonSet>({
         ref: 'Classes',
         required: true,
     },
-    totalLessons: {
-        type: SchemaTypes.Number,
-        default: 0,
+
+    module: {
+        type: SchemaTypes.ObjectId,
+        ref: 'Modules'
     },
+
     lessons: {
         type: [SchemaTypes.ObjectId],
         ref: 'Lessons',
         default: []
     },
-    code: {
+
+    title: {
         type: SchemaTypes.String,
-        unique: true,
-        index: true,
         required: true,
     },
-    updatedBy: {
-        type: SchemaTypes.ObjectId,
-        required: true,
-    },
-    createdAt: {
-        type: SchemaTypes.Date,
-        default: new Date(),
-    },
-    updatedAt: {
-        type: SchemaTypes.Date,
-        default: new Date(),
-    },
+
 })
 
 export const  LessonSetModel = model("LessonSets", LessonSetSchema)

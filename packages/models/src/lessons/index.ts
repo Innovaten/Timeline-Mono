@@ -10,11 +10,6 @@ export const LessonSchema = new Schema<ILesson>({
         type: SchemaTypes.String,
         required: true,
     },
-    isDone: {
-        type: SchemaTypes.Boolean,
-        required: true,
-        default: false,
-    },
     resources: {
         type: [SchemaTypes.ObjectId],
         default: [],
@@ -41,6 +36,7 @@ export const LessonSchema = new Schema<ILesson>({
     createdBy: {
         type: SchemaTypes.ObjectId,
         required: true,
+        ref: "Users",
     },
     createdAt: {
         type: SchemaTypes.Date,
@@ -53,6 +49,7 @@ export const LessonSchema = new Schema<ILesson>({
     updatedBy: {
         type: SchemaTypes.ObjectId,
         required: true,
+        ref: "Users",
     },
 })
 

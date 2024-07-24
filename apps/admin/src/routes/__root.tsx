@@ -18,20 +18,20 @@ export const Route = createRootRouteWithContext<ConsoleRouterContext>()({
     const authToken = _getToken()
     const userToken = _getUser()
 
-    // if(!location.href.startsWith('/login') && (!authToken || !userToken) ){ // If we don't know you
-    //   throw redirect ({to: "/login"})
-    // } else if(authToken && !userToken){ //  You have a token but user context is not set
-    //     makeAuthenticatedRequest(
-    //       "get",
-    //       '/api/v1/auth/verify-token'
-    //     ).then(res => {
-    //       if(res.data.success){
-    //         _setUser(res.data.data);
-    //       } else {
-    //         throw redirect ({to: "/login"})
-    //       }
-    //     })
-    // }
+    if(!location.href.startsWith('/login') && (!authToken || !userToken) ){ // If we don't know you
+      throw redirect ({to: "/login"})
+    } else if(authToken && !userToken){ //  You have a token but user context is not set
+        makeAuthenticatedRequest(
+          "get",
+          '/api/v1/auth/verify-token'
+        ).then(res => {
+          if(res.data.success){
+            _setUser(res.data.data);
+          } else {
+            throw redirect ({to: "/login"})
+          }
+        })
+    }
   }
 })
 

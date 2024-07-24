@@ -19,6 +19,9 @@ export class CreateModuleDto {
     @IsMongoId()
     @IsNotEmpty()
     readonly class: string;
+
+    @IsString()
+    authToken: string;
 }
 
 export class UpdateModuleDto {
@@ -37,4 +40,12 @@ export class UpdateModuleDto {
 
     @IsMongoId()
     readonly class?: string;
+
+    @IsString()
+    authToken: string;
+}
+
+export class DeletModuleDto {
+    @IsString()
+    authToken: string;
 }

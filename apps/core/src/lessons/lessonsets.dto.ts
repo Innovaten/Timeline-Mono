@@ -6,23 +6,39 @@ export class CreateLessonSetDto {
     @IsNotEmpty()
     readonly class: string;
 
-    @IsNumber()
+    @IsMongoId()
     @IsNotEmpty()
-    readonly totalLessons: number;
+    readonly module: string
 
     @IsArray()
     @IsMongoId({ each: true })
     readonly lessons: string[];
+
+    @IsString()
+    @IsNotEmpty()
+    readonly title: string
+
+    @IsString()
+    authToken: string;
 }
 
 export class UpdateLessonSetDto {
     @IsMongoId()
     readonly class?: string;
 
-    @IsNumber()
-    readonly totalLessons?: number;
+    @IsMongoId()
+    @IsNotEmpty()
+    readonly module?: string
 
     @IsArray()
     @IsMongoId({ each: true })
     readonly lessons?: string[];
+
+    @IsString()
+    authToken: string
+}
+
+export class DeleteLessonSetDto {
+    @IsString()
+    authToken: string;
 }

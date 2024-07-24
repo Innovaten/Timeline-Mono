@@ -6,8 +6,6 @@ export interface ILesson {
     resources: Types.ObjectId[]
     lessonSet: Types.ObjectId
 
-    isDone: boolean
-
     meta: {
         isDeleted: boolean
     },

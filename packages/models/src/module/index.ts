@@ -10,10 +10,11 @@ export const ModuleSchema = new Schema<IModules>({
         type: [SchemaTypes.ObjectId],
         default: [],
     },
-    isDone: {
-        type: SchemaTypes.Boolean,
-        default: false,
+    moduleId: {
+        type: SchemaTypes.ObjectId,
+        ref: 'Modules'
     },
+
     meta: {
         type: new Schema({
             isDeleted: {

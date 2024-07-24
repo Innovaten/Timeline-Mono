@@ -13,9 +13,8 @@
       "KAFKA_USERNAME",
       "KAFKA_PASSWORD",
       "KAFKA_BROKER",
-      "MAILGUN_API_KEY",
-      "MAILGUN_DOMAIN",
-      "MNOTIFY_API_KEY"
+      "RESEND_API_KEY",
+      "RESEND_DOMAIN"
     ],
   "tasks": {
     "build": {

@@ -107,6 +107,9 @@ export const emailBodyTemplates: Record<string, TemplateExecutor> = {
          "Best regards,",
          "Timeline Trust"   
         ].join("<br>")
+        // Data:
+        // otp
+        // email
     )
 }
 

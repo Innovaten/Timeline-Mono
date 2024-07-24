@@ -11,13 +11,9 @@ export const ServicesConfig = {
             process.env.KAFKA_BROKER ?? ""
         ]
     },
-    mnotify: {
-        api_key: process.env.MNOTIFY_API_KEY ?? "",
-    },
     mail: {
-        api_key: process.env.MAILGUN_API_KEY ?? "",  
-        domain: process.env.MAILGUN_DOMAIN ?? "",
-        test_email: process.env.TESTING_EMAIL ?? "",
+        api_key: process.env.RESEND_API_KEY ?? "",  
+        domain: process.env.RESEND_DOMAIN ?? "",
     }
     
 }

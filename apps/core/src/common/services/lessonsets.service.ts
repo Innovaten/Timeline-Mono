@@ -43,17 +43,19 @@ export class LessonSetsService {
         const query: any = {};
 
         if (filter.classId) {
-            if (!Types.ObjectId.isValid(filter.classId)) {
-                throw new NotFoundException('Invalid Class ID');
-            }
             query.class = new Types.ObjectId(filter.classId);
         }
 
+        if (!Types.ObjectId.isValid(filter.classId)) {
+            throw new NotFoundException('Invalid Class ID');
+        }
+
         if (filter.moduleId) {
-            if (!Types.ObjectId.isValid(filter.moduleId)) {
-                throw new NotFoundException('Invalid Module ID');
-            }
             query.module = new Types.ObjectId(filter.moduleId);
+        }
+
+        if (!Types.ObjectId.isValid(filter.moduleId)) {
+            throw new NotFoundException('Invalid Module ID');
         }
 
         const lessonSets = await LessonSetModel.find(query)

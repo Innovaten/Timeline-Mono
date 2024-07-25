@@ -2,26 +2,34 @@ import { ModuleModel, IModulesDoc } from "@repo/models";
 import { Types } from "mongoose";
 import { CreateModuleDto, UpdateModuleDto } from "./module.dto";
 import { LessonSetsService } from "../common/services/lessonsets.service";
-import { CompletedLessonsService } from "../common/services/completedlessons.service";
-import { generateCode } from "../utils";
 import { ILessonSetDoc } from "@repo/models";
-import { UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import { ClassModel } from "@repo/models";
 
 export class ModulesService {
   private lessonSetsService: LessonSetsService;
-  private completedLessonsService: CompletedLessonsService;
 
   constructor() {
     this.lessonSetsService = new LessonSetsService();
-    this.completedLessonsService = new CompletedLessonsService();
   }
 
-  async getCount(filter?: Record<string, any>){
+
+   async isAdminAssignedToClass(adminId: string, classId: string) {
+    const classDoc = await ClassModel.findById(classId)
+
+    if(!classDoc) {
+      throw new Error("Specified class not found")
+    }
+
+    return classDoc.administrators.some((admin) => admin.equals(new Types.ObjectId(adminId)))
+  }
+
+  async getCount(filter: Record<string, any> = {}){
     return ModuleModel.countDocuments(filter)
 }
 
 async getLessonSetsByModuleId(moduleId: string, userRole: string) {
-  if (userRole !== 'ADMINISTRATOR' && userRole !== 'SUDO') {
+  if (userRole !== 'ADMIN' && userRole !== 'SUDO') {
     throw new UnauthorizedException('Unauthorized');
   }
 
@@ -31,27 +39,24 @@ async getLessonSetsByModuleId(moduleId: string, userRole: string) {
 
   async createModule(
     moduleData: CreateModuleDto,
-    creator: string
+    creator: string,
+    classId: string,
   ): Promise<IModulesDoc> {
-    const lessonSets = await Promise.all(
-      moduleData.lessonSet.map((id) =>
-        this.lessonSetsService.getLessonSetById(id)
-      )
-    );
 
-    if (lessonSets.some((ls) => !ls)) {
-      throw new Error("One or more LessonSets not found");
+    const isAssigned = await this.isAdminAssignedToClass(creator, classId)
+
+    if (!isAssigned) {
+      throw new ForbiddenException('Not assigned to this class!')
     }
+
 
     const { lessonSet, ...actualData } = moduleData;
 
     const newModule = new ModuleModel({
-      code: await generateCode(await ModuleModel.countDocuments(), "MOD"),
-      lessonSet: lessonSet.map((ls) => new Types.ObjectId(ls)),
+      lessonSet: new Types.ObjectId(),
       ...actualData,
       createdBy: new Types.ObjectId(creator),
       updatedBy: new Types.ObjectId(creator),
-      isDone: false,
       meta: {
         isDeleted: false,
       },
@@ -125,24 +130,9 @@ async getLessonSetsByModuleId(moduleId: string, userRole: string) {
     offset: number = 0,
     filter: any = {}
 ): Promise<IModulesDoc[]> {
-    const query: any = {};
     
-    if (filter.name) {
-        query.name = { $regex: filter.name, $options: 'i' };
-    }
 
-    if (filter.createdBy) {
-        query.createdBy = new Types.ObjectId(filter.createdBy);
-    }
-
-    if (filter.startDate && filter.endDate) {
-        query.createdAt = {
-            $gte: new Date(filter.startDate),
-            $lte: new Date(filter.endDate),
-        };
-    }
-
-    const modules = await ModuleModel.find(query)
+    const modules = await ModuleModel.find(filter)
         .skip(offset)
         .limit(limit)
         .populate("lessonSet")

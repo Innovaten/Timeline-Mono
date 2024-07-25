@@ -30,7 +30,7 @@ export class OtpService {
 
 
         const otp = lodash.random(100000, 999999).toString()
-
+        console.log(otp)
         user.auth.otp = otp
         user.auth.otpLastSentAt = currentTime
         user.auth.otp_expiry = new Date(currentTime.getTime() + 5 * 60000)

@@ -23,11 +23,8 @@ export const ModuleSchema = new Schema<IModules>({
             }
         })
     },
-    url: {
-        type: SchemaTypes.String,
-        required: true,
-    },
-    class: {
+
+    classId: {
         type: SchemaTypes.ObjectId,
         ref: 'Classes',
         required: true,

@@ -1,4 +1,3 @@
-// lessonsets.dto.ts
 import { IsString, IsNotEmpty, IsArray, IsMongoId, IsNumber } from 'class-validator';
 
 export class CreateLessonSetDto {
@@ -30,9 +29,6 @@ export class UpdateLessonSetDto {
     @IsNotEmpty()
     readonly module?: string
 
-    @IsArray()
-    @IsMongoId({ each: true })
-    readonly lessons?: string[];
 
     @IsString()
     authToken: string

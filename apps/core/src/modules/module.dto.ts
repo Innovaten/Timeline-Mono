@@ -9,16 +9,9 @@ export class CreateModuleDto {
     @IsMongoId({ each: true })
     readonly lessonSet: string[];
 
-    @IsBoolean()
-    readonly isDone: boolean;
 
-    @IsString()
     @IsNotEmpty()
-    readonly url: string;
-
-    @IsMongoId()
-    @IsNotEmpty()
-    readonly class: string;
+    readonly classId: string;
 
     @IsString()
     authToken: string;
@@ -32,14 +25,8 @@ export class UpdateModuleDto {
     @IsMongoId({ each: true })
     readonly lessonSet?: string[];
 
-    @IsBoolean()
-    readonly isDone?: boolean;
-
-    @IsString()
-    readonly url?: string;
-
     @IsMongoId()
-    readonly class?: string;
+    readonly classId?: string;
 
     @IsString()
     authToken: string;

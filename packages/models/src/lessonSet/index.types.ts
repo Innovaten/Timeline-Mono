@@ -7,6 +7,10 @@ export interface ILessonSet {
     title: String
     updatedBy: Types.ObjectId
 
+    meta: {
+        isDeleted: boolean;
+    }
+
     createdAt: Date
     updatedAt: Date
 }

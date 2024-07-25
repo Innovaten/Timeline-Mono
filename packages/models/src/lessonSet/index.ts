@@ -13,6 +13,15 @@ export const LessonSetSchema = new Schema<ILessonSet>({
         ref: 'Modules'
     },
 
+    meta: {
+        type: new Schema({
+            isDeleted: {
+                type: SchemaTypes.Boolean,
+                default: false
+            }
+        })
+    },
+
     lessons: {
         type: [SchemaTypes.ObjectId],
         ref: 'Lessons',

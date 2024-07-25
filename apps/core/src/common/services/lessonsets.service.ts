@@ -54,6 +54,10 @@ export class LessonSetsService {
             query.module = new Types.ObjectId(filter.moduleId);
         }
 
+        if (filter.title) {
+            query.title = filter.title;
+        }
+
         if (!Types.ObjectId.isValid(filter.moduleId)) {
             throw new NotFoundException('Invalid Module ID');
         }
@@ -79,7 +83,6 @@ export class LessonSetsService {
             throw new NotFoundException('Lesson Set not found');
         }
 
-        // Ensure lessons are not set to null
         const updatedData: any = { ...updateLessonSetDto };
         if (updateLessonSetDto.lessons !== undefined) {
             updatedData.lessons = updateLessonSetDto.lessons.map((id: string) => new Types.ObjectId(id));
@@ -99,12 +102,15 @@ export class LessonSetsService {
             throw new NotFoundException('Invalid Lesson Set ID');
         }
 
-        const deletedLessonSet = await LessonSetModel.findByIdAndDelete(lessonSetId).exec();
-        if (!deletedLessonSet) {
+        const LessonSet = await LessonSetModel.findById(lessonSetId);
+        if (!LessonSet) {
             throw new NotFoundException('Lesson Set not found');
         }
 
-        return deletedLessonSet;
+        LessonSet.meta.isDeleted = true;
+        LessonSet.updatedAt = new Date()
+
+        return LessonSet;
     }
 
 

@@ -10,9 +10,7 @@ export interface IModules {
         isDeleted: boolean
     }
 
-    url: string
-
-    class: Types.ObjectId
+    classId: Types.ObjectId
     code: string
     createdBy: Types.ObjectId
     updatedBy: Types.ObjectId

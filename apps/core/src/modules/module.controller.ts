@@ -76,7 +76,7 @@ export class ModulesController {
     }
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Post()
   async createModule(
     @Body() createModuleDto: CreateModuleDto,
@@ -93,9 +93,12 @@ export class ModulesController {
         return ServerErrorResponse(new Error('Unauthorized'), 403);
       }
 
+      const { classId } = createModuleDto
+
       const newModule = await this.modulesService.createModule(
         createModuleDto,
         `${creator._id}`,
+        classId,
       );
 
       console.log('Created module', newModule._id);
@@ -105,7 +108,7 @@ export class ModulesController {
     }
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Patch(':id')
   async updateModule(
     @Param('id') id: string,
@@ -122,7 +125,7 @@ export class ModulesController {
         return ServerErrorResponse(new Error('Unauthenticated'), 401);
       }
 
-      if (!['SUDO', 'ADMINISTRATOR'].includes(updater.role)) {
+      if (!['SUDO', 'ADMIN'].includes(updater.role)) {
         return ServerErrorResponse(new Error('Unauthorized'), 403);
       }
 

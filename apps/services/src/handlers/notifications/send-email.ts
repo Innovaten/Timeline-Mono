@@ -1,12 +1,10 @@
 import { EachMessagePayload } from "kafkajs";
 import { emailSubjectTemplates, emailBodyTemplates } from "../templates/email-templates";
 import { ServicesConfig } from "../../../config";
-import Mailgun from 'mailgun.js'
-import FormData from 'form-data'; // Hmmmm
 import { LMSKafkaMessage } from "../..";
+import { Resend } from "resend";
 
-
-const mg = new Mailgun(FormData).client({ username: 'api', key: ServicesConfig.mail.api_key})
+const resend = new Resend(ServicesConfig.mail.api_key);
 
 export async function emailHandler(KafkaArgs: EachMessagePayload){
     try {
@@ -14,10 +12,12 @@ export async function emailHandler(KafkaArgs: EachMessagePayload){
     
         const emailSubject = emailSubjectTemplates[purpose]({ ...data})
         const emailBody = emailBodyTemplates[purpose]({ ...data})
-        await sendRequestToMG({ email: data.email, subject: emailSubject, body: emailBody })
-        console.log(`Sent ${purpose} email to ${data.email}`)
-    } catch (err) {
-        console.log('--- Kafka Email Handler Error ---\n', err)
+        const emailMetadata = await sendEmailRequest({ email: data.email, subject: emailSubject, body: emailBody })
+       
+        console.log(`Sent ${purpose} email to ${data.email}.\nResend Email ID: ${emailMetadata?.data?.id}`)
+    
+    } catch (err: any) {
+        console.log('--- Kafka Email Handler Error ---\n', err.message ? err.message : err)
     }
 }
 
@@ -27,19 +27,25 @@ type RequestToMGArgs = {
     body: string,
 }
 
-async function sendRequestToMG(args: RequestToMGArgs) {
+async function sendEmailRequest(args: RequestToMGArgs) {
     try{
-        mg.messages.create(ServicesConfig.mail.domain, { // Change to real account when in prod
-            //to: ServicesConfig.node_env == 'production' ?  [args.email] : [ServicesConfig.mail.test_email],
+        const sendEmail = await resend.emails.send({
+            from: `Timeline Trust Support <timelinetrust@${ServicesConfig.mail.domain}>`,
             to: [args.email],
-            from: 'Timeline Trust Support <postmaster@mg.kodditor.co>',
             subject: args.subject,
             html: `
             <html>
               ${args.body}
             </html>
         `})
-    } catch (err) {
-        console.log(`--- Mailgun Error ---\n`, err)
+
+        if(sendEmail.error){
+            throw new Error(sendEmail.error.name + ": " + sendEmail.error.message)
+        }
+        
+        return sendEmail;
+
+    } catch (err: any) {
+        console.log(`--- Resend Error ---\n`, err.message ? err.message : err)
     }
 }

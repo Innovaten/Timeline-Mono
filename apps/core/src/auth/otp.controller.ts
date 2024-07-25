@@ -16,10 +16,9 @@ export class OtpController {
     @Get('send')
     async sendOtp(
         @Query('email') email: string, 
-        @Query('via') via: string 
     ) {
         try {
-            return this.otpService.sendOtp(email, via)
+            return this.otpService.sendOtp(email)
         } catch (error) {
             return ServerErrorResponse(new Error(`${error}`), 500)
         }    

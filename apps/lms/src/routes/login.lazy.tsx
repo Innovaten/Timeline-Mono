@@ -208,7 +208,7 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
   function handleSubmit(values: { email: string }){
       fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-verification'], 'flex')
       
-      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send/forgot-password?email=${values.email}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send?email=${values.email}&via=email`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('e', values.email);
@@ -304,7 +304,7 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
       fadeParentAndReplacePage(pages['parent'], pages['forgot-verification'], pages['forgot-new-password'], 'flex')
       
 
-      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify-otp?email=${email}&otp=${OTP}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify?email=${email}&otp=${OTP}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('o', OTP);
@@ -375,7 +375,7 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
   function handleSubmit(values: { newPassword: string, confirmPassword: string}){
       toggleLoading()
       setTimeout(() => router.navigate({ to: '/', search: {destination: searchParams.destination, register: false }}), 1000)
-      return
+
       makeUnauthenticatedRequest(
           'post', 
           '/api/v1/auth/update-password',

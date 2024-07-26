@@ -384,7 +384,7 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
        function handleSubmit(values: { email: string }){
           multiPage.goToNext();
           toggleLoading();
-          makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send/forgot-password?email=${values.email}`)
+          makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send?email=${values.email}&via=email`)
            .then(res => {
               if(res.data.success){
                 sessionStorage.setItem('e', values.email);
@@ -474,7 +474,7 @@ function ForgotVerification({componentRef, multiPage}: PageProps){
       multiPage.goToNext()
       
 
-      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify-otp?email=${email}&otp=${OTP}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify?email=${email}&otp=${OTP}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('o', OTP);

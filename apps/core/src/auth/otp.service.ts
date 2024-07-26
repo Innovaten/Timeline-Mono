@@ -30,11 +30,11 @@ export class OtpService {
 
 
         const otp = lodash.random(100000, 999999).toString()
-
         user.auth.otp = otp
         user.auth.otpLastSentAt = currentTime
         user.auth.otp_expiry = new Date(currentTime.getTime() + 5 * 60000)
         await user.save()
+        console.log("otp",otp);
 
         let topic: KafkaTopic;
         let data: Record<string, any>;

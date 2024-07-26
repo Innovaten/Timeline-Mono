@@ -27,7 +27,7 @@ export class KafkaService implements OnModuleInit {
                 password: CoreConfig.kafka.password,
             }
           }).producer()
-       // this.producer.connect()
+        this.producer.connect()
     }
 
     async produceMessage(

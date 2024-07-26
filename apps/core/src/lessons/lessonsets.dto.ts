@@ -9,10 +9,6 @@ export class CreateLessonSetDto {
     @IsNotEmpty()
     readonly module: string
 
-    @IsArray()
-    @IsMongoId({ each: true })
-    readonly lessons: string[];
-
     @IsString()
     @IsNotEmpty()
     readonly title: string

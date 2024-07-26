@@ -7,7 +7,7 @@ export class CreateModuleDto {
 
     @IsArray()
     @IsMongoId({ each: true })
-    readonly lessonSet: string[];
+    readonly lessonSet: string;
 
 
     @IsNotEmpty()

@@ -1,7 +1,7 @@
 import { SchemaTypes, Schema, model } from "mongoose";
-import { IModules } from "./index.types";
+import { IModule } from "./index.types";
 
-export const ModuleSchema = new Schema<IModules>({
+export const ModuleSchema = new Schema<IModule>({
     title: {
         type: SchemaTypes.String,
         required: true,
@@ -38,6 +38,7 @@ export const ModuleSchema = new Schema<IModules>({
     createdBy: {
         type: SchemaTypes.ObjectId,
         required: true,
+        ref: 'Users',
     },
 
     createdAt: {
@@ -50,7 +51,8 @@ export const ModuleSchema = new Schema<IModules>({
     },
     updatedBy: {
         type: SchemaTypes.ObjectId,
-        default: new Date()
+        default: new Date(),
+        ref: 'Users',
     },
 })
 

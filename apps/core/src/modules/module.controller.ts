@@ -85,13 +85,11 @@ export class ModulesController {
     try {
       const creator = await this.jwt.validateToken(createModuleDto.authToken);
 
+
       if (!creator) {
         return ServerErrorResponse(new Error('Unauthenticated'), 401);
       }
 
-      if (creator.role !== 'SUDO') {
-        return ServerErrorResponse(new Error('Unauthorized'), 403);
-      }
 
       const { classId } = createModuleDto
 

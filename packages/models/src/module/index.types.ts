@@ -1,6 +1,6 @@
 import { Document, Types } from "mongoose";
 
-export interface IModules {
+export interface IModule {
     title: string
     lessonSet: Types.ObjectId[]
 
@@ -19,4 +19,4 @@ export interface IModules {
     updatedAt: Date 
 }
 
-export interface IModulesDoc extends Document, IModules{}
+export interface IModulesDoc extends Document, IModule{}

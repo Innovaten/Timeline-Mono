@@ -21,7 +21,6 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.0.0",
-    "@nestjs/mongoose": "^10.0.10",
     "@nestjs/platform-express": "^10.0.0",
     "@repo/models": "*",
     "@repo/utils": "*",

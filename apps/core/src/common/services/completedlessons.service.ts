@@ -1,8 +1,9 @@
-// completedlessons.service.ts
 import { Injectable } from '@nestjs/common';
 import { CompletedLessonsModel, ICompletedLessonsDoc } from '@repo/models';
 import { Types } from 'mongoose';
 import { CreateCompletedLessonDto, UpdateCompletedLessonDto } from '../../lessons/completedlessons.dto';
+
+
 @Injectable()
 export class CompletedLessonsService {
     async createCompletedLesson(createCompletedLessonDto: CreateCompletedLessonDto): Promise<ICompletedLessonsDoc> {

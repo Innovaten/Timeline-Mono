@@ -5,24 +5,14 @@ import { LessonSetsService } from "../common/services/lessonsets.service";
 import { ILessonSetDoc } from "@repo/models";
 import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { ClassModel } from "@repo/models";
+import { AuthGuard } from "../common/guards/jwt.guard";
+import { AssignedService } from "../common/services/assigned.service";
 
 export class ModulesService {
   private lessonSetsService: LessonSetsService;
-
-  constructor() {
-    this.lessonSetsService = new LessonSetsService();
-  }
-
-
-   async isAdminAssignedToClass(adminId: string, classId: string) {
-    const classDoc = await ClassModel.findById(classId)
-
-    if(!classDoc) {
-      throw new Error("Specified class not found")
-    }
-
-    return classDoc.administrators.some((admin) => admin.equals(new Types.ObjectId(adminId)))
-  }
+  private assignedService: AssignedService
+  private jwt: AuthGuard;
+  
 
   async getCount(filter: Record<string, any> = {}){
     return ModuleModel.countDocuments(filter)
@@ -43,10 +33,10 @@ async getLessonSetsByModuleId(moduleId: string, userRole: string) {
     classId: string,
   ): Promise<IModulesDoc> {
 
-    const isAssigned = await this.isAdminAssignedToClass(creator, classId)
+    const isAuthorized = await this.assignedService.isAdminOrSudo(creator, classId);
 
-    if (!isAssigned) {
-      throw new ForbiddenException('Not assigned to this class!')
+    if (!isAuthorized) {
+      throw new ForbiddenException('You are not authorized to create a module for this class!');
     }
 
 

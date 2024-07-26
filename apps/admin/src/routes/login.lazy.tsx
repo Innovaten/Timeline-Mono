@@ -394,7 +394,8 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
               }
               toggleLoading();
           }).catch(err => {
-            toast.error(err);
+            toast.error(`${err}`);
+            //console.log(err);
              toggleLoading();
        });
       }
@@ -484,7 +485,8 @@ function ForgotVerification({componentRef, multiPage}: PageProps){
           toggleLoading()
 
       }).catch(err => {
-          toast.error(err)
+          toast.error(`${err}`)
+         // console.log(err)
           setOTPHasError(false)
           toggleLoading()
       })

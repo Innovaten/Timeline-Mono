@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import {  ClassModel, UserModel } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, IlessonDoc, UserModel } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -187,6 +187,16 @@ export class UserService {
             }
         } )
 
+        const emptyCompletedLessons = new CompletedLessonsModel({
+            user: user.id,
+            lesson: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        })
+
+        user.completedLessons = emptyCompletedLessons.id;
+
+        await emptyCompletedLessons.save()
         await user.save()
 
         await this.kafka.produceMessage(
@@ -233,6 +243,21 @@ export class UserService {
 
         return ServerSuccessResponse({ message: 'Password updated successfully' })
 
+    }
+
+    async getUsersCompletedLessons(specifier: string, isId: boolean): Promise<ICompletedLessonDoc> {
+        
+        let user: any
+        if(isId){
+            user = await UserModel.findOne({ _id: new Types.ObjectId(specifier) }).populate<{ completedLessons: { lessons: IlessonDoc[] }}>("completedLessons.lessons")
+        } else {
+            user = await UserModel.findOne({ code: specifier }).populate<{ completedLessons: { lessons: IlessonDoc[] }}>("completedLessons.lesson")
+        }
+
+        if(!user){
+            throw new BadRequestException(`Specified user could not be found`)
+        }
+        return user.completedLessons.lessons;
     }
 }
 

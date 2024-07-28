@@ -3,7 +3,7 @@ import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { Roles } from '../common/enums/roles.enum';
 import { ClassesService } from '../classes/classes.service';
@@ -280,7 +280,20 @@ export class UsersController {
                 announcements: result,
                 count,
             });
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
         
+    @Get(':specifier/completed-lessons')
+    async getUsersCompletedLessons( 
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+    ) {
+        try {
+            const IsId = isId == "true";
+            const user_count = await this.user.getUsersCompletedLessons(specifier, IsId)
+            return ServerSuccessResponse(user_count);
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);

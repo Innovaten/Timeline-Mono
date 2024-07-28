@@ -1,4 +1,5 @@
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel } from "@repo/models";
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel  } from "@repo/models";
+
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
 import { generateCode } from "../utils";
@@ -48,7 +49,7 @@ export class ClassesService {
             ...actualData,
             status: "Active",
             administrators: [],
-            lessons: [],
+            modules: [],
             resources: [],
             assignments: [],
             quizzes: [],
@@ -140,5 +141,20 @@ export class ClassesService {
         const announcements = await AnnouncementModel.find({ announcementSet: classDoc.announcementSet}).populate("createdBy updatedBy");
 
         return announcements;
+    }
+
+    // This is the function that gets all the modules asscociated with a specific class (the classId needs to be passes as a parameter)
+    async getModuleByClassId(classId: string, userRole: string): Promise<IModuleDoc[]> {
+        const classDoc = await ClassModel.findById(classId)
+        if (!classDoc) {
+            throw new Error("Class not found")
+        }
+
+        if (userRole !== 'SUDO' && userRole !== 'ADMIN' ) {
+            throw new Error("Unauthorized")
+        }
+
+        const modules = await ModuleModel.find({ _id: { $in: classDoc.modules } })
+        return modules
     }
 }

@@ -9,6 +9,8 @@ import { RegistrationsModule } from './registrations/registrations.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { AssetsModule } from './assets/assets.module';
 import CustomCommon from './common';
+import { ModulesModule } from './modules/module.module';
+import { LessonsModule } from './lessons/lessons.module';
 
 @Module({
   imports: [
@@ -21,7 +23,9 @@ import CustomCommon from './common';
     RegistrationsModule,
     ClassesModule,
     AnnouncementsModule,
-    AssetsModule
+    AssetsModule,
+    ModulesModule,
+    LessonsModule,
   ],
   controllers: [AppController],
   providers: [AppService, CustomCommon],

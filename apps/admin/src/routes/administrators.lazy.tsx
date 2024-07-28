@@ -3,7 +3,7 @@ import { createLazyFileRoute } from '@tanstack/react-router';
 import { useAdministrators, useAdministratorsFilter, useCompositeFilterFlag } from '../hooks';
 import { PlusIcon, FunnelIcon, ArrowPathIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
-import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, validPhoneNumber } from '@repo/utils';
+import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, useToggleManager, validPhoneNumber } from '@repo/utils';
 import { Formik, Form } from 'formik'
 import { toast } from 'sonner'
 import { useState } from 'react';
@@ -15,20 +15,28 @@ export const Route = createLazyFileRoute('/administrators')({
 
 
 function Administrators(){
+    
+    const initialToggles = {
+        'create-dialog': false,
+        'update-dialog': false,
+        'delete-dialog': false,
+
+        'refresh': false,
+        'filters-is-shown': false,
+
+        'create-is-loading': false,
+        'update-is-loading': false,
+        'delete-is-loading': false,
+    }
+
+    type TogglesType = typeof initialToggles
+    type ToggleKeys = keyof TogglesType
+    const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
 
     const { filter, filterOptions, changeFilter, filterChangedFlag } = useAdministratorsFilter();
-    const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
-    const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ filterChangedFlag, refreshFlag ])
-
+    const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ filterChangedFlag, toggleManager.get('refresh') ])
+    
     const { isLoading: administratorsIsLoading, administrators, count: administratorsCount } = useAdministrators(compositeFilterFlag, filter);
-    const { dialogIsOpen, toggleDialog: toggleCreateDialog } = useDialog();
-    const { dialogIsOpen: updateDialogIsOpen, toggleDialog: toggleUpdateDialog } = useDialog();
-    const { dialogIsOpen: deleteDialogIsOpen, toggleDialog: toggleDeleteDialog } = useDialog();
-    const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
-    const { isLoading, toggleLoading, resetLoading } = useLoading()
-    const { isLoading: deleteIsLoading, toggleLoading: toggleDeleteIsLoading } = useLoading()
-    const { isLoading: updateIsLoading, toggleLoading: toggleUpdateLoading, resetLoading: resetUpdateLoading } = useLoading()
-
 
     const [ selectedAdmin, setSelectedAdmin ] = useState<Partial<IUserDoc>>({
         firstName: '',
@@ -58,7 +66,7 @@ function Administrators(){
         gender: string,
         phone: string,
     }){
-        toggleUpdateLoading()
+        toggleManager.toggle('update-is-loading')
         values.phone = validPhoneNumber(values.phone)
         
         const changedValues = {}
@@ -81,24 +89,25 @@ function Administrators(){
         ).then( res => {
             if(res.status == 200 && res.data.success){
                 toast.success("Administrator Updated Successfully")
-                toggleRefreshFlag()
+                toggleManager.toggle('refresh')
             } else {
                 values.phone = "0" + selectedAdmin.phone?.substring(3)
                 toast.error(`${res.data.error.msg}`)
             }
-            toggleUpdateDialog()
-            resetUpdateLoading()
+            toggleManager.toggle('update-dialog')
         })
         .catch( err => {
             values.phone = "0" + selectedAdmin.phone?.substring(3)
             toast.error(`${err}`)
-            resetUpdateLoading()
+        })
+        .finally(() => {
+            toggleManager.reset('update-is-loading')
         })
     }
     
     function handleToggleRole(){
 
-        toggleUpdateLoading()
+        toggleManager.toggle('update-is-loading')
         const baseUrl = "/api/v1/users/"
         const finalUrl = baseUrl +  (selectedAdmin.role == "SUDO" ? 'downgrade-to-admin?sudoId=' : "upgrade-to-sudo?adminId=" ) + selectedAdmin._id;
         
@@ -110,16 +119,17 @@ function Administrators(){
             if(res.status == 201 && res.data.success){
                 const successText = selectedAdmin.role == "SUDO" ? "User downgraded to Administrator successfully": "User upgraded to Sudo successfully";
                 toast.success(successText);
-                toggleUpdateDialog()
-                toggleRefreshFlag()
+                toggleManager.toggle('update-dialog')
+                toggleManager.toggle('refresh')
             } else {
                 toast.error(`${res.data.error.msg}`)
             }
-            resetUpdateLoading()
         })
         .catch(err => {
             toast.error(`${err}`)
-            resetUpdateLoading()
+        })
+        .finally(() => {
+            toggleManager.reset('update-is-loading');
         })
     }
 
@@ -132,7 +142,7 @@ function Administrators(){
         phone: string,
         role: string,
     }){
-        toggleLoading()
+        toggleManager.toggle('create-is-loading')
 
         const validPhone = validPhoneNumber(values.phone)
 
@@ -148,9 +158,9 @@ function Administrators(){
         .then(res => {
 
             if(res.status == 201 && res.data.success){
-                toggleCreateDialog()
+                toggleManager.toggle('create-dialog')
                 toast.success(<p>Admin created successfully.<br/>A confirmation will be sent via email.</p>)
-                toggleRefreshFlag()
+                toggleManager.toggle('refresh')
             } else {
                 toast.error(`${res.data.error.msg}`)
             }
@@ -160,13 +170,13 @@ function Administrators(){
             toast.error(`${err}`)
         })
         .finally(() => {
-            toggleLoading()
+            toggleManager.toggle('create-is-loading')
         })
 
     }
 
     function handleDeleteAdmin(){
-        toggleDeleteIsLoading()
+        toggleManager.toggle('delete-dialog')
         makeAuthenticatedRequest(
             "delete",
             `/api/v1/users/${selectedAdmin._id}`,
@@ -176,7 +186,7 @@ function Administrators(){
         ).then( res => {
             if(res.status == 200 && res.data.success){
                 toast.success("Administrator deleted successfully")
-                toggleRefreshFlag();                
+                toggleManager.toggle('refresh')              
             } else {
                 toast.error(`${res.data.err.msg}`)
             }
@@ -189,16 +199,16 @@ function Administrators(){
             }
         })
         .finally(() => {
-            toggleDeleteIsLoading();
-            toggleDeleteDialog()
+            toggleManager.toggle('delete-is-loading');
+            toggleManager.toggle('delete-dialog')
         })
     }
 
     return (
         <>
             <DialogContainer 
-                toggleOpen={toggleCreateDialog}
-                isOpen={dialogIsOpen}
+                toggleOpen={() => toggleManager.toggle('create-dialog')}
+                isOpen={toggleManager.get('create-dialog')}
                 title='Add a new administrator'
                 description="Enter the administrator's details below"
             >
@@ -252,15 +262,15 @@ function Administrators(){
                             <Input name='phone' label='Phone Number' iconType='phone' hasValidation />
                         </span>
                         <span className='flex justify-end gap-4 w-full'>
-                            <Button className='px-3 !h-[35px]' type='button' onClick={()=>{ toggleCreateDialog(); resetLoading()}} variant='neutral'>Close</Button>
-                            <Button className='px-3 !h-[35px]' type='submit' isLoading={isLoading}>Add Administrator</Button>
+                            <Button className='px-3 !h-[35px]' type='button' onClick={()=>{  toggleManager.toggle('create-dialog'); toggleManager.reset('create-dialog') }} variant='neutral'>Close</Button>
+                            <Button className='px-3 !h-[35px]' type='submit' isLoading={toggleManager.get('create-is-loading')}>Add Administrator</Button>
                         </span>
                     </Form>
                 </Formik>
             </DialogContainer>
             <DialogContainer
-                toggleOpen={toggleUpdateDialog}
-                isOpen={updateDialogIsOpen}
+                toggleOpen={() => {toggleManager.toggle('update-dialog')}}
+                isOpen={toggleManager.get('update-dialog')}
                 title={`Update Administrator`}
                 description={`Update ${ selectedAdmin.firstName + " " + selectedAdmin.lastName }'s details`}
             >
@@ -298,9 +308,9 @@ function Administrators(){
                             <Input name='phone' label='Phone Number' iconType='phone' hasValidation />
                         </span>
                         <span className='flex justify-end gap-4 w-full'>
-                            <Button className='px-3 !h-[35px]' type='button' onClick={()=>{ toggleUpdateDialog(); resetUpdateLoading()}} variant='neutral'>Close</Button>
-                            <Button className='px-3 !h-[35px]' type='button' variant='danger' isLoading={updateIsLoading} onClick={handleToggleRole}>{ selectedAdmin.role == "SUDO" ? "Downgrade to ADMIN" : "Upgrade to SUDO" }</Button>
-                            <Button className='px-3 !h-[35px]' type='submit' isLoading={updateIsLoading}>Update Administrator</Button>
+                            <Button className='px-3 !h-[35px]' type='button' onClick={()=>{ toggleManager.toggle('update-dialog'); toggleManager.reset('update-dialog')}} variant='neutral'>Close</Button>
+                            <Button className='px-3 !h-[35px]' type='button' variant='danger' isLoading={toggleManager.get('update-is-loading')} onClick={handleToggleRole}>{ selectedAdmin.role == "SUDO" ? "Downgrade to ADMIN" : "Upgrade to SUDO" }</Button>
+                            <Button className='px-3 !h-[35px]' type='submit' isLoading={toggleManager.get('update-is-loading')}>Update Administrator</Button>
                         </span>
                     </Form>
                 </Formik>
@@ -310,31 +320,31 @@ function Administrators(){
             <DialogContainer
                 title='Delete Administrator'
                 description={`Are you sure you want to delete the ${selectedAdmin.firstName} ${selectedAdmin.lastName} account?`}
-                isOpen={deleteDialogIsOpen}
-                toggleOpen={toggleDeleteDialog}
+                isOpen={toggleManager.get('delete-dialog')}
+                toggleOpen={()=>{toggleManager.toggle('delete-dialog')}}
             >
                 <div className='flex justify-end gap-4 mt-8'>
-                    <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); setSelectedAdmin({}) }}>Close</Button>
-                    <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={handleDeleteAdmin}>Delete Administrator</Button>
+                    <Button className='!h-[35px] px-2' variant='neutral' isDisabled={toggleManager.get('delete-is-loading')} onClick={()=> { toggleManager.toggle('delete-dialog'); setSelectedAdmin({}) }}>Close</Button>
+                    <Button className='!h-[35px] px-2' variant='danger' isLoading={toggleManager.get('delete-is-loading')} onClick={handleDeleteAdmin}>Delete Administrator</Button>
                 </div>
             </DialogContainer>
 
             <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
                     <h3 className='text-blue-800'>Administrators</h3>
-                    <Button className='flex px-2 !h-[35px]' onClick={toggleCreateDialog}> <PlusIcon className='inline w-4 mr-1' /> Add <span className='hidden sm:inline' >&nbsp;an administrator</span></Button>
+                    <Button className='flex px-2 !h-[35px]' onClick={()=>{toggleManager.toggle('create-dialog')}}> <PlusIcon className='inline w-4 mr-1' /> Add <span className='hidden sm:inline' >&nbsp;an administrator</span></Button>
                 </div>
                 <div className='w-full mt-3 flex flex-wrap gap-4'>
                     <Button
-                        onClick={toggleFiltersAreShown}
+                        onClick={()=>{ toggleManager.toggle('filters-is-shown')}}
                         variant='outline'
                         className='!h-[35px] px-2 flex items-center gap-2'
                     >
                         <FunnelIcon className='w-4' />
-                        { filterIsShown ? "Close" : "Show"} Filters    
+                        { toggleManager.get('filters-is-shown') ? "Close" : "Show"} Filters    
                     </Button>
 
-                    { filterIsShown &&
+                    { toggleManager.get('filters-is-shown') &&
                         <select
                             className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
                             onChange={(e) => { 
@@ -390,10 +400,10 @@ function Administrators(){
                                 <div className='flex gap-4 items-center font-light'>
                                     <span className='w-[150px] hidden sm:flex justify-end'>{new Date(admin.createdAt).toDateString()}</span>
                                     <div className='w-[100px] flex justify-end gap-4'>
-                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleUpdateDialog() }}>              
+                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleManager.toggle('update-dialog') }}>              
                                             <PencilIcon className='w-4 h-4' />
                                         </span>
-                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleDeleteDialog() }}>
+                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleManager.toggle('delete-dialog') }}>
                                             <TrashIcon className='w-4 h-4' />
                                         </span>
                                     </div>

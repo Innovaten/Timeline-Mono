@@ -12,39 +12,39 @@ export interface ConsoleRouterContext {
 
 export const Route = createRootRouteWithContext<ConsoleRouterContext>()({
   component: RootPage,
-  beforeLoad: ( {  location }) => {
-    const authToken = _getToken()
-    const userToken = _getUser()
+  // beforeLoad: ( {  location }) => {
+  //   const authToken = _getToken()
+  //   const userToken = _getUser()
 
-    if(!location.href.startsWith('/login') && !location.href.startsWith('/register')  && (!authToken || !userToken) ){ // If we don't know you
-      throw redirect ({
-        to: "/login", 
-        search: { 
-          destination: "", 
-          ...location.search 
-        } 
-      })
-    } else if( location.href.startsWith('register')){
-      return;
-    } else if(authToken && !userToken){ //  You have a token but user context is not set
-        makeAuthenticatedRequest(
-          "get",
-          '/api/v1/auth/verify-token'
-        ).then(res => {
-          if(res.data.success){
-            _setUser(res.data.data);
-          } else {
-            throw redirect ({
-              to: "/login", 
-              search: {
-                destination: "",
-                ...location.search
-              } 
-            })
-          }
-        })
-    }
-  }
+  //   if(!location.href.startsWith('/login') && !location.href.startsWith('/register')  && (!authToken || !userToken) ){ // If we don't know you
+  //     throw redirect ({
+  //       to: "/login", 
+  //       search: { 
+  //         destination: "", 
+  //         ...location.search 
+  //       } 
+  //     })
+  //   } else if( location.href.startsWith('register')){
+  //     return;
+  //   } else if(authToken && !userToken){ //  You have a token but user context is not set
+  //       makeAuthenticatedRequest(
+  //         "get",
+  //         '/api/v1/auth/verify-token'
+  //       ).then(res => {
+  //         if(res.data.success){
+  //           _setUser(res.data.data);
+  //         } else {
+  //           throw redirect ({
+  //             to: "/login", 
+  //             search: {
+  //               destination: "",
+  //               ...location.search
+  //             } 
+  //           })
+  //         }
+  //       })
+  //   }
+  // }
 
 })
 

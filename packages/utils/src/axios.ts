@@ -37,8 +37,6 @@ export async function makeUnauthenticatedRequest(
   );
 }
 
-axios.get("./.",{ headers: { } })
-
 export async function makeAuthenticatedRequest(
   method: "get" | "post" | "put" | "patch" | "delete",
   url: string,

@@ -4,6 +4,7 @@ import { RegistrationModel, RegistrationSchema } from "./registration";
 import { ClassModel, ClassSchema } from "./class";
 import { AnnouncementModel, AnnouncementSchema } from './announcement'
 import { AnnouncementSetModel, AnnouncementSetSchema } from './announcement-set'
+import { ResourcesModel, ResourceSchema } from "./resource";
 
 
 import { IUserDoc } from "./user/index.types";
@@ -11,6 +12,7 @@ import { IRegistrationDoc } from "./registration/index.types";
 import { IClassDoc } from "./class/index.types";
 import { IAnnouncementDoc } from "./announcement/index.types";
 import { IAnnouncementSetDoc } from "./announcement-set/index.types";
+import { IResourceDoc } from "./resource/index.types";
 
 ( async function index(){
     await mongoose.connect(process.env.MONGODB_URI!, {
@@ -28,6 +30,7 @@ export {
     type IClassDoc,
     type IAnnouncementDoc,
     type IAnnouncementSetDoc,
+    type IResourceDoc,
 
     //Models
     UserModel,
@@ -35,6 +38,7 @@ export {
     ClassModel,
     AnnouncementModel,
     AnnouncementSetModel,
+    ResourcesModel,
 
     // Schema
     UserSchema,
@@ -42,5 +46,6 @@ export {
     ClassSchema,
     AnnouncementSchema,
     AnnouncementSetSchema,
+    ResourceSchema,
 
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc } from '@repo/models';
@@ -162,17 +162,14 @@ export class UsersController {
         }
     }
 
+    @UseGuards(AuthGuard)
     @Delete(":_id")
     async deleteUser(
-        @Body() deleteUserDto: DeleteUserDto,
-        @Param("_id") _id: string
+        @Param("_id") _id: string,
+        @Req() req: any
     ) {
         try {
-            if(!deleteUserDto.authToken){
-                return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
-            }
-
-            const actor = await this.jwt.validateToken(deleteUserDto.authToken);
+            const actor = req.user;
 
             if(!actor){
                 return ServerErrorResponse(new Error("Unauthenticated Request"), 401)

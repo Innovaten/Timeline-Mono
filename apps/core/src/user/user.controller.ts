@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Headers } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc } from '@repo/models';
@@ -194,6 +194,40 @@ export class UsersController {
         }
 
     }
+
+    @Get("announcements")
+    async getAnnouncementsForLMS(
+        @Headers('authorization') authToken: string
+    ) {
+        if (authToken.startsWith('Bearer')){
+            authToken = authToken.split(" ")[1];
+          }
+
+        try{
+            const user = await this.jwt.validateToken(authToken);
+            if(!user){
+                return ServerErrorResponse(
+                    new Error('Unauthenticated Request'),
+                    401
+                )
+            }
+            if(user.role != Roles.STUDENT){
+                return ServerErrorResponse(
+                    new Error('Unauthorized Request'),
+                    403
+                )
+            }
+            const announcements = await this.announcements.getAnnouncementsForLMS(user.classes)
+            return ServerSuccessResponse(announcements);
+
+        }catch (err) {
+            return ServerErrorResponse(
+                new Error(`${err}`), 
+                500
+            )
+        }
+    }
+
 
     @UseGuards(AuthGuard)
     @Get('count')

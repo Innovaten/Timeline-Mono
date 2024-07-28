@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Post, UseGuards, Request, Query, Param, Body, Delete } from '@nestjs/common';
+import { Controller, Get, Patch, Post, UseGuards, Request, Query, Param, Body, Delete, Headers } from '@nestjs/common';
 import { sendInternalServerError } from '../utils';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
@@ -9,6 +9,7 @@ import { CreateAnnouncementDto , UpdateAnnouncementDto} from './announcements.dt
 import { ClassesService } from '../classes/classes.service';
 import { Types } from 'mongoose';
 import { IAnnouncementDoc } from '@repo/models';
+import { IUserDoc } from '@repo/models';
 
 @Controller({
     path: 'announcements',
@@ -127,6 +128,41 @@ export class AnnouncementsController {
         } catch (err) {
             return sendInternalServerError(err);
         }
+    }
+
+    @Get("count")
+    async getAnnouncementCount(
+        @Query('filter') rawFilter: string,
+        @Headers('authorization') authToken: string
+    ){
+        if (authToken.startsWith('Bearer')){
+            authToken = authToken.split(" ")[1];
+          }
+
+        try{
+           
+            const user = await this.jwt.validateToken(authToken) as IUserDoc;
+            if(!user){
+                return ServerErrorResponse(
+                    new Error('Unauthenticated Request'),
+                    401
+                )
+            }
+        
+           if (user?.role === 'ADMIN' || user?.role === 'SUDO') {
+            const filter =  {createdBy: new Types.ObjectId(user?._id as string)};
+            const classes_count = await this.service.getAnnouncementsCount(filter)
+            return ServerSuccessResponse<number>(classes_count); 
+            } else {
+                return ServerErrorResponse(
+                    new Error("Unauthorized Request"),
+                    401
+                )
+            }
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        }   
     }
 
     @Patch(":_id")

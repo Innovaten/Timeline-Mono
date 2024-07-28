@@ -3,6 +3,7 @@ import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, 
 import { CreateAnnouncementDto, UpdateAnnouncementDto } from './announcements.dto';
 import { generateCode } from '../utils';
 import { Types, startSession } from 'mongoose';
+import { forEach } from 'lodash';
 
 @Injectable()
 export class AnnouncementsService {
@@ -35,6 +36,7 @@ export class AnnouncementsService {
     ): Promise<IAnnouncementDoc> {
         const timestamp = new Date();
         const prefix = "ANMT"
+        console.log(announcementData)
         
         const { authToken, classCode: relatedClassCode, ...actualData } = announcementData;
 
@@ -204,4 +206,28 @@ export class AnnouncementsService {
         
         return announcement;
     }
+
+    async getAnnouncementsForLMS(
+       userClasses: object[],
+    ): Promise<IAnnouncementDoc[]> {
+        const classes = await ClassModel.find({ _id: { $in: userClasses }});
+        const filter = { isDraft: false, "meta.isDeleted": false }
+        if(!classes){
+            throw new Error("Specified user is not related with any class")
+        }   
+        const anouncementSetIds = classes.map(c => c.announcementSet)
+        const announcementSets = await AnnouncementSetModel.find({ _id: { $in: anouncementSetIds }});
+        let announcementIds: Types.ObjectId[] = []
+
+        announcementSets.forEach(aset => {
+            announcementIds = [
+                ...announcementIds,
+                ...aset.announcements,
+            ]
+        })
+
+        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }, ...filter }).sort({ createdAt: -1 }).populate("createdAt createdBy");
+        return announcements;
+}
+
 }

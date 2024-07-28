@@ -4,7 +4,6 @@ import { CoreConfig } from "../../config";
 
 const kafkaTopics = [
     "notifications.send-email",
-    "notifications.send-sms",
 ] as const;
 
 export type KafkaTopic = typeof kafkaTopics[number];

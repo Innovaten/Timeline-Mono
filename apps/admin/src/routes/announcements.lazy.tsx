@@ -47,6 +47,9 @@ function Announcements({ }){
         onSuccess: (data) => {
           toast.success(`Announcement ${data.code ?? ""} deleted successfully`)
         },
+        onFailure: (error) => {
+            toast.error(`${error.msg}`)
+        },
       }
     )
   }
@@ -61,7 +64,7 @@ function Announcements({ }){
         >
             <div className='flex justify-end gap-4 mt-8'>
                 <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); resetSelected() }}>Close</Button>
-                <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={() => { handleDeleteAnnouncement }}>Delete Announcement</Button>
+                <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={ handleDeleteAnnouncement }>Delete Announcement</Button>
             </div>
         </DialogContainer>
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>

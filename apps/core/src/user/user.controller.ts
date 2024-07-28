@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Headers } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req, Headers } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { Roles } from '../common/enums/roles.enum';
 import { ClassesService } from '../classes/classes.service';
@@ -162,17 +162,14 @@ export class UsersController {
         }
     }
 
+    @UseGuards(AuthGuard)
     @Delete(":_id")
     async deleteUser(
-        @Body() deleteUserDto: DeleteUserDto,
-        @Param("_id") _id: string
+        @Param("_id") _id: string,
+        @Req() req: any
     ) {
         try {
-            if(!deleteUserDto.authToken){
-                return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
-            }
-
-            const actor = await this.jwt.validateToken(deleteUserDto.authToken);
+            const actor = req.user;
 
             if(!actor){
                 return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
@@ -317,7 +314,20 @@ export class UsersController {
                 announcements: result,
                 count,
             });
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
         
+    @Get(':specifier/completed-lessons')
+    async getUsersCompletedLessons( 
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+    ) {
+        try {
+            const IsId = isId == "true";
+            const user_count = await this.user.getUsersCompletedLessons(specifier, IsId)
+            return ServerSuccessResponse(user_count);
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);

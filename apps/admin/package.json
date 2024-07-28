@@ -17,6 +17,9 @@
     "@tanstack/router": "^0.0.1-beta.53",
     "@tanstack/router-devtools": "^1.34.9",
     "@tanstack/router-vite-plugin": "^1.34.8",
+    "@uppy/core": "^4.0.1",
+    "@uppy/dashboard": "^4.0.1",
+    "@uppy/react": "^4.0.1",
     "sonner": "^1.5.0"
   },
   "devDependencies": {

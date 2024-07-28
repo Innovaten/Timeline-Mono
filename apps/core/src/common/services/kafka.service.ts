@@ -1,10 +1,9 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
-import { Kafka, Producer } from "kafkajs"
+import { Kafka, Producer, logLevel } from "kafkajs"
 import { CoreConfig } from "../../config";
 
 const kafkaTopics = [
     "notifications.send-email",
-    "notifications.send-sms",
 ] as const;
 
 export type KafkaTopic = typeof kafkaTopics[number];
@@ -25,7 +24,8 @@ export class KafkaService implements OnModuleInit {
                 mechanism: 'scram-sha-256',
                 username: CoreConfig.kafka.username,
                 password: CoreConfig.kafka.password,
-            }
+            },
+            logLevel: logLevel.ERROR,
           }).producer()
         this.producer.connect()
     }

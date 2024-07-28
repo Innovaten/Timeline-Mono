@@ -9,7 +9,6 @@ import { forEach } from 'lodash';
 export class AnnouncementsService {
 
     async listAnnouncements(limit?: number, offset?: number, filter: Record<string, any> = {}, ): Promise<any>{
-        console.log(filter)
         const results = await AnnouncementModel.find(filter)
         .limit(limit ?? 10)
         .skip(offset ?? 0)

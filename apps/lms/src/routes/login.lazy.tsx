@@ -104,16 +104,16 @@ function Login({ componentRef, pages }: LoginProps){
           values,
       )
       .then(res => {
-            console.log(res.data);
             if(res.data.success){
-              const token = res.data.data.access_token;    
+
+              const token = res.data.data.access_token;
               _setToken(token);
               
               const user: HydratedDocument<IUserDoc> = res.data.data.user;
               _setUser(user)
               setUser(user);
               router.navigate({ 
-                ...( searchParams.destination == '' ?  {to: '/home' } : { to: searchParams.destination })
+                ...( searchParams.destination == '' ?  {to: '/' } : { to: searchParams.destination })
                 })
               toggleLoading()
           } else {

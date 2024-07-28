@@ -1,6 +1,7 @@
 import { Document, Types } from "mongoose";
 
 export interface ILesson {
+    code: string
     title: string
     content: string
     resources: Types.ObjectId[]
@@ -9,7 +10,6 @@ export interface ILesson {
     meta: {
         isDeleted: boolean
     },
-    code: string
 
     createdBy: Types.ObjectId
     updatedBy: Types.ObjectId

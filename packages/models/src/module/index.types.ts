@@ -1,17 +1,15 @@
 import { Document, Types } from "mongoose";
 
 export interface IModule {
+    code: string
     title: string
-    lessonSet: Types.ObjectId[]
-
-    moduleId: Types.ObjectId
+    lessonSet: Types.ObjectId
 
     meta: {
         isDeleted: boolean
     }
 
     classId: Types.ObjectId
-    code: string
     createdBy: Types.ObjectId
     updatedBy: Types.ObjectId
 
@@ -19,4 +17,4 @@ export interface IModule {
     updatedAt: Date 
 }
 
-export interface IModulesDoc extends Document, IModule{}
+export interface IModuleDoc extends Document, IModule{}

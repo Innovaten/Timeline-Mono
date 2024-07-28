@@ -207,6 +207,22 @@ export class UsersController {
         } 
     }
 
+    @UseGuards(AuthGuard)
+    @Get(':specifier/completed-lessons')
+    async getUsersCompletedLessons( 
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+    ) {
+        try {
+            const IsId = isId == "true";
+            const user_count = await this.user.getUsersCompletedLessons(specifier, IsId)
+            return ServerSuccessResponse(user_count);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+
     @Patch('update-password')
     async updatedPassword(
         @Query('id') id: string,

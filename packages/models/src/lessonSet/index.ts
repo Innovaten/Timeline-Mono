@@ -7,31 +7,21 @@ export const LessonSetSchema = new Schema<ILessonSet>({
         ref: 'Classes',
         required: true,
     },
-
     module: {
         type: SchemaTypes.ObjectId,
         ref: 'Modules'
     },
-
-    meta: {
-        type: new Schema({
-            isDeleted: {
-                type: SchemaTypes.Boolean,
-                default: false
-            }
-        })
-    },
-
     lessons: {
-        type: [SchemaTypes.ObjectId],
-        ref: 'Lessons',
+        type: [{ type: SchemaTypes.ObjectId, ref: "Lessons" }],
         default: []
     },
 
-    title: {
-        type: SchemaTypes.String,
-        required: true,
+    createdAt: {
+        type: SchemaTypes.Date,
     },
+    updatedAt: {
+        type: SchemaTypes.Date,
+    }
 
 })
 

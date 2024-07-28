@@ -5,7 +5,7 @@ import { Types } from "mongoose";
 @Injectable()
 export class AssignedService {
 
-  async isAdminOrSudo(userId: string, classId: string): Promise<boolean> {
+  async isAdminOrSudo(userId: string, classCode: string): Promise<boolean> {
     const user = await UserModel.findById(userId);
 
     if (!user) {
@@ -17,7 +17,7 @@ export class AssignedService {
       return true; 
     }
 
-    const classDoc = await ClassModel.findById(classId);
+    const classDoc = await ClassModel.findOne({ code: classCode });
 
     if (!classDoc) {
       throw new NotFoundException("Specified class not found");

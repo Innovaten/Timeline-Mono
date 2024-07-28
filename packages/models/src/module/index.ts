@@ -2,17 +2,19 @@ import { SchemaTypes, Schema, model } from "mongoose";
 import { IModule } from "./index.types";
 
 export const ModuleSchema = new Schema<IModule>({
+    code: {
+        type: SchemaTypes.String,
+        unique: true,
+        index: true,
+        required: true,
+    },
     title: {
         type: SchemaTypes.String,
         required: true,
     },
     lessonSet: {
-        type: [SchemaTypes.ObjectId],
-        default: [],
-    },
-    moduleId: {
-        type: SchemaTypes.ObjectId,
-        ref: 'Modules'
+        type: SchemaTypes.ObjectId, 
+        ref: "LessonSets",
     },
 
     meta: {
@@ -29,11 +31,10 @@ export const ModuleSchema = new Schema<IModule>({
         ref: 'Classes',
         required: true,
     },
-    code: {
-        type: SchemaTypes.String,
-        unique: true,
-        index: true,
-        required: true,
+
+    createdAt: {
+        type: SchemaTypes.Date,
+        default: new Date()
     },
     createdBy: {
         type: SchemaTypes.ObjectId,
@@ -41,10 +42,6 @@ export const ModuleSchema = new Schema<IModule>({
         ref: 'Users',
     },
 
-    createdAt: {
-        type: SchemaTypes.Date,
-        default: new Date()
-    },
     updatedAt: {
         type: SchemaTypes.Date,
         default: new Date()

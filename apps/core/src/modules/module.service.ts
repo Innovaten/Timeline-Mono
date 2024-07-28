@@ -1,117 +1,108 @@
-import { ModuleModel, IModulesDoc } from "@repo/models";
+import { ModuleModel, IModuleDoc, LessonSetModel, ILessonSetDoc, IlessonDoc } from "@repo/models";
 import { Types } from "mongoose";
 import { CreateModuleDto, UpdateModuleDto } from "./module.dto";
-import { LessonSetsService } from "../common/services/lessonsets.service";
-import { ILessonSetDoc } from "@repo/models";
-import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException } from "@nestjs/common";
 import { ClassModel } from "@repo/models";
-import { AuthGuard } from "../common/guards/jwt.guard";
 import { AssignedService } from "../common/services/assigned.service";
+import { generateCode } from "../utils";
 
 export class ModulesService {
-  private lessonSetsService: LessonSetsService;
-  private assignedService: AssignedService
-  private jwt: AuthGuard;
   
+  constructor (
+    private assignedService: AssignedService,
+  ) {}
 
   async getCount(filter: Record<string, any> = {}){
     return ModuleModel.countDocuments(filter)
 }
 
-async getLessonSetsByModuleId(moduleId: string, userRole: string) {
-  if (userRole !== 'ADMIN' && userRole !== 'SUDO') {
-    throw new UnauthorizedException('Unauthorized');
-  }
-
-  return this.lessonSetsService.findByModuleId(moduleId);
-}
-
-
   async createModule(
     moduleData: CreateModuleDto,
     creator: string,
-    classId: string,
-  ): Promise<IModulesDoc> {
+  ): Promise<IModuleDoc> {
 
-    const isAuthorized = await this.assignedService.isAdminOrSudo(creator, classId);
+    const timestamp = new Date()
+    const isAuthorized = await this.assignedService.isAdminOrSudo(creator, moduleData.classCode);
 
     if (!isAuthorized) {
       throw new ForbiddenException('You are not authorized to create a module for this class!');
     }
 
+    const relatedClass = await ClassModel.findOne({ code: moduleData.classCode })
 
-    const { lessonSet, ...actualData } = moduleData;
+    if(!relatedClass){
+      throw new BadRequestException('Related class was not found')
+    }
 
+    const newLessonSet =  new LessonSetModel({
+      class: `${relatedClass._id}`,      
+      lessons: [],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+  })
+  
     const newModule = new ModuleModel({
-      lessonSet: new Types.ObjectId(),
-      ...actualData,
+      code: await generateCode(await ModuleModel.countDocuments(), "MDL"),
+      title: moduleData.title,
+      lessonSet: newLessonSet.id,
+    
       createdBy: new Types.ObjectId(creator),
       updatedBy: new Types.ObjectId(creator),
+      createdAt: timestamp,
+      updatedAt: timestamp,
       meta: {
         isDeleted: false,
       },
     });
 
+    newLessonSet.module = newModule.id;
+
+    await newLessonSet.save();
     await newModule.save();
 
     return newModule;
   }
 
   async updateModule(
-    moduleId: string,
+    id: string,
     moduleData: UpdateModuleDto,
     updater: string
-  ): Promise<IModulesDoc> {
-    const existingModule = await ModuleModel.findById(moduleId);
-    if (!existingModule) {
-      throw new Error("Module not found");
-    }
+  ): Promise<any> {
   
-    const updatedLessonSets =
-      moduleData.lessonSet &&
-      (await Promise.all(
-        moduleData.lessonSet.map((id) =>
-          this.lessonSetsService.getLessonSetById(id)
-        )
-      ));
-  
-    if (updatedLessonSets && updatedLessonSets.some((ls) => !ls)) {
-      throw new Error("One or more LessonSets not found");
-    }
-  
-    const lessonSetIds = updatedLessonSets
-      ?.filter((ls): ls is ILessonSetDoc => ls !== null)
-      .map((ls) => new Types.ObjectId(ls._id as Types.ObjectId));
-  
-    existingModule.set({
-      ...moduleData,
-      lessonSet: lessonSetIds, // use filtered lessonSetIds
-      updatedBy: new Types.ObjectId(updater),
-      updatedAt: new Date(),
-    });
-  
-    await existingModule.save();
-    return existingModule;
+    const { authToken, classCode, ...actualData} = moduleData;
+
+    return await ModuleModel.findByIdAndUpdate(
+      id,
+      {
+        ...actualData,
+        updatedBy: new Types.ObjectId(updater),
+        updatedAt: new Date(),
+      }, 
+      { new: true }
+    );
   }
   
-  async deleteModule(moduleId: string, actorId: string): Promise<IModulesDoc | null> {
+  async deleteModule(moduleId: string, actorId: string): Promise<IModuleDoc> {
+    
     const module = await ModuleModel.findById(moduleId);
     if (!module) {
       throw new Error("Module not found");
     }
 
     module.meta.isDeleted = true;
+    module.updatedBy = new Types.ObjectId(actorId);
+    module.updatedAt = new Date();
+
     await module.save();
 
     return module;
   }
 
-  async getModule(moduleId: string, user: string): Promise<IModulesDoc | null> {
+  async getModule(moduleId: string, isId: boolean): Promise<IModuleDoc | null> {
     const module = await ModuleModel.findById(moduleId).populate("lessonSet");
     if (!module) {
       throw new Error("Module not found");
     }
-
     return module;
   }
 
@@ -119,16 +110,27 @@ async getLessonSetsByModuleId(moduleId: string, userRole: string) {
     limit: number = 10,
     offset: number = 0,
     filter: any = {}
-): Promise<IModulesDoc[]> {
+  ): Promise<IModuleDoc[]> {
     
-
     const modules = await ModuleModel.find(filter)
-        .skip(offset)
-        .limit(limit)
-        .populate("lessonSet")
-        .sort({ createdAt: -1 });
+      .skip(offset)
+      .limit(limit)
+      .populate("lessonSet")
+      .sort({ createdAt: -1 });
 
     return modules;
-}
+  }
+
+  async getLessonsByModule(module: string){
+  
+    const relatedModule = await ModuleModel.findById(module).populate<{ lessonSet: { lessons: IlessonDoc[]}}>({ path: "lessonSet.lessons"});
+
+    if(!relatedModule){
+      throw new BadRequestException('Specified module not found')
+    }
+
+    return relatedModule.lessonSet.lessons;
+
+  }
 
 }

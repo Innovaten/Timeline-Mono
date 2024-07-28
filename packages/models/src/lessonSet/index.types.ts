@@ -4,9 +4,7 @@ export interface ILessonSet {
     class: Types.ObjectId
     lessons: Types.ObjectId[]
     module: Types.ObjectId
-    title: String
-    updatedBy: Types.ObjectId
-
+    
     meta: {
         isDeleted: boolean;
     }

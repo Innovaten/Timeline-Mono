@@ -1,15 +1,14 @@
 import { SchemaTypes, Schema, model } from "mongoose";
-import { ICompletedLessons } from "./index.types";
+import { ICompletedLesson } from "./index.types";
 
-export const CompletedLessonSchema = new Schema<ICompletedLessons> ({
+export const CompletedLessonSchema = new Schema<ICompletedLesson> ({
     user: {
         type: SchemaTypes.ObjectId,
         ref: 'Users',
         required: true,
     },
     lessons: {
-        type: [SchemaTypes.ObjectId],
-        ref: 'Lessons',
+        type: [{ type: SchemaTypes.ObjectId, ref: 'Lessons' }],
         required: true,
     },
     updatedAt: {

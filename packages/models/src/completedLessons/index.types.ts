@@ -1,10 +1,10 @@
 import { Document, Types } from "mongoose";
 
-export interface ICompletedLessons {
+export interface ICompletedLesson {
     user: Types.ObjectId
     lessons: Types.ObjectId[]
     createdAt: Date
     updatedAt: Date
 }
 
-export interface ICompletedLessonsDoc extends Document, ICompletedLessons {}
+export interface ICompletedLessonDoc extends Document, ICompletedLesson {}

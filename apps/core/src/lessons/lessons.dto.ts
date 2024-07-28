@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsArray, IsBoolean, IsMongoId } from 'class-validator';
+import { IsString, IsNotEmpty } from 'class-validator';
 
 export class CreateLessonDto {
     @IsString()
@@ -6,19 +6,14 @@ export class CreateLessonDto {
     readonly title: string;
 
     @IsString()
+    readonly moduleCode: string;
+
+    @IsString()
     @IsNotEmpty()
     readonly content: string;
 
-    @IsArray()
-    @IsMongoId({ each: true })
-    readonly resources: string[];
-
-    @IsMongoId()
-    @IsNotEmpty()
-    readonly lessonSet: string;
-
-    @IsBoolean()
-    readonly isDone: boolean;
+    @IsString()
+    readonly authToken: string
 }
 
 export class UpdateLessonDto {
@@ -28,13 +23,6 @@ export class UpdateLessonDto {
     @IsString()
     readonly content?: string;
 
-    @IsArray()
-    @IsMongoId({ each: true })
-    readonly resources?: string[];
-
-    @IsMongoId()
-    readonly lessonSet?: string;
-
-    @IsBoolean()
-    readonly isDone?: boolean;
+    @IsString()
+    readonly authToken: string
 }

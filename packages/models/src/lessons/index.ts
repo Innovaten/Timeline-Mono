@@ -11,7 +11,7 @@ export const LessonSchema = new Schema<ILesson>({
         required: true,
     },
     resources: {
-        type: [SchemaTypes.ObjectId],
+        type: [{ type: SchemaTypes.ObjectId, ref: "Resources" }],
         default: [],
     },
     lessonSet: {

@@ -1,20 +1,24 @@
-import { IsString, IsNotEmpty, IsArray, IsMongoId } from 'class-validator';
+import { IsString, IsNotEmpty, IsMongoId } from 'class-validator';
 
 export class CreateCompletedLessonDto {
     @IsMongoId()
     @IsNotEmpty()
     readonly user: string;
 
-    @IsArray()
     @IsMongoId({ each: true })
-    readonly lessons: string[];
+    readonly lesson: string;
+
+    @IsString()
+    readonly authToken: string
 }
 
 export class UpdateCompletedLessonDto {
     @IsMongoId()
     readonly user?: string;
 
-    @IsArray()
     @IsMongoId({ each: true })
-    readonly lessons?: string[];
+    readonly lesson?: string;
+
+    @IsString()
+    readonly authToken: string
 }

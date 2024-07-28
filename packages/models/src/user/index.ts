@@ -57,6 +57,10 @@ export const UserSchema = new Schema<IUserDoc>({
     required: false,
   },
 
+  completedLessons: {
+    type: SchemaTypes.ObjectId,
+    ref: "CompletedLessons",
+  },
 
   meta: {
     isPasswordSet: {

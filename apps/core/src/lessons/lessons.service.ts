@@ -1,55 +1,90 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { IlessonDoc } from '@repo/models'
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Types } from 'mongoose';
+import { IUserDoc, IlessonDoc, ModuleModel } from '@repo/models'
 import { CreateLessonDto, UpdateLessonDto } from './lessons.dto';
-import { LessonSetsService } from '../common/services/lessonsets.service';
-import { CompletedLessonsService } from '../common/services/completedlessons.service';
+import { LessonModel } from '@repo/models';
+import { generateCode } from '../utils';
 
 @Injectable()
 export class LessonsService {
-  constructor(
-    @InjectModel('Lesson') private lessonModel: Model<IlessonDoc>,
-    private readonly lessonSetsService: LessonSetsService,
-    private readonly completedLessonsService: CompletedLessonsService,
-  ) {}
+  constructor () {}
 
-  async createLesson(createLessonDto: CreateLessonDto, userRole: string) {
-    if (!['ADMIN', 'SUDO'].includes(userRole)) {
+  async createLesson(createLessonDto: CreateLessonDto, user: IUserDoc): Promise<IlessonDoc> {
+
+    const timestamp = new Date()
+
+    if (!['ADMIN', 'SUDO'].includes(user.role)) {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    const lessonSet = await this.lessonSetsService.getLessonSetById(createLessonDto.lessonSet);
-    if (!lessonSet) {
-      throw new Error('LessonSet not found');
+    const relatedModule = await ModuleModel.findOne({ code: createLessonDto.moduleCode });
+
+    if(!relatedModule){
+      throw new BadRequestException("Related module could not be found")
     }
 
-    const newLesson = new this.lessonModel(createLessonDto);
+    const newLesson = new LessonModel({
+      code: await generateCode( await LessonModel.countDocuments(), "LSN"),
+      title: createLessonDto.title,
+      content: createLessonDto.content,
+      resources: [],
+      lessonSet: new Types.ObjectId(relatedModule.lessonSet.toString()),
+      meta: {
+        isDeleted: false,
+      },
+      createdBy: new Types.ObjectId(`${user._id}`),
+      updatedBy: new Types.ObjectId(`${user._id}`),
+      createdAt: timestamp,
+      updatedAt: timestamp
+    });
+
     await newLesson.save();
     return newLesson;
   }
 
-  async findAllLessons() {
-    return this.lessonModel.find().exec();
+  async findAllLessons(filter: Record<string, any>, limit: number = 10, offset: number = 0): Promise<IlessonDoc[]> {
+    return await LessonModel.find(filter)
+    .limit(limit)
+    .skip(offset)
+    .populate("createdBy updatedBy resources");
   }
 
-  async findLessonById(id: string) {
-    return this.lessonModel.findById(id).exec();
+  async findLessonById(specifier: string, isId: boolean): Promise<any> {
+    const filter = isId ? { _id: new Types.ObjectId(specifier) } : { code: specifier } ;
+   
+    return await LessonModel.find(filter).populate("createdBy updatedBy resources");
   }
 
-  async updateLesson(id: string, updateLessonDto: UpdateLessonDto, userRole: string) {
+  async updateLesson(id: string, updateLessonDto: UpdateLessonDto, user: IUserDoc): Promise<any> {
+    if (!['ADMIN', 'SUDO'].includes(user.role)) {
+      throw new UnauthorizedException('Unauthorized');
+    }
+
+    const { authToken, ...actualData } = updateLessonDto;
+
+    return await LessonModel.findByIdAndUpdate(id, 
+      {
+        ...actualData,
+        updatedAt: new Date(),
+        updatedBy: new Types.ObjectId(`${user._id}`)
+      }, 
+      { new: true }
+    );
+  }
+
+  async deleteLesson(id: string, userRole: string): Promise<any> {
     if (!['ADMIN', 'SUDO'].includes(userRole)) {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    return this.lessonModel.findByIdAndUpdate(id, updateLessonDto, { new: true }).exec();
-  }
-
-  async deleteLesson(id: string, userRole: string) {
-    if (!['ADMIN', 'SUDO'].includes(userRole)) {
-      throw new UnauthorizedException('Unauthorized');
-    }
-
-    return this.lessonModel.findByIdAndDelete(id).exec();
+    return await LessonModel.findByIdAndUpdate(id, 
+      { 
+        meta: { 
+          isDeleted: true 
+        }, 
+        updatedAt: new Date() 
+      }, 
+      { new: true}
+    )
   }
 }

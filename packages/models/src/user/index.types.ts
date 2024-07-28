@@ -16,6 +16,8 @@ export interface IUser {
   classes: Types.ObjectId[]
   modeOfClass: "In-Person" | "Online"
 
+  completedLessons: Types.ObjectId;
+  
   meta: {
     isPasswordSet: boolean;
     isSuspended: boolean;

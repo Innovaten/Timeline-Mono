@@ -106,10 +106,10 @@ function Login({ componentRef, pages }: LoginProps){
       .then(res => {
             console.log(res.data);
             if(res.data.success){
-              const token = res.data.data.token;
+              const token = res.data.data.access_token;    
               _setToken(token);
               
-              const user: HydratedDocument<IUserDoc> = res.data.user;
+              const user: HydratedDocument<IUserDoc> = res.data.data.user;
               _setUser(user)
               setUser(user);
               router.navigate({ 

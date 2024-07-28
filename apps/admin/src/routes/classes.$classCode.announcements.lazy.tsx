@@ -1,5 +1,5 @@
-import { Button, DialogContainer } from '@repo/ui';
-import { _getToken, abstractAuthenticatedRequest, useDialog, useLoading } from '@repo/utils'
+import { Button, DialogContainer, FileUploader } from '@repo/ui';
+import { _getToken, abstractAuthenticatedRequest, useDialog, useFileUploader, useLoading } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useCompositeFilterFlag, useAnnouncements, useSpecificEntity } from '../hooks';
@@ -16,6 +16,7 @@ export const Route = createLazyFileRoute('/classes/$classCode/announcements')({
 function Announcements({ }){
   const routerState = useRouterState();
   const { classCode } = Route.useParams()
+  const filesHook = useFileUploader();
 
   if(routerState.location.pathname !== `/classes/${classCode}/announcements`){
     return <Outlet />

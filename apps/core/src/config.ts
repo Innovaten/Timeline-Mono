@@ -6,6 +6,8 @@ export const CoreConfig = {
     s3: {
         bucket: process.env.S3_BUCKET ?? "",
         region: process.env.S3_REGION ?? "",
+        access_key: process.env.S3_ACCESS_KEY ?? "",
+        secret_access_key: process.env.S3_SECRET_ACCESS_KEY ?? "",
     },
     secrets: {
         core: process.env.CORE_SECRET_KEY ?? "this+might+not+be+a+secret"

@@ -8,9 +8,7 @@ function Calendar({}){
 
   return (
     <>
-      Hi from Calendar.<br />
-      Implement Me.
+      <p>Hi. Implement me.</p>
     </>
   )
-
 }

@@ -1,7 +1,8 @@
 import { BadRequestException, PipeTransform } from '@nestjs/common';
 
+
 export class ImageFileValidationPipe implements PipeTransform {
-  transform(files: Express.Multer.File[]): Express.Multer.File[] {
+  transform(file: Express.Multer.File): Express.Multer.File {
     const allowedMimeTypes = [
         'image/jpeg',  // .jpg .jpeg
         'image/png',  // .png
@@ -18,11 +19,10 @@ export class ImageFileValidationPipe implements PipeTransform {
         'application/x-zip-compressed' // .zip
     ];
 
-    for (const file of files) {
-      if (!allowedMimeTypes.includes(file.mimetype)) {
-        throw new BadRequestException('Invalid file type.');
-      }
+    if(!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException('Invalid file type.');
     }
-    return files;
+    
+    return file;
   }
 }

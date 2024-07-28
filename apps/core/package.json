@@ -25,6 +25,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@repo/models": "*",
     "@repo/utils": "*",
+    "@types/multer": "^1.4.11",
     "aws-sdk": "^2.1661.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",

@@ -149,7 +149,6 @@ function Administrators(){
 
             if(res.status == 201 && res.data.success){
                 toggleCreateDialog()
-                toggleLoading()
                 toast.success(<p>Admin created successfully.<br/>A confirmation will be sent via email.</p>)
                 toggleRefreshFlag()
             } else {
@@ -159,6 +158,9 @@ function Administrators(){
         .catch( err => {
             console.log(err)
             toast.error(`${err}`)
+        })
+        .finally(() => {
+            toggleLoading()
         })
 
     }
@@ -313,7 +315,7 @@ function Administrators(){
             >
                 <div className='flex justify-end gap-4 mt-8'>
                     <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); setSelectedAdmin({}) }}>Close</Button>
-                    <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={() => { handleDeleteAdmin }}>Delete Administrator</Button>
+                    <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={handleDeleteAdmin}>Delete Administrator</Button>
                 </div>
             </DialogContainer>
 

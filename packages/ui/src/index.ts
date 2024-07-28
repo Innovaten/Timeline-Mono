@@ -5,6 +5,7 @@ import {
     SelectInput,
     TextEditor,
     StatCard,
+    FileUploader,
 
 } from './components'
 
@@ -14,7 +15,8 @@ export {
     Button,
     SelectInput,
     TextEditor,
-    
+    FileUploader,
+
     DialogContainer,
     StatCard,
     

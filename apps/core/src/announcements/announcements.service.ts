@@ -8,7 +8,6 @@ import { Types, startSession } from 'mongoose';
 export class AnnouncementsService {
 
     async listAnnouncements(limit?: number, offset?: number, filter: Record<string, any> = {}, ): Promise<any>{
-        console.log(filter)
         const results = await AnnouncementModel.find(filter)
         .limit(limit ?? 10)
         .skip(offset ?? 0)

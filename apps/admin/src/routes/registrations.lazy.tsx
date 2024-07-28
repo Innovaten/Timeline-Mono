@@ -62,6 +62,7 @@ function RegistrationsPage() {
     )
       .then((res) => {
         if (res.status == 200 && res.data.success) {
+          toggleClassesApprovalDialog();
           manuallyToggleCompositeFilterFlag()
           toast.success(
             <p>
@@ -189,26 +190,31 @@ function RegistrationsPage() {
         description="Kindly select the classes the registrant is allowed to access"
       >
         <div className="flex flex-col gap-4 sm:justify-between min-h-[200px]">
-          <div className="flex gap-x-4 mt-4 ">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-h-48 overflow-y-auto mt-4">
             {
               classesUpForApproval.map((c, idx) => <div key={idx}
                 className={ cn(
-                  approvedClasses.includes(c._id as string) ? "bg-blue-700 text-white hover:bg-blue-700/70" : "bg-blue-50 hover:bg-blue-200",
-                  'px-4 py-2 rounded-full border-[1.5px] border-blue-700/60  cursor-pointer duration-150', 
+                  'flex gap-2 items-center bg-blue-50 rounded p-2 border-blue-100 hover:border-blue-700/40 cursor-pointer duration-150 border-[1.5px]', 
+                  approvedClasses.includes(c._id as string) ? "border-blue-700/40 bg-blue-700 text-white" : "border-bg-blue-100/40",
                 )}
                 onClick={
                   () =>{ setApprovedClasses( prev => [
                     ...(prev.includes(c._id as string) ? approvedClasses.filter( d => d != c._id as string) : [...approvedClasses, c._id as string ] )
                   ]); }
                 }
-              >{c.name}</div>)
+              >
+                <div className='flex flex-col'>
+                  <p>{c.name}</p>
+                  <small>{c.code}</small>
+                </div>
+              </div>)
             }
           </div>
           <div className="flex flex-row gap-4">
               <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={false} variant="outline" onClick={() => {setIsOpen(true); toggleClassesApprovalDialog() }}>
                 Back to details
               </Button>
-              <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={approvalIsLoading} isDisabled={approvedClasses.length < 1} variant="primary" onClick={() => {toggleClassesApprovalDialog(); approveRegistrant(registrantId)}}>
+              <Button className="px-3 !w-full !h-[35px]" type="submit" isLoading={approvalIsLoading} isDisabled={approvedClasses.length < 1} variant="primary" onClick={() => {approveRegistrant(registrantId)}}>
                 Approve Registrant
               </Button>
             </div>

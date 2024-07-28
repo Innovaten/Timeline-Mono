@@ -1,9 +1,10 @@
-import { Controller, HttpStatus, ParseFilePipeBuilder, Post, UploadedFiles, UseInterceptors, Req, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { AnyFilesInterceptor } from '@nestjs/platform-express'
+import { Controller, HttpStatus, ParseFilePipeBuilder, Post, UploadedFile, UseInterceptors, Req, UnauthorizedException, BadRequestException, UseGuards } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express'
 import { ImageFileValidationPipe } from './assets.validators';
 import { JwtService } from '../common/services/jwt.service';
 import { AssetsService } from './assets.service';
 import { ServerErrorResponse } from '../common/entities/responses.entity';
+import { AuthGuard } from '../common/guards/jwt.guard';
 
 @Controller({
     path: 'assets',
@@ -18,49 +19,40 @@ export class AssetsController {
         private jwt: JwtService,
     ) { }
 
-    
-
+    @UseGuards(AuthGuard)
     @Post('upload')
-    @UseInterceptors(AnyFilesInterceptor())
+    @UseInterceptors(FileInterceptor('file'))
     async uploadFiles(
-        @Req() req: Request,
-        @UploadedFiles(
+        @Req() req: any,
+        @UploadedFile(
             new ParseFilePipeBuilder()
             .addMaxSizeValidator({ 
-                maxSize: 10000, 
-                message: "File is too large"
+                maxSize: 10 * 1000 * 1000, 
+                message: "File is too large" 
             })
             .build({
                 errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
             })
-        ) files: Array<Express.Multer.File>
+        ) file: Express.Multer.File
     ){
         try {
-            new ImageFileValidationPipe().transform(files)
-            console.log(files)
+            new ImageFileValidationPipe().transform(file)
     
-            const uploader = await this.jwt.validateToken(req.headers.get("Authorization") ?? "")
-    
+            const uploader = req.user
             if(!uploader){
                 throw new UnauthorizedException()
             }
-    
-            await Promise.all(
-                files.map(file => {
-                    const title = req.headers.get("Original-File-Name");
-                    const extension = req.headers.get("Original-File-Ext")
-    
-                    if(!title || !extension){
-                        throw new BadRequestException("Invalid Headers")
-                    }
-                    return this.service.uploadFiles(`${uploader._id}`, title, extension, file)
-                })
-            )
-    
-            return 
 
-        } catch (err) {
-            return ServerErrorResponse(new Error(`${err}`), 5000)
+            const title = req.headers["original-file-name"];
+            const extension = req.headers["original-file-ext"];
+
+            if(!title || !extension){
+                throw new BadRequestException("Invalid Headers")
+            }
+            return this.service.uploadFile(`${uploader._id}`, title, extension, file)
+
+        } catch (err: any) {
+            return ServerErrorResponse(new Error(`${err.message ? err.message : err}`), 500)
         }
 
     }

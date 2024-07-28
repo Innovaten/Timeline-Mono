@@ -1,0 +1,202 @@
+// import { Button, DialogContainer } from '@repo/ui';
+// import { _getToken, abstractAuthenticatedRequest, useDialog, useLoading } from '@repo/utils'
+// import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
+// import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+// import { useCompositeFilterFlag, useAnnouncements, useSpecificEntity } from '../hooks';
+// import { Input, TextEditor } from '@repo/ui'
+// import { Formik, Form, ErrorMessage } from 'formik'
+// import dayjs from 'dayjs';
+// import { IAnnouncementDoc } from '@repo/models';
+// import { toast } from 'sonner';
+// import { useLMSContext } from '../app';
+// import { useAnnouncementStateFilter } from '../hooks/announcements.hook,';
+
+// export const Route = createLazyFileRoute('/classes/$classCode/modules')({
+//   component: Lessons
+// })
+
+// function Lessons({ }){
+//   const routerState = useRouterState();
+//   const { classCode } = Route.useParams()
+
+//   if(routerState.location.pathname !== `/classes/${classCode}/modules`){
+//     return <Outlet />
+//   } 
+
+//   const { user } = useLMSContext()
+
+//   const { toggleDialog: toggleDeleteDialog, dialogIsOpen: deleteDialogIsOpen } = useDialog();
+//   const { toggleDialog: toggleCreateDialog, dialogIsOpen: createDialogIsOpen } = useDialog();
+//   const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
+//   const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
+//   const { isLoading: deleteIsLoading, resetLoading: resetDeleteIsLoading, toggleLoading: toggleDeleteIsloading } = useLoading()
+  
+//   const { changeFilter, filter, filterChangedFlag, filterOptions} = useAnnouncementStateFilter()
+  
+//   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag, filterChangedFlag ])
+
+//   const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0, {
+//       ...filter,
+//       user,
+//     })
+    
+//   const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
+
+
+//   function handleDeleteModule(){
+    
+//     // if(!selectedAnnouncement) return 
+    
+//     // abstractAuthenticatedRequest(
+//     //   "delete",
+//     //   `/api/v1/announcements/${selectedAnnouncement._id}?classCode=${classCode}`,
+//     //   {},
+//     //   {},
+//     //   {
+//     //     onStart: toggleDeleteIsloading,
+//     //     onSuccess: (data) => {
+//     //       resetSelected()
+//     //       toggleDeleteDialog()
+//     //       toggleRefreshFlag()
+//     //       toast.success(`Announcement ${data.code ?? ""} deleted successfully`)
+//     //     },
+//     //     onFailure: (err) => { toast.error(`${err.msg}`)},
+//     //     finally: resetDeleteIsLoading
+//     //   }
+//     // )
+//   }
+//   const InitialValues  = {
+//     title: "",
+// }
+//   return (
+//     <>
+//         <DialogContainer
+//             title='Delete Module'
+//             description={`Are you sure you want to delete the ${selectedAnnouncement?.title} lesson?`}
+//             isOpen={deleteDialogIsOpen}
+//             toggleOpen={toggleDeleteDialog}
+//         >
+//             <div className='flex justify-end gap-4 mt-8'>
+//                 <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); resetSelected() }}>Close</Button>
+//                 <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={handleDeleteModule}>Delete Module</Button>
+//             </div>
+//         </DialogContainer>
+
+//         <DialogContainer
+//             title='Create Module'
+//             description={`Create a new module for class ${classCode}`}
+//             isOpen={createDialogIsOpen}
+//             toggleOpen={toggleCreateDialog}
+//         >
+//             <div className='flex justify-end gap-4 mt-8'>
+//                 <Formik 
+//                 initialValues={InitialValues}
+//                 onSubmit={()=>{}}>
+//                     <Form className='flex flex-col gap-6 w-full'>
+//                     <Input name='module' label='Module Name' hasValidation />
+//                 </Form>
+//                 </Formik>
+//             </div>
+//             <div className='flex justify-end gap-4 mt-8'>
+//                 <Button className='!h-[35px] px-2' onClick={handleDeleteModule}>Save</Button>
+//             </div>
+//         </DialogContainer>
+
+
+//         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
+//           <div className='mt-2 flex h-fit justify-between items-center'>
+//               <h3 className='text-blue-800'>Class Modules</h3>
+//               <Link to={`/classes/${classCode}/modules/create`}>
+//                 <Button className='flex px-2 !h-[35px]' onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleCreateDialog() }}> <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;a Module</span></Button>
+//               </Link>
+//           </div>
+//           <div className='w-full mt-3 flex flex-wrap gap-4'>
+//                     <Button
+//                         onClick={toggleFiltersAreShown}
+//                         variant='outline'
+//                         className='!h-[35px] px-2 flex items-center gap-2'
+//                     >
+//                         <FunnelIcon className='w-4' />
+//                         { filterIsShown ? "Close" : "Show"} Filters    
+//                     </Button>
+//                     { 
+//                         filterIsShown && 
+//                         <>
+//                             <div className='flex flex-row items-center gap-2 '>
+//                                 <small className='text-blue-700'>Status</small>
+//                                 <select
+//                                     className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
+//                                     onChange={(e) => { 
+//                                         // @ts-ignore
+//                                         changeFilter(e.target.value)
+//                                     }}
+//                                 >
+//                                     { 
+//                                         filterOptions.map((f, idx) =>{ 
+//                                             return (
+//                                                 <option key={idx} value={f}>{f}</option>
+//                                             )
+//                                         })
+//                                     }
+//                                 </select> 
+//                             </div>
+//                         </>
+//                     }
+//               <div className='flex flex-col gap-2 justify-end'>
+//                   <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
+//               </div>
+//           </div>
+//           <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>
+//                     <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
+//                         <div className = 'w-full text-blue-700 py-2 px-1 sm:px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
+//                             <div className='flex items-center gap-4'>
+//                                 <span className='flex-1 font-normal truncate'>TITLE</span>
+//                             </div>
+//                             <div className='flex gap-4 items-center font-light'>
+//                                 <span className='w-[150px] hidden sm:flex justify-end'>AUTHOR</span>
+//                                 <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
+//                                 <span className='w-[100px] flex justify-end'>ACTIONS</span>
+//                             </div>
+//                         </div>
+//                         {
+//                             announcementsIsLoading && 
+//                             <div className='w-full h-full m-auto mt-4'>
+
+//                                 <div
+//                                     className='w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin' 
+//                                 ></div>
+//                             </div>
+//                         } 
+//                         { 
+//                             !announcementsIsLoading && announcements.map((announcement, idx) => {
+//                                 return (
+//                                 <Link to={`/classes/${classCode}/announcements/${announcement.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+//                                     <div className='flex items-center gap-4'>
+//                                         <span className='flex-1 font-normal truncate'>{announcement.title}</span>
+//                                     </div>
+//                                     <div className='flex gap-4 items-center font-light'>
+//                                         <span className='w-[150px] hidden sm:flex justify-end'>{announcement.createdBy.firstName + " " + announcement.createdBy.lastName}</span>
+//                                         <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(announcement.createdAt).format("HH:mm - DD/MM/YY")}</span>
+//                                         <span className='w-[100px] flex gap-2 justify-end'>
+//                                             <Link to={`/classes/${classCode}/announcements/${announcement.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
+//                                                 <PencilIcon className='w-4 h-4' />
+//                                             </Link>
+//                                             <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAnnouncement(announcement); toggleDeleteDialog() }}>
+//                                                 <TrashIcon className='w-4 h-4' />
+//                                             </span>
+//                                         </span>
+//                                     </div>
+//                                 </Link>
+//                                 )
+//                             })
+//                         }
+//                     </div>
+//                 </div>
+//                 <div className='flex justify-end text-blue-700 mt-2 pb-2'>
+//                     <p>Showing <span className='font-semibold'>{announcements.length}</span> of <span className='font-semibold'>{announcementsCount}</span></p>
+//                 </div>
+//             </div>
+//         </>
+//     )
+
+// }

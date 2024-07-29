@@ -132,6 +132,5 @@ export default function SidebarComponent(){
 
 function routePathIsEqual(path: string){
     const pathName = useRouterState().location.pathname
-    console.log(pathName.substring(1), path.substring(1))
     return path.substring(1) == "" ? pathName === path : pathName.substring(1).startsWith(path.substring(1));
 }

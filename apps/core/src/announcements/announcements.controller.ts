@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Post, UseGuards, Request, Query, Param, Body, Delete, Headers } from '@nestjs/common';
+import { Controller, Get, Patch, Post, UseGuards, Request, Query, Param, Body, Delete, Req } from '@nestjs/common';
 import { sendInternalServerError } from '../utils';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
@@ -130,18 +130,14 @@ export class AnnouncementsController {
         }
     }
 
+    @UseGuards(AuthGuard)
     @Get("count")
     async getAnnouncementCount(
         @Query('filter') rawFilter: string,
-        @Headers('authorization') authToken: string
+        @Req() req: any,
     ){
-        if (authToken.startsWith('Bearer')){
-            authToken = authToken.split(" ")[1];
-          }
-
         try{
-           
-            const user = await this.jwt.validateToken(authToken) as IUserDoc;
+            const user = req.user as IUserDoc;
             if(!user){
                 return ServerErrorResponse(
                     new Error('Unauthenticated Request'),
@@ -150,7 +146,7 @@ export class AnnouncementsController {
             }
         
            if (user?.role === 'ADMIN' || user?.role === 'SUDO') {
-            const filter =  {createdBy: new Types.ObjectId(user?._id as string)};
+            const filter =  rawFilter ? JSON.parse(rawFilter) : {};
             const classes_count = await this.service.getAnnouncementsCount(filter)
             return ServerSuccessResponse<number>(classes_count); 
             } else {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req, Headers } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc } from '@repo/models';
@@ -192,16 +192,14 @@ export class UsersController {
 
     }
 
+    @UseGuards(AuthGuard)
     @Get("announcements")
     async getAnnouncementsForLMS(
-        @Headers('authorization') authToken: string
+        @Req() req: any,
     ) {
-        if (authToken.startsWith('Bearer')){
-            authToken = authToken.split(" ")[1];
-          }
-
+     
         try{
-            const user = await this.jwt.validateToken(authToken);
+            const user = req.user;
             if(!user){
                 return ServerErrorResponse(
                     new Error('Unauthenticated Request'),

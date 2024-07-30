@@ -1,80 +1,53 @@
+import { createLazyFileRoute,useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { Button, DialogContainer, FileUploader } from '@repo/ui';
 import { _getToken, abstractAuthenticatedRequest, useDialog, useFileUploader, useLoading } from '@repo/utils'
-import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { useCompositeFilterFlag, useModules, useSpecificEntity, useModuleStateFilter } from '../hooks';
-import { Input } from '@repo/ui'
-import { Formik, Form } from 'formik'
+import { useCompositeFilterFlag, useLessons, useSpecificEntity, useLessonStateFilter } from '../hooks';
 import dayjs from 'dayjs';
-import { IModuleDoc } from '@repo/models';
+import { ILessonDoc } from '@repo/models';
 import { toast } from 'sonner';
 import { useLMSContext } from '../app';
-import * as Yup from 'yup'
 
-export const Route = createLazyFileRoute('/classes/$classCode/modules')({
+export const Route = createLazyFileRoute('/classes/$classCode/modules/$moduleCode/lessons')({
   component: Lessons
 })
 
+
+
 function Lessons({ }){
   const routerState = useRouterState();
-  const { classCode } = Route.useParams()
+  const { classCode, moduleCode } = Route.useParams()
   const filesHook = useFileUploader();
 
-  if(routerState.location.pathname !== `/classes/${classCode}/modules`){
+  if(routerState.location.pathname !== `/classes/${classCode}/modules/${moduleCode}/lessons`){
     return <Outlet />
   } 
 
   const { user } = useLMSContext()
 
   const { toggleDialog: toggleDeleteDialog, dialogIsOpen: deleteDialogIsOpen } = useDialog();
-  const { toggleDialog: toggleCreateDialog, dialogIsOpen: createDialogIsOpen } = useDialog();
   const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
   const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
   const { isLoading: deleteIsLoading, resetLoading: resetDeleteIsLoading, toggleLoading: toggleDeleteIsloading } = useLoading()
   
-  const { changeFilter, filter, filterChangedFlag, filterOptions} = useModuleStateFilter()
+  const { changeFilter, filter, filterChangedFlag, filterOptions} = useLessonStateFilter()
   
   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag, filterChangedFlag ])
 
-  const { isLoading: modulesIsLoading, modules, count: modulesCount } = useModules(compositeFilterFlag, 50, 0, {
+  const { isLoading: lessonsIsLoading, lessons, count: lessonsCount } = useLessons(compositeFilterFlag, 50, 0, {
       ...filter,
-      user,
+      moduleCode,
     })
     
-  const { entity: selectedModule, setSelected: setSelectedModule, resetSelected} = useSpecificEntity<IModuleDoc>();
+  const { entity: selectedLesson, setSelected: setSelectedLesson, resetSelected} = useSpecificEntity<ILessonDoc>();
 
-  function handleCreateModule(values: {
-    title: string,
-  }) {
 
-    abstractAuthenticatedRequest(
-        "post",
-        "/api/v1/modules",
-        {
-            title: values.title,
-            classCode: classCode,
-            authToken: _getToken(),
-        },
-        {},
-        {
-            onStart: toggleDeleteIsloading,
-            onSuccess: (data)=>{ 
-                toast.success("Module created successfully")
-                toggleCreateDialog()
-                toggleRefreshFlag()
-            },
-            onFailure: (err) =>{ toast.error(`${err.msg}`) },
-            finally: resetDeleteIsLoading,
-        }
-    )
-    }
-  function handleDeleteModule(){
-    
-    if(!selectedModule) return 
-    
+  function handleDeleteLesson(){
+    if(!selectedLesson) return 
+
     abstractAuthenticatedRequest(
       "delete",
-      `/api/v1/modules/${selectedModule._id}?classCode=${classCode}`,
+      `/api/v1/lessons/${selectedLesson._id}?classCode=${classCode}`,
       {},
       {},
       {
@@ -83,68 +56,33 @@ function Lessons({ }){
           resetSelected()
           toggleDeleteDialog()
           toggleRefreshFlag()
-          toast.success(`Module ${data.code ?? ""} deleted successfully`)
+          toast.success(`Lesson ${data.code ?? ""} deleted successfully`)
         },
         onFailure: (err) => { toast.error(`${err.msg}`)},
         finally: resetDeleteIsLoading
       }
     )
   }
-  const InitialValues  = {
-    title: "",
-}
+
   return (
+    
     <>
         <DialogContainer
-            title='Delete Module'
-            description={`Are you sure you want to delete the ${selectedModule?.title} lesson?`}
+            title='Delete Lesson'
+            description={`Are you sure you want to delete the ${selectedLesson?.title} lesson?`}
             isOpen={deleteDialogIsOpen}
             toggleOpen={toggleDeleteDialog}
         >
             <div className='flex justify-end gap-4 mt-8'>
                 <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); resetSelected() }}>Close</Button>
-                <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={handleDeleteModule}>Delete Module</Button>
-
+                <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={handleDeleteLesson}>Delete Lesson</Button>
             </div>
         </DialogContainer>
-
-        <DialogContainer
-            title='Create Module'
-            description={`Create a new module for class ${classCode}`}
-            isOpen={createDialogIsOpen}
-            toggleOpen={toggleCreateDialog}
-        >
-            <Formik 
-                initialValues={InitialValues}
-                validationSchema={createModuleValidationSchema}
-                onSubmit={handleCreateModule}
-                
-                >
-            { form => {
-                return (
-                    <>
-            <div className='flex justify-end gap-4 mt-8'>
-                    <Form className='flex flex-col gap-6 w-full'>
-                    <Input name='title' label='Module Name' hasValidation />
-                </Form>
-               
-            </div>
-            <div className='flex justify-end gap-4 mt-8'>
-                <Button className='!h-[35px] w-24 px-2' onClick={form.submitForm}>Save</Button>
-                <FileUploader filesHook={filesHook} buttonVariant='outline'/>
-            </div>
-            </>
-            )
-            }}
-            </Formik>
-        </DialogContainer>
-
-
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
           <div className='mt-2 flex h-fit justify-between items-center'>
-              <h3 className='text-blue-800'>Class Modules</h3>
-              <Link to={`/classes/${classCode}/modules/create`}>
-                <Button className='flex px-2 !h-[35px]' onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleCreateDialog() }}> <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;a Module</span></Button>
+              <h3 className='text-blue-800'>Class Lessons</h3>
+              <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons/create`}>
+                <Button className='flex px-2 !h-[35px]' > <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;a Lesson</span></Button>
               </Link>
           </div>
           <div className='w-full mt-3 flex flex-wrap gap-4'>
@@ -191,12 +129,12 @@ function Lessons({ }){
                             </div>
                             <div className='flex gap-4 items-center font-light'>
                                 <span className='w-[150px] hidden sm:flex justify-end'>AUTHOR</span>
-                                <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
+                                <span className='w-[150px] hidden sm:flex justify-end'>LAST UPDATED</span>
                                 <span className='w-[100px] flex justify-end'>ACTIONS</span>
                             </div>
                         </div>
                         {
-                            modulesIsLoading && 
+                            lessonsIsLoading && 
                             <div className='w-full h-full m-auto mt-4'>
 
                                 <div
@@ -205,20 +143,20 @@ function Lessons({ }){
                             </div>
                         } 
                         { 
-                            !modulesIsLoading && modules.map((module, idx) => {
+                            !lessonsIsLoading && lessons.map((lesson, idx) => {
                                 return (
-                                <Link to={`/classes/${classCode}/modules/${module.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                                <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons/${lesson.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                     <div className='flex items-center gap-4'>
-                                        <span className='flex-1 font-normal truncate'>{module.title}</span>
+                                        <span className='flex-1 font-normal truncate'>{lesson.title}</span>
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{module.createdBy.firstName + " " + module.createdBy.lastName}</span>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(module.createdAt).format("HH:mm - DD/MM/YY")}</span>
+                                        <span className='w-[150px] hidden sm:flex justify-end'>{lesson.createdBy.firstName + " " + lesson.createdBy.lastName}</span>
+                                        <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(lesson.updatedAt).format("HH:mm - DD/MM/YY")}</span>
                                         <span className='w-[100px] flex gap-2 justify-end'>
-                                            <Link to={`/classes/${classCode}/modules/${module.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
+                                            <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons/${lesson.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
                                                 <PencilIcon className='w-4 h-4' />
                                             </Link>
-                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedModule(module); toggleDeleteDialog() }}>
+                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedLesson(lesson); toggleDeleteDialog() }}>
                                                 <TrashIcon className='w-4 h-4' />
                                             </span>
                                         </span>
@@ -230,14 +168,10 @@ function Lessons({ }){
                     </div>
                 </div>
                 <div className='flex justify-end text-blue-700 mt-2 pb-2'>
-                    <p>Showing <span className='font-semibold'>{modules.length}</span> of <span className='font-semibold'>{modulesCount}</span></p>
+                    <p>Showing <span className='font-semibold'>{lessons.length}</span> of <span className='font-semibold'>{lessonsCount}</span></p>
                 </div>
             </div>
         </>
     )
 
 }
-
-const createModuleValidationSchema = Yup.object({
-    title: Yup.string().required("Module name is required").min(4, "Module is too short").max(256, "Module name is too long"),
-})

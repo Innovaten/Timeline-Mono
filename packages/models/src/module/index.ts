@@ -12,6 +12,10 @@ export const ModuleSchema = new Schema<IModule>({
         type: SchemaTypes.String,
         required: true,
     },
+    resources: {
+        type: [{ type: SchemaTypes.ObjectId, ref: "Resources" }],
+        default: [],
+    },
     lessonSet: {
         type: SchemaTypes.ObjectId, 
         ref: "LessonSets",

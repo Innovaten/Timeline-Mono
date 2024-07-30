@@ -58,7 +58,7 @@ export function FileUploader({ filesHook, buttonVariant }: FileUploaderProps) {
             <DashboardModal 
                 uppy={uppy}
                 open={modalIsOpen}
-            />;
+            />
             <Button
                 { ...(buttonVariant ? { variant: buttonVariant } : {} )}
                 onClick={toggleUploadModal}

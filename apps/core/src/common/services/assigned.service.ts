@@ -23,7 +23,7 @@ export class AssignedService {
       throw new NotFoundException("Specified class not found");
     }
 
-    // then we go ahead tocheck to see if he be admin
+    // then we go ahead to check to see if he be admin
     const isAssigned = classDoc.administrators.some((admin) =>
       admin.equals(new Types.ObjectId(userId))
     );

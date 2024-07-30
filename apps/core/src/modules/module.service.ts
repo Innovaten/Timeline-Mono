@@ -1,4 +1,4 @@
-import { ModuleModel, IModuleDoc, LessonSetModel, ILessonSetDoc, IlessonDoc } from "@repo/models";
+import { ModuleModel, IModuleDoc, LessonSetModel, ILessonSetDoc, ILessonDoc } from "@repo/models";
 import { Types } from "mongoose";
 import { CreateModuleDto, UpdateModuleDto } from "./module.dto";
 import { BadRequestException, ForbiddenException } from "@nestjs/common";
@@ -40,12 +40,13 @@ export class ModulesService {
       createdAt: timestamp,
       updatedAt: timestamp,
   })
-  
+
     const newModule = new ModuleModel({
       code: await generateCode(await ModuleModel.countDocuments(), "MDL"),
       title: moduleData.title,
       lessonSet: newLessonSet.id,
     
+      classId: relatedClass.id,
       createdBy: new Types.ObjectId(creator),
       updatedBy: new Types.ObjectId(creator),
       createdAt: timestamp,
@@ -99,7 +100,7 @@ export class ModulesService {
   }
 
   async getModule(moduleId: string, isId: boolean): Promise<IModuleDoc | null> {
-    const module = await ModuleModel.findById(moduleId).populate("lessonSet");
+    const module = await ModuleModel.findOne({code: moduleId}).populate("createdBy lessonSet");
     if (!module) {
       throw new Error("Module not found");
     }
@@ -115,7 +116,7 @@ export class ModulesService {
     const modules = await ModuleModel.find(filter)
       .skip(offset)
       .limit(limit)
-      .populate("lessonSet")
+      .populate("createdBy lessonSet")
       .sort({ createdAt: -1 });
 
     return modules;
@@ -123,7 +124,7 @@ export class ModulesService {
 
   async getLessonsByModule(module: string){
   
-    const relatedModule = await ModuleModel.findById(module).populate<{ lessonSet: { lessons: IlessonDoc[]}}>({ path: "lessonSet.lessons"});
+    const relatedModule = await ModuleModel.findById(module).populate<{ lessonSet: { lessons: ILessonDoc[]}}>({ path: "lessonSet.lessons"});
 
     if(!relatedModule){
       throw new BadRequestException('Specified module not found')

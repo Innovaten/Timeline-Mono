@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, IlessonDoc, UserModel } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -249,9 +249,9 @@ export class UserService {
         
         let user: any
         if(isId){
-            user = await UserModel.findOne({ _id: new Types.ObjectId(specifier) }).populate<{ completedLessons: { lessons: IlessonDoc[] }}>("completedLessons.lessons")
+            user = await UserModel.findOne({ _id: new Types.ObjectId(specifier) }).populate<{ completedLessons: { lessons: ILessonDoc[] }}>("completedLessons.lessons")
         } else {
-            user = await UserModel.findOne({ code: specifier }).populate<{ completedLessons: { lessons: IlessonDoc[] }}>("completedLessons.lesson")
+            user = await UserModel.findOne({ code: specifier }).populate<{ completedLessons: { lessons: ILessonDoc[] }}>("completedLessons.lesson")
         }
 
         if(!user){

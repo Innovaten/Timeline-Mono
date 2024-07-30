@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { IUserDoc, IlessonDoc, ModuleModel } from '@repo/models'
+import { IUserDoc, ILessonDoc, ModuleModel, LessonSetModel } from '@repo/models'
 import { CreateLessonDto, UpdateLessonDto } from './lessons.dto';
 import { LessonModel } from '@repo/models';
 import { generateCode } from '../utils';
@@ -9,7 +9,7 @@ import { generateCode } from '../utils';
 export class LessonsService {
   constructor () {}
 
-  async createLesson(createLessonDto: CreateLessonDto, user: IUserDoc): Promise<IlessonDoc> {
+  async createLesson(createLessonDto: CreateLessonDto, user: IUserDoc): Promise<ILessonDoc> {
 
     const timestamp = new Date()
 
@@ -38,21 +38,35 @@ export class LessonsService {
       updatedAt: timestamp
     });
 
+
+    const relatedLessonSet = await LessonSetModel.findOne({ _id: new Types.ObjectId(relatedModule.lessonSet.toString()) });
+    if(!relatedLessonSet){
+      throw new BadRequestException("Related lesson set could not be found")
+    }
+    relatedLessonSet.lessons.push(new Types.ObjectId(newLesson._id.toString()));
+    await relatedLessonSet.save();
     await newLesson.save();
     return newLesson;
   }
 
-  async findAllLessons(filter: Record<string, any>, limit: number = 10, offset: number = 0): Promise<IlessonDoc[]> {
+  async findAllLessons(filter: Record<string, any>, limit: number = 10, offset: number = 0): Promise<ILessonDoc[]> {
+    const { moduleCode, ...rest } = filter;
+    if(moduleCode){
+      const relatedModule = await ModuleModel.findOne({ code: moduleCode })
+    const filter = { lessonSet: relatedModule?.lessonSet, ...rest }
     return await LessonModel.find(filter)
     .limit(limit)
     .skip(offset)
     .populate("createdBy updatedBy resources");
+    }
+    else {
+      throw new BadRequestException("Module code is required");
+    } 
   }
 
   async findLessonById(specifier: string, isId: boolean): Promise<any> {
-    const filter = isId ? { _id: new Types.ObjectId(specifier) } : { code: specifier } ;
-   
-    return await LessonModel.find(filter).populate("createdBy updatedBy resources");
+    const filter = { code: specifier } ;
+    return await LessonModel.findOne(filter).populate("createdBy updatedBy resources");
   }
 
   async updateLesson(id: string, updateLessonDto: UpdateLessonDto, user: IUserDoc): Promise<any> {
@@ -61,8 +75,7 @@ export class LessonsService {
     }
 
     const { authToken, ...actualData } = updateLessonDto;
-
-    return await LessonModel.findByIdAndUpdate(id, 
+    return await LessonModel.findOneAndUpdate({_id: id}, 
       {
         ...actualData,
         updatedAt: new Date(),

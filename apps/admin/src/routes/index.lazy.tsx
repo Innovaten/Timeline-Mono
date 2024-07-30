@@ -5,7 +5,7 @@ import { useLMSContext } from '../app'
 import { BookOpenIcon, UsersIcon, AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData'
-import { useRegistrations, useAdminsCount, useClassesCount, usePendingCount, useStudentsCount } from '../hooks';
+import { useRegistrations, useAdminsCount, useClassesCount, usePendingCount, useStudentsCount, useAnnouncementsCount } from '../hooks';
 import { Button, StatCard } from '@repo/ui';
 
 dayjs.extend(localeData)
@@ -25,6 +25,7 @@ function IndexPage() {
     const { adminCount } = useAdminsCount()
     const { studentCount } = useStudentsCount()
     const { classesCount } = useClassesCount()
+    const { announcementsCount } = useAnnouncementsCount()
     
  
     const currentHour = new Date().getHours()
@@ -36,12 +37,12 @@ function IndexPage() {
     [
       {
         label: 'My Classes',
-        value: 12,
+        value: classesCount,
         icon: BookOpenIcon,
       },
       {
         label: 'Announcements',
-        value: 704,
+        value: announcementsCount,
         icon: MegaphoneIcon,
       },
       {

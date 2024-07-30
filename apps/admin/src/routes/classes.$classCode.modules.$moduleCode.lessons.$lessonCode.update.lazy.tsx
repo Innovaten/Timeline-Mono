@@ -1,6 +1,6 @@
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { Button, Input, TextEditor } from '@repo/ui'
-import { createLazyFileRoute, Navigate } from '@tanstack/react-router'
-import { Formik, Form, ErrorMessage } from 'formik'
+import { Formik, Form } from 'formik'
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 import { $insertNodes, $getRoot } from 'lexical'
 import * as Yup from 'yup'
@@ -8,80 +8,56 @@ import { useEffect, useRef, useState } from 'react';
 import { LexicalEditor } from 'lexical'
 import { _getToken, abstractAuthenticatedRequest, abstractUnauthenticatedRequest, useLoading } from '@repo/utils';
 import { toast } from 'sonner';
-import { useAnnouncement } from '../hooks';
-
-export const Route = createLazyFileRoute('/classes/$classCode/announcements/$announcementCode/update')({
-    component: CreateAnnouncement
+import { useLesson } from '../hooks';
+export const Route = createLazyFileRoute('/classes/$classCode/modules/$moduleCode/lessons/$lessonCode/update')({
+  component: CreateLesson
 })
 
 
-function CreateAnnouncement(){
+
+
+function CreateLesson(){
 
     const { isLoading, toggleLoading, resetLoading } = useLoading()
-    const { classCode, announcementCode } = Route.useParams()
+    const { classCode, moduleCode, lessonCode } = Route.useParams()
 
-    const { isLoading: announcementContentUpdated, toggleLoading: toggleAnnouncementContentUpdated } = useLoading()
+    const { isLoading: lessonContentUpdated, toggleLoading: toggleModuleContentUpdated } = useLoading()
     const { isLoading: publishIsLoading, toggleLoading: togglePublishIsLoading, resetLoading: resetPublishLoading } = useLoading()
     
     const editorRef = useRef<LexicalEditor>();
 
-    const { isLoading: announcementIsLoading, announcement } = useAnnouncement(false, announcementCode, false);
+    const { isLoading: lessonIsLoading, lesson } = useLesson(false, lessonCode, false);
 
     const navigate = Route.useNavigate()
 
 
-    function handleUpdateAnnouncement(values: { 
+    function handleUpdateLesson(values: { 
         title: string,
         content: string
     }) {
 
-        if(!announcement) return
+      console.log(lesson)
+        if(!lesson) return
 
         abstractUnauthenticatedRequest(
             "patch",
-            `/api/v1/announcements/${announcement._id}`,
+            `/api/v1/lessons/${lesson._id}`,
             {
                 title: values.title,
                 content: values.content,
-                classCode: classCode,
-                isDraft: false,
                 authToken: _getToken(),
             },
             {},
             {
                 onStart: toggleLoading,
                 onSuccess: (data)=>{ 
-                    toast.success("Announcement created successfully")
+                    toast.success("Lesson updated successfully")
                     navigate({
-                        to: `/classes/${classCode}/announcements`
+                        to: `/classes/${classCode}/modules/${moduleCode}/lessons`
                     })
                 },
                 onFailure: (err) =>{ toast.error(`${err.msg}`) },
                 finally: resetLoading,
-            }
-        )
-    }
-
-    function handlePublishAnnouncement(){
-        if(!announcement) return
-
-        abstractAuthenticatedRequest(
-            "get",
-            `/api/v1/announcements/${announcement._id}/publish?classCode=${classCode}&isId=true`,
-            {},
-            {},
-            {
-                onStart: togglePublishIsLoading,
-                onSuccess: (data)=>{ 
-                    toast.success("Announcement published successfully")
-                    setTimeout(() => {
-                        navigate({
-                            to: `/classes/${classCode}/announcements`
-                        })
-                    }, 500)
-                },
-                onFailure: (err) =>{ toast.error(`${err.msg}`) },
-                finally: resetPublishLoading,
             }
         )
     }
@@ -92,14 +68,14 @@ function CreateAnnouncement(){
     }
 
     useEffect(() => {
-        if(!announcement) return
+        if(!lesson) return
         if(!editorRef.current) return
 
-        if(announcementContentUpdated) return  
+        if(lessonContentUpdated) return  
         editorRef.current.update(() => {
             const parser = new DOMParser()
 
-            const dom = parser.parseFromString(announcement.content, "text/html");
+            const dom = parser.parseFromString(lesson.content, "text/html");
 
             // @ts-ignore
             const nodes = $generateNodesFromDOM(editorRef.current, dom);
@@ -108,30 +84,30 @@ function CreateAnnouncement(){
             $insertNodes(nodes);
         })
 
-        toggleAnnouncementContentUpdated()
+        toggleModuleContentUpdated()
 
-    }, [announcement])
+    }, [lesson])
 
     return (
         <>
             <div className='flex flex-col w-full h-[calc(100vh-7rem)] sm:h-full'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
-                    <h3 className='text-blue-800'>Update Announcement</h3>
+                    <h3 className='text-blue-800'>Update Lesson</h3>
                 </div>
                 <Formik
                     initialValues={initialValues}
-                    validationSchema={updateAnnouncementValidationSchema}
-                    onSubmit={handleUpdateAnnouncement}
-                >
+                    validationSchema={updateLessonValidationSchema}
+                    onSubmit={handleUpdateLesson}
+                    >
                     { form => {
                            
                         useEffect(() => {
-                            form.setFieldValue("title", announcement?.title)
-                        }, [announcement])
+                            form.setFieldValue("title", lesson?.title)
+                        }, [lesson])
 
                         return (
                             <>
-                                <div className={` ${announcementIsLoading ? "hidden" : "flex" } flex-col justify-between w-full h-[calc(100%-1rem)]`}>
+                                <div className={` ${lessonIsLoading ? "hidden" : "flex" } flex-col justify-between w-full h-[calc(100%-1rem)]`}>
                                     <div className='w-full h-[calc(100%-4rem)] mt-4 overflow-auto'>
                                         <Form className='flex flex-col gap-6 w-full h-full'>
                                             <Input name='title'  label='Title' hasValidation />
@@ -146,13 +122,9 @@ function CreateAnnouncement(){
                                     </div>
                                     <div className='flex h-16 flex-shrink-0 justify-end items-center w-full gap-4'>
                                         <Button className='!w-[130px]' isDisabled={!form.isValid} isLoading={isLoading} onClick={form.submitForm}>Save</Button>
-                                        {
-                                            announcement?.isDraft &&
-                                            <Button className='!w-[130px]' variant='outline' isLoading={publishIsLoading} onClick={handlePublishAnnouncement}>Publish</Button>
-                                        }
                                     </div>
                                 </div>
-                                <div className={` ${announcementIsLoading ? "flex" : "hidden" }`}>
+                                <div className={` ${lessonIsLoading ? "flex" : "hidden" }`}>
                                     <div className='w-full h-full m-auto mt-4'>
                                         <div
                                         className='w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin' 
@@ -168,7 +140,7 @@ function CreateAnnouncement(){
     )
 }
 
-const updateAnnouncementValidationSchema = Yup.object({
+const updateLessonValidationSchema = Yup.object({
     title: Yup.string().required("Title is required").min(4, "Title is too short").max(256, "Title is too long"),
-    content: Yup.string().required("Content is required"),
+    content: Yup.string().optional()
 })

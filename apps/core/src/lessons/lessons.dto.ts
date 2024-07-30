@@ -6,10 +6,10 @@ export class CreateLessonDto {
     readonly title: string;
 
     @IsString()
+    @IsNotEmpty()
     readonly moduleCode: string;
 
     @IsString()
-    @IsNotEmpty()
     readonly content: string;
 
     @IsString()

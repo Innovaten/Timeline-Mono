@@ -105,6 +105,7 @@ function Login({ componentRef, pages }: LoginProps){
       )
       .then(res => {
             if(res.data.success){
+
               const token = res.data.data.access_token;
               _setToken(token);
               

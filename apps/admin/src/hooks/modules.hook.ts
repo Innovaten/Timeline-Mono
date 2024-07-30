@@ -1,28 +1,26 @@
-import { ILessonDoc, IUserDoc } from "@repo/models";
+import { IModuleDoc, IUserDoc } from "@repo/models";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 
-export function useLessons(refreshFlag: boolean = true,limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
+export function useModules(refreshFlag: boolean = true,limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
 
-    const [ lessons, setLessons ] = useState<(ILessonDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
+    const [ modules, setModules ] = useState<(IModuleDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ count, setCount ] = useState<number>(0);
 
     const { user, ...actualFilter} = filter
-    
 
-    const route = "/lessons"
+    const route = "/modules"
     useEffect(() => {
         makeAuthenticatedRequest(
             "get",
             `/api/v1${route}?filter=${JSON.stringify(actualFilter)}&limit=${limit}&offset=${offset}`,
         ).then(res => {
             if(res.status == 200 && res.data.success){
-                console.log(res.data.data)
-                setLessons(res.data.data);
-                setCount(res.data.data.length);
+                setModules(res.data.data.modules);
+                setCount(res.data.data.count);
             } else {
                 toast.error(res.data.error?.msg);
             }
@@ -40,24 +38,24 @@ export function useLessons(refreshFlag: boolean = true,limit: number = 10, offse
 
     }, [refreshFlag])
 
-    return { lessons, isLoading, count };
+    return { modules, isLoading, count };
 
 }
 
-export function useLesson(refreshFlag: boolean = true, specifier: string, isId:boolean = false){
+export function useModule(refreshFlag: boolean = true, specifier: string, isId:boolean = true){
 
-    const [ lesson, setLesson ] = useState<ILessonDoc & { createdBy: IUserDoc, updatedBy:IUserDoc } | null>(null)
+    const [ module, setModule ] = useState<IModuleDoc & { createdBy: IUserDoc, updatedBy:IUserDoc } | null>(null)
     const { isLoading, toggleLoading, resetLoading } = useLoading()
 
     useEffect( () => {
         abstractAuthenticatedRequest(
             "get",
-            `/api/v1/lessons/${specifier}?isId=${isId}`,
+            `/api/v1/modules/${specifier}?isId=${isId}`,
             {},
             {},
             {
                 onStart: toggleLoading,
-                onSuccess: setLesson,
+                onSuccess: setModule,
                 onFailure: (err) => {toast.error(`${err.msg}`)},
                 finally: resetLoading
             }
@@ -65,16 +63,18 @@ export function useLesson(refreshFlag: boolean = true, specifier: string, isId:b
 
     }, [refreshFlag])
 
-    return { isLoading, lesson }
+
+    return { isLoading, module }
+
 }
 
 
-export function useLessonStateFilter(){
+export function useModuleStateFilter(){
     const [ filterLabel, setFilterLabel ] = useState<"Public" | "Deleted">("Public");
     const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
 
     const resultingFilters = {
-        "Public": {"meta.isDeleted": { $eq: false }},
+        "Public": { "meta.isDeleted": { $eq: false }},
         "Deleted": { "meta.isDeleted": { $eq: true }},
     };
 
@@ -82,7 +82,7 @@ export function useLessonStateFilter(){
     
     const filter = resultingFilters[filterLabel];
 
-    function changeFilter(arg:  "Public"  | "Deleted"){
+    function changeFilter(arg:  "Public" | "Deleted"){
         setFilterChangedFlag(prev => !prev);
         setFilterLabel(arg);
     };

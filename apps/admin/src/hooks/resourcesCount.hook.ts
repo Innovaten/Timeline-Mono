@@ -113,9 +113,10 @@ export function usePendingCount(
     return { isLoading, pendingCount }
 }
 export function useAnnouncementsCount(
+    refreshFlag: boolean = true,  
     filter: Record<string,any> = {}
 ){
-    const [ isLoadingClasses, setIsLoadingAnnouncement ] = useState<boolean>(true);
+    const [ isLoadingAnnouncement, setIsLoadingAnnouncement ] = useState<boolean>(true);
     const [ announcementsCount, setAnnouncementsCount ] = useState<number>(0);
 
     useEffect(
@@ -134,8 +135,15 @@ export function useAnnouncementsCount(
                 }
                 setIsLoadingAnnouncement(false);
             })
-        },[]
+            .catch(err => {
+                if(err.message){
+                    toast.error(err.message)
+                } else {
+                    toast.error(`${err}`)
+                }
+            })
+        },[refreshFlag]
 )
 
-    return { isLoadingClasses, announcementsCount }
+    return { isLoadingAnnouncement, announcementsCount }
 }

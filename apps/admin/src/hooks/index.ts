@@ -5,6 +5,8 @@ import { useAdminsCount, useClassesCount, usePendingCount, useStudentsCount, use
 import useCompositeFilterFlag from "./composite-filter.hook"
 import { useMovileNavigation } from "@repo/utils"
 import { useAnnouncements, useAnnouncement, useAnnouncementStateFilter } from "./announcements.hook,"
+import { useLessons, useLesson, useLessonStateFilter } from "./lessons.hook"
+import { useModules, useModule, useModuleStateFilter } from "./modules.hook"
 import { useSpecificEntity } from "./common.hook"
 export {
 
@@ -24,5 +26,10 @@ export {
     useAnnouncementStateFilter,
     useSpecificEntity,
     useAnnouncementsCount,
-    
+    useLessons,
+    useLesson,
+    useLessonStateFilter,
+    useModules,
+    useModule,    
+    useModuleStateFilter
 }

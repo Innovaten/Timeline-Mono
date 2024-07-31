@@ -1,5 +1,5 @@
 import { Button, DialogContainer, FileUploader } from '@repo/ui';
-import { _getToken, abstractAuthenticatedRequest, useDialog, useFileUploader, useLoading } from '@repo/utils'
+import { _getToken, abstractAuthenticatedRequest, useDialog, useFileUploader, useLoading, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useCompositeFilterFlag, useAnnouncements, useSpecificEntity } from '../hooks';
@@ -16,22 +16,30 @@ export const Route = createLazyFileRoute('/classes/$classCode/announcements')({
 function Announcements({ }){
   const routerState = useRouterState();
   const { classCode } = Route.useParams()
-  const filesHook = useFileUploader();
-
-  if(routerState.location.pathname !== `/classes/${classCode}/announcements`){
-    return <Outlet />
-  } 
-
-  const { user } = useLMSContext()
-
-  const { toggleDialog: toggleDeleteDialog, dialogIsOpen: deleteDialogIsOpen } = useDialog();
-  const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
-  const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
-  const { isLoading: deleteIsLoading, resetLoading: resetDeleteIsLoading, toggleLoading: toggleDeleteIsloading } = useLoading()
   
+  if(routerState.location.pathname !== `/classes/${classCode}/announcements`){
+      return <Outlet />
+  } 
+  
+  const { user } = useLMSContext()
+  const filesHook = useFileUploader();
+  
+  const initialToggles = {
+    'delete-dialog': false,
+
+    'refresh': false,
+    'filter-is-shown': false,
+
+    'delete-is-loading': false
+    }
+
+    type TogglesType = typeof initialToggles
+    type ToggleKeys = keyof TogglesType
+    const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
+
   const { changeFilter, filter, filterChangedFlag, filterOptions} = useAnnouncementStateFilter()
   
-  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag, filterChangedFlag ])
+  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ toggleManager.get('refresh'), filterChangedFlag ])
 
   const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0, {
       ...filter,
@@ -41,41 +49,50 @@ function Announcements({ }){
   const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
 
 
-  function handleDeleteAnnouncement(){
-    if(!selectedAnnouncement) return 
+  function DeleteDialog(){
 
-    abstractAuthenticatedRequest(
-      "delete",
-      `/api/v1/announcements/${selectedAnnouncement._id}?classCode=${classCode}`,
-      {},
-      {},
-      {
-        onStart: toggleDeleteIsloading,
-        onSuccess: (data) => {
-          resetSelected()
-          toggleDeleteDialog()
-          toggleRefreshFlag()
-          toast.success(`Announcement ${data.code ?? ""} deleted successfully`)
-        },
-        onFailure: (err) => { toast.error(`${err.msg}`)},
-        finally: resetDeleteIsLoading
+    function handleDeleteAnnouncement(){
+        if(!selectedAnnouncement) return 
+    
+        abstractAuthenticatedRequest(
+          "delete",
+          `/api/v1/announcements/${selectedAnnouncement._id}?classCode=${classCode}`,
+          {},
+          {},
+          {
+            onStart: ()=>{ toggleManager.toggle(('delete-is-loading')) },
+            onSuccess: (data) => {
+              resetSelected()
+              toggleManager.reset('delete-dialog')
+              toggleManager.toggle('refresh')
+              toast.success(`Announcement ${data.code ?? ""} deleted successfully`)
+            },
+            onFailure: (err) => { toast.error(`${err.msg}`)},
+            finally: ()=>{ toggleManager.toggle('delete-is-loading') }
+          }
+        )
       }
+
+    return (
+        <>
+            <DialogContainer
+            title='Delete Announcement'
+            description={`Are you sure you want to delete the ${selectedAnnouncement?.title} announcement?`}
+            isOpen={toggleManager.get('delete-dialog')}
+            toggleOpen={()=>{ toggleManager.toggle('delete-dialog')}}
+            >
+                <div className='flex justify-end gap-4 mt-8'>
+                    <Button className='!h-[35px] px-2' variant='neutral' isDisabled={toggleManager.get('delete-is-loading')} onClick={()=> { toggleManager.reset('delete-dialog'); resetSelected() }}>Close</Button>
+                    <Button className='!h-[35px] px-2' variant='danger' isLoading={toggleManager.get('delete-is-loading')} onClick={handleDeleteAnnouncement}>Delete Announcement</Button>
+                </div>
+            </DialogContainer>
+        </>
     )
   }
 
   return (
     <>
-        <DialogContainer
-            title='Delete Announcement'
-            description={`Are you sure you want to delete the ${selectedAnnouncement?.title} announcement?`}
-            isOpen={deleteDialogIsOpen}
-            toggleOpen={toggleDeleteDialog}
-        >
-            <div className='flex justify-end gap-4 mt-8'>
-                <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); resetSelected() }}>Close</Button>
-                <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={handleDeleteAnnouncement}>Delete Announcement</Button>
-            </div>
-        </DialogContainer>
+        <DeleteDialog />
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
           <div className='mt-2 flex h-fit justify-between items-center'>
               <h3 className='text-blue-800'>Class Announcements</h3>
@@ -85,15 +102,15 @@ function Announcements({ }){
           </div>
           <div className='w-full mt-3 flex flex-wrap gap-4'>
                     <Button
-                        onClick={toggleFiltersAreShown}
+                        onClick={()=>{ toggleManager.toggle('filter-is-shown')}}
                         variant='outline'
                         className='!h-[35px] px-2 flex items-center gap-2'
                     >
                         <FunnelIcon className='w-4' />
-                        { filterIsShown ? "Close" : "Show"} Filters    
+                        { toggleManager.get('filter-is-shown') ? "Close" : "Show"} Filters    
                     </Button>
                     { 
-                        filterIsShown && 
+                        toggleManager.get('filter-is-shown') && 
                         <>
                             <div className='flex flex-row items-center gap-2 '>
                                 <small className='text-blue-700'>Status</small>
@@ -154,7 +171,7 @@ function Announcements({ }){
                                             <Link to={`/classes/${classCode}/announcements/${announcement.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
                                                 <PencilIcon className='w-4 h-4' />
                                             </Link>
-                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAnnouncement(announcement); toggleDeleteDialog() }}>
+                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAnnouncement(announcement); toggleManager.toggle('delete-dialog') }}>
                                                 <TrashIcon className='w-4 h-4' />
                                             </span>
                                         </span>

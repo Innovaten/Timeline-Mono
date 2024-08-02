@@ -11,6 +11,7 @@ import { AssetsModule } from './assets/assets.module';
 import CustomCommon from './common';
 import { ModulesModule } from './modules/module.module';
 import { LessonsModule } from './lessons/lessons.module';
+import { AssignmentsModule } from './assignments/assignments.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { LessonsModule } from './lessons/lessons.module';
     AssetsModule,
     ModulesModule,
     LessonsModule,
+    AssignmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, CustomCommon],

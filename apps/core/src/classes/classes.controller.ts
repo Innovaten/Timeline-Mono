@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req, UnauthorizedException } from '@nestjs/common';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { ClassModel, IAnnouncementSetDoc, IClassDoc, IUserDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
@@ -7,6 +7,7 @@ import { JwtService } from '../common/services/jwt.service';
 import { ClassesService } from './classes.service';
 import { Roles } from '../common/enums/roles.enum';
 import { HydratedDocument, Types } from 'mongoose';
+import { CreateAssigmentDto } from '../assignments/assignments.dto';
 
 
 @Controller({
@@ -312,13 +313,43 @@ export class ClassesController {
     }
 
     @Get(':_id/modules')
-    async getModulesByClassId(@Param('_id') _id: string, @Request() req: any) {
+    async getModulesByClassId(
+        @Param('_id') _id: string, 
+        @Request() req: any
+    ) {
         try {
             const userRole = req.user.role
             return this.service.getModuleByClassId(_id, userRole)
         } catch (error) {
             return ServerErrorResponse(new Error(`${error}`), 500)
         }
+    }
 
+    @Post(":classId/assignments")
+    async createAssignment(
+        @Param('classId') classId: string, 
+        @Body() assignmentData: CreateAssigmentDto
+    ) {
+        try {
+            if(!assignmentData.authToken){
+                throw new UnauthorizedException()
+            }
+
+            const user = await this.jwt.validateToken(assignmentData.authToken)
+
+            if(!user){
+                throw new UnauthorizedException();
+            }
+
+            const newAssignment = await this.service.createAssignment(classId, assignmentData, user);
+
+            return ServerSuccessResponse(newAssignment);
+
+        } catch (err: any) {
+            return ServerErrorResponse(
+                new Error(`${ err.message ? err.message : err}`),
+                500
+            )
+        }
     }
 }

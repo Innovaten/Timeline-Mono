@@ -325,9 +325,9 @@ export class ClassesController {
         }
     }
 
-    @Post(":classId/assignments")
+    @Post(":_id/assignments")
     async createAssignment(
-        @Param('classId') classId: string, 
+        @Param('_id') classId: string, 
         @Body() assignmentData: CreateAssigmentDto
     ) {
         try {

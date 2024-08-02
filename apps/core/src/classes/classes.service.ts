@@ -1,4 +1,4 @@
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, AssignmentModel, IAssignmentSetDoc  } from "@repo/models";
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc  } from "@repo/models";
 
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
@@ -10,12 +10,36 @@ export class ClassesService {
    
     async getClass(filter: Record<string, any> = {}){
 
-        const result = await ClassModel.findOne(filter).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[]}>("announcementSet createdBy administrators");
+        const result = await ClassModel.findOne(filter).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[], assignmentSet: { assignments: IAssignment}}>([
+            {
+                path: "createdBy administrators",
+            },
+            {
+                path: "announcementSet",
+                populate: "announcements"
+            },
+            {
+                path: "assignmentSet",
+                populate: "assignments",
+            }
+        ]);
         return result;
     }
 
     async getClassById(_id: string){
-        const result = await ClassModel.findById(_id).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[]}>("announcementSet createdBy administrators");
+        const result = await ClassModel.findById(_id).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[], assignmentSet: { assignments: IAssignment}}>([
+        {
+            path: "createdBy administrators",
+        },
+        {
+            path: "announcementSet",
+            populate: "announcements"
+        },
+        {
+            path: "assignmentSet",
+            populate: "assignments",
+        }
+    ]);
         return result;
     }
 
@@ -116,6 +140,8 @@ export class ClassesService {
 
         classDoc.updatedAt = new Date();
         classDoc.updatedBy = new Types.ObjectId(`${updator}`)
+        adminDoc.updatedAt = new Date();
+
         await classDoc.save()
         await adminDoc.save()
 

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -258,6 +258,30 @@ export class UserService {
             throw new BadRequestException(`Specified user could not be found`)
         }
         return user.completedLessons.lessons;
+    }
+
+    async getUserAssignments(specifier: string, isId: boolean, requestingUser: IUserDoc){
+
+        const filter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
+
+        if(requestingUser.role == "SUDO"){
+            return AssignmentModel.find({ meta: { isDeleted: false } }).populate("createdBy updatedBy")
+        }
+
+        const user = await UserModel.findOne(filter).populate<{ classes?: { assignmentSet?: { assignments?: IAssignmentDoc[] } }}>({
+            path: "classes",
+            populate: {
+                path: "assignmentSet",
+                populate: {
+                    path: "assignments",
+                    populate: "createdBy updatedBy"
+                }
+            }
+        })
+
+        return user?.classes?.assignmentSet?.assignments ?
+            user?.classes?.assignmentSet?.assignments?.filter(a => a.accessList.map(a => a._id.toString()).includes(`${user._id}`)) :
+            []
     }
 }
 

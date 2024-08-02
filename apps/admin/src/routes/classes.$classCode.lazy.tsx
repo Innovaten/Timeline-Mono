@@ -33,12 +33,12 @@ function ClassDetails(){
     },
     {
       label: 'Announcements',
-      value: thisClass?.announcementSet.announcements.length ?? 0,
+      value: thisClass?.announcementSet?.announcements?.length ?? 0,
       icon: MegaphoneIcon,
     },
     {
       label: 'Assignments',
-      value: thisClass?.assignments.length ?? 0,
+      value: thisClass?.assignmentSet?.assignments?.length ?? 0,
       icon: NewspaperIcon,
     },
   ]

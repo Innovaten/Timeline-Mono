@@ -1,59 +1,56 @@
 import { Button, DialogContainer, FileUploader } from '@repo/ui';
-import { _getToken, abstractAuthenticatedRequest, useDialog, useFileUploader, useLoading, useToggleManager } from '@repo/utils'
+import { _getToken, abstractAuthenticatedRequest, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
-import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { useCompositeFilterFlag, useAnnouncements, useSpecificEntity } from '../hooks';
+import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { useCompositeFilterFlag, useAssignments, useSpecificEntity, useAssignmentStateFilter } from '../hooks';
 import dayjs from 'dayjs';
-import { IAnnouncementDoc } from '@repo/models';
 import { toast } from 'sonner';
-import { useLMSContext } from '../app';
-import { useAnnouncementStateFilter } from '../hooks/announcements.hook,';
+import { IAssignmentDoc } from '@repo/models';
 
-export const Route = createLazyFileRoute('/classes/$classCode/announcements')({
-  component: Announcements
+export const Route = createLazyFileRoute('/classes/$classCode/assignments')({
+  component: ClassAssignments
 })
 
-function Announcements({ }){
+function ClassAssignments(){
   const routerState = useRouterState();
   const { classCode } = Route.useParams()
   
-  if(routerState.location.pathname !== `/classes/${classCode}/announcements`){
+  if(routerState.location.pathname !== `/classes/${classCode}/assignments`){
       return <Outlet />
   } 
   
-  const { user } = useLMSContext()
-  const filesHook = useFileUploader();
-  
   const initialToggles = {
     'delete-dialog': false,
+    'publish-dialog': false,
 
     'refresh': false,
     'filter-is-shown': false,
 
-    'delete-is-loading': false
+    'delete-is-loading': false,
+    'publish-is-loading': false,
     }
 
     type TogglesType = typeof initialToggles
     type ToggleKeys = keyof TogglesType
     const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
 
-  const { changeFilter, filter, filterChangedFlag, filterOptions} = useAnnouncementStateFilter()
+  const { changeFilter, filter, filterChangedFlag, filterOptions} = useAssignmentStateFilter()
   
   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ toggleManager.get('refresh'), filterChangedFlag ])
 
-  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0, filter)
+  const { isLoading: assignmentsIsLoading, assignments, count: assignmentsCount } = useAssignments(compositeFilterFlag, 50, 0, filter)
     
-  const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
+  const { entity: selectedAssignment, setSelected: setSelectedAssignment, resetSelected} = useSpecificEntity<IAssignmentDoc>();
 
 
   function DeleteDialog(){
 
-    function handleDeleteAnnouncement(){
-        if(!selectedAnnouncement) return 
+    function handleDeleteAssignment(){
+        if(!selectedAssignment) return 
     
         abstractAuthenticatedRequest(
           "delete",
-          `/api/v1/announcements/${selectedAnnouncement._id}?classCode=${classCode}`,
+          `/api/v1/assignments/${selectedAssignment._id}?isId=true`,
           {},
           {},
           {
@@ -73,14 +70,55 @@ function Announcements({ }){
     return (
         <>
             <DialogContainer
-            title='Delete Announcement'
-            description={`Are you sure you want to delete the ${selectedAnnouncement?.title} announcement?`}
+            title='Delete Assignment'
+            description={`Are you sure you want to delete the ${selectedAssignment?.title} assignment?`}
             isOpen={toggleManager.get('delete-dialog')}
             toggleOpen={()=>{ toggleManager.toggle('delete-dialog')}}
             >
                 <div className='flex justify-end gap-4 mt-8'>
                     <Button className='!h-[35px] px-2' variant='neutral' isDisabled={toggleManager.get('delete-is-loading')} onClick={()=> { toggleManager.reset('delete-dialog'); resetSelected() }}>Close</Button>
-                    <Button className='!h-[35px] px-2' variant='danger' isLoading={toggleManager.get('delete-is-loading')} onClick={handleDeleteAnnouncement}>Delete Announcement</Button>
+                    <Button className='!h-[35px] px-2' variant='danger' isLoading={toggleManager.get('delete-is-loading')} onClick={handleDeleteAssignment}>Delete assignment</Button>
+                </div>
+            </DialogContainer>
+        </>
+    )
+  }
+
+  function PublishDialog(){
+
+    function handlePublishAssignment(){
+        if(!selectedAssignment) return 
+    
+        abstractAuthenticatedRequest(
+          "get",
+          `/api/v1/assignments/${selectedAssignment._id}/publish?isId=true`,
+          {},
+          {},
+          {
+            onStart: ()=>{ toggleManager.toggle(('publish-is-loading')) },
+            onSuccess: (data) => {
+              resetSelected()
+              toggleManager.reset('publish-dialog')
+              toggleManager.toggle('refresh')
+              toast.success(`Announcement ${data.code ?? ""} published successfully`)
+            },
+            onFailure: (err) => { toast.error(`${err.msg}`)},
+            finally: ()=>{ toggleManager.toggle('publish-is-loading') }
+          }
+        )
+      }
+
+    return (
+        <>
+            <DialogContainer
+            title='Publish Assignment'
+            description={`Are you sure you want to publish the ${selectedAssignment?.title} assignment?`}
+            isOpen={toggleManager.get('publish-dialog')}
+            toggleOpen={()=>{ toggleManager.toggle('publish-dialog')}}
+            >
+                <div className='flex justify-end gap-4 mt-8'>
+                    <Button className='!h-[35px] px-2' variant='neutral' isDisabled={toggleManager.get('publish-is-loading')} onClick={()=> { toggleManager.reset('publish-dialog'); resetSelected() }}>Close</Button>
+                    <Button className='!h-[35px] px-2' variant='danger' isLoading={toggleManager.get('publish-is-loading')} onClick={handlePublishAssignment}>Publish assignment</Button>
                 </div>
             </DialogContainer>
         </>
@@ -90,11 +128,12 @@ function Announcements({ }){
   return (
     <>
         <DeleteDialog />
+        <PublishDialog />
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
           <div className='mt-2 flex h-fit justify-between items-center'>
-              <h3 className='text-blue-800'>Class Announcements</h3>
-              <Link to={`/classes/${classCode}/announcements/create`}>
-                <Button className='flex px-2 !h-[35px]' > <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;an Announcement</span></Button>
+              <h3 className='text-blue-800'>Class Assignments</h3>
+              <Link to={`/classes/${classCode}/assignments/create`}>
+                <Button className='flex px-2 !h-[35px]' > <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;an assignment</span></Button>
               </Link>
           </div>
           <div className='w-full mt-3 flex flex-wrap gap-4'>
@@ -142,11 +181,11 @@ function Announcements({ }){
                             <div className='flex gap-4 items-center font-light'>
                                 <span className='w-[150px] hidden sm:flex justify-end'>AUTHOR</span>
                                 <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
-                                <span className='w-[100px] flex justify-end'>ACTIONS</span>
+                                <span className='w-[120px] flex justify-end'>ACTIONS</span>
                             </div>
                         </div>
                         {
-                            announcementsIsLoading && 
+                            assignmentsIsLoading && 
                             <div className='w-full h-full m-auto mt-4'>
 
                                 <div
@@ -155,21 +194,24 @@ function Announcements({ }){
                             </div>
                         } 
                         { 
-                            !announcementsIsLoading && announcements.map((announcement, idx) => {
+                            !assignmentsIsLoading && assignments?.length != 0 && assignments.map((assignment, idx) => {
                                 return (
-                                <Link to={`/classes/${classCode}/announcements/${announcement.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                                <Link to={`/classes/${classCode}/assignments/${assignment.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                     <div className='flex items-center gap-4'>
-                                        <span className='flex-1 font-normal truncate'>{announcement.title}</span>
+                                        <span className='flex-1 font-normal truncate'>{assignment.title}</span>
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{announcement.createdBy.firstName + " " + announcement.createdBy.lastName}</span>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(announcement.createdAt).format("HH:mm - DD/MM/YY")}</span>
-                                        <span className='w-[100px] flex gap-2 justify-end'>
-                                            <Link to={`/classes/${classCode}/announcements/${announcement.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
+                                        <span className='w-[150px] hidden sm:flex justify-end'>{assignment.createdBy.firstName + " " + assignment.createdBy.lastName}</span>
+                                        <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(assignment.createdAt).format("HH:mm - DD/MM/YY")}</span>
+                                        <span className='w-[120px] flex gap-2 justify-end'>
+                                            <Link to={`/classes/${classCode}/assignments/${assignment.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
                                                 <PencilIcon className='w-4 h-4' />
                                             </Link>
-                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAnnouncement(announcement); toggleManager.toggle('delete-dialog') }}>
+                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAssignment(assignment); toggleManager.toggle('delete-dialog') }}>
                                                 <TrashIcon className='w-4 h-4' />
+                                            </span>
+                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAssignment(assignment); toggleManager.toggle('publish-dialog') }}>
+                                                <ShareIcon className='w-4 h-4' />
                                             </span>
                                         </span>
                                     </div>
@@ -180,7 +222,7 @@ function Announcements({ }){
                     </div>
                 </div>
                 <div className='flex justify-end text-blue-700 mt-2 pb-2'>
-                    <p>Showing <span className='font-semibold'>{announcements.length}</span> of <span className='font-semibold'>{announcementsCount}</span></p>
+                    <p>Showing <span className='font-semibold'>{assignments.length}</span> of <span className='font-semibold'>{assignmentsCount}</span></p>
                 </div>
             </div>
         </>

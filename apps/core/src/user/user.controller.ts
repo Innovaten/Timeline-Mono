@@ -316,7 +316,28 @@ export class UsersController {
             return ServerErrorResponse(new Error(`${err}`), 500);
         } 
     }
-        
+
+    @UseGuards(AuthGuard)
+    @Get(':specifier/completed-lessons')
+    async getUserAssignments( 
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+        @Req() req: any
+    ) {
+        try {
+
+            const IsId = isId === "true";
+            const user = req.user as IUserDoc;
+
+            const assignments = await this.user.getUserAssignments(specifier, IsId, user)
+            return ServerSuccessResponse(assignments);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+    
+    @UseGuards(AuthGuard)
     @Get(':specifier/completed-lessons')
     async getUsersCompletedLessons( 
         @Param('specifier') specifier: string,
@@ -324,8 +345,8 @@ export class UsersController {
     ) {
         try {
             const IsId = isId == "true";
-            const user_count = await this.user.getUsersCompletedLessons(specifier, IsId)
-            return ServerSuccessResponse(user_count);
+            const completedLessons = await this.user.getUsersCompletedLessons(specifier, IsId)
+            return ServerSuccessResponse(completedLessons);
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);

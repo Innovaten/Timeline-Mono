@@ -231,47 +231,6 @@ export class ClassesController {
     }
 
     @UseGuards(AuthGuard)
-    @Get(":specifier")
-    async getClass( 
-        @Param("specifier") specifier: string,
-        @Query('isId') isId: boolean = true,
-        @Request() req: Request,
-    ) {
-
-        try {
-            // @ts-ignore
-            const user = req["user"]
-
-            if(!user){
-                return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
-            }
-
-            let thisClass: any | null = null;
-            
-
-            if(isId == true){
-                thisClass = await this.service.getClassById(specifier)
-            } else {
-                thisClass = await this.service.getClass({ code: specifier })
-            }
-        
-            if(!thisClass){
-                return ServerErrorResponse(
-                    new Error("Specified class could not be found"),
-                    404,
-                )
-            }
-
-            return ServerSuccessResponse(thisClass);
-
-        } catch(err) {
-            return ServerErrorResponse(new Error(`${err}`), 500);
-        } 
-
-    }
-
-
-    @UseGuards(AuthGuard)
     @Get(':_id/announcements')
     async getAnnouncementsByClass(
         @Param('_id') classId: string,
@@ -301,9 +260,9 @@ export class ClassesController {
             }
 
             const announcements = await this.service.getAnnouncementsByClass(classId);
-
+            
             return ServerSuccessResponse(announcements);
-
+            
         } catch(err) {
             return ServerErrorResponse(
                 new Error(`${err}`), 
@@ -351,5 +310,71 @@ export class ClassesController {
                 500
             )
         }
+    }
+
+
+
+
+    @UseGuards(AuthGuard)
+    @Get(":specifier/students")
+    async getStudentsInClass( 
+        @Param("specifier") specifier: string,
+        @Query('isId') isId: string = "true",
+        @Request() req: Request,
+    ) {
+
+        try {
+            // @ts-ignore
+            const user = req["user"]
+            
+            const students = await this.service.getStudentsInClass(specifier, isId === "true", user);
+
+            return ServerSuccessResponse(students);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+
+    }
+
+
+    @UseGuards(AuthGuard)
+    @Get(":specifier")
+    async getClass( 
+        @Param("specifier") specifier: string,
+        @Query('isId') isId: string = "true",
+        @Request() req: Request,
+    ) {
+
+        try {
+            // @ts-ignore
+            const user = req["user"]
+
+            if(!user){
+                return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
+            }
+
+            let thisClass: any | null = null;
+            
+
+            if(isId === "true"){
+                thisClass = await this.service.getClassById(specifier)
+            } else {
+                thisClass = await this.service.getClass({ code: specifier })
+            }
+        
+            if(!thisClass){
+                return ServerErrorResponse(
+                    new Error("Specified class could not be found"),
+                    404,
+                )
+            }
+
+            return ServerSuccessResponse(thisClass);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+
     }
 }

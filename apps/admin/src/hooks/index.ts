@@ -9,6 +9,7 @@ import { useLessons, useLesson, useLessonStateFilter } from "./lessons.hook"
 import { useModules, useModule, useModuleStateFilter } from "./modules.hook"
 import { useSpecificEntity } from "./common.hook"
 import { useAssignment, useAssignmentStateFilter, useAssignments } from "./assignment.hook"
+import { useStudents, useStudentsInClass } from "./students.hook"
 export {
 
     useRegistrations,
@@ -36,4 +37,6 @@ export {
     useAssignment,
     useAssignmentStateFilter,
     useAssignments,
+    useStudents,
+    useStudentsInClass,
 }

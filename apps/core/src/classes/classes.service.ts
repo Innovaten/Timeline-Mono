@@ -4,7 +4,7 @@ import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
 import { generateCode } from "../utils";
 import { CreateAssigmentDto } from "../assignments/assignments.dto";
-import { BadRequestException, ForbiddenException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 
 export class ClassesService {
    
@@ -181,6 +181,21 @@ export class ClassesService {
         const announcements = await AnnouncementModel.find({ announcementSet: classDoc.announcementSet}).populate("createdBy updatedBy");
 
         return announcements;
+    }
+
+    async getStudentsInClass(specifier: string, isId: boolean, user: IUserDoc){
+
+        const filter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
+        const relatedClass = await ClassModel.findOne(filter).populate<{ students: IUserDoc[] }>("students").lean()
+
+        if(!relatedClass){
+            throw new NotFoundException("Specified class could not be found")
+        }
+
+        if(user.role != "SUDO" && !relatedClass.administrators.map(a => a.toString()).includes(`${user._id}`)){
+            throw new ForbiddenException("You are not authorized to make this request")
+        }
+        return relatedClass.students;
     }
 
     // This is the function that gets all the modules asscociated with a specific class (the classId needs to be passes as a parameter)

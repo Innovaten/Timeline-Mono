@@ -41,6 +41,9 @@ const ClassesClassCodeModulesCreateLazyImport = createFileRoute(
 const ClassesClassCodeModulesModuleCodeLazyImport = createFileRoute(
   '/classes/$classCode/modules/$moduleCode',
 )()
+const ClassesClassCodeAssignmentsCreateLazyImport = createFileRoute(
+  '/classes/$classCode/assignments/create',
+)()
 const ClassesClassCodeAnnouncementsCreateLazyImport = createFileRoute(
   '/classes/$classCode/announcements/create',
 )()
@@ -166,6 +169,16 @@ const ClassesClassCodeModulesModuleCodeLazyRoute =
     getParentRoute: () => ClassesClassCodeModulesLazyRoute,
   } as any).lazy(() =>
     import('./routes/classes.$classCode.modules.$moduleCode.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const ClassesClassCodeAssignmentsCreateLazyRoute =
+  ClassesClassCodeAssignmentsCreateLazyImport.update({
+    path: '/create',
+    getParentRoute: () => ClassesClassCodeAssignmentsLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/classes.$classCode.assignments.create.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -361,6 +374,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassCodeAnnouncementsCreateLazyImport
       parentRoute: typeof ClassesClassCodeAnnouncementsLazyImport
     }
+    '/classes/$classCode/assignments/create': {
+      id: '/classes/$classCode/assignments/create'
+      path: '/create'
+      fullPath: '/classes/$classCode/assignments/create'
+      preLoaderRoute: typeof ClassesClassCodeAssignmentsCreateLazyImport
+      parentRoute: typeof ClassesClassCodeAssignmentsLazyImport
+    }
     '/classes/$classCode/modules/$moduleCode': {
       id: '/classes/$classCode/modules/$moduleCode'
       path: '/$moduleCode'
@@ -437,7 +457,10 @@ export const routeTree = rootRoute.addChildren({
             }),
           ClassesClassCodeAnnouncementsCreateLazyRoute,
         }),
-      ClassesClassCodeAssignmentsLazyRoute,
+      ClassesClassCodeAssignmentsLazyRoute:
+        ClassesClassCodeAssignmentsLazyRoute.addChildren({
+          ClassesClassCodeAssignmentsCreateLazyRoute,
+        }),
       ClassesClassCodeModulesLazyRoute:
         ClassesClassCodeModulesLazyRoute.addChildren({
           ClassesClassCodeModulesModuleCodeLazyRoute:
@@ -532,7 +555,10 @@ export const routeTree = rootRoute.addChildren({
     },
     "/classes/$classCode/assignments": {
       "filePath": "classes.$classCode.assignments.lazy.tsx",
-      "parent": "/classes/$classCode"
+      "parent": "/classes/$classCode",
+      "children": [
+        "/classes/$classCode/assignments/create"
+      ]
     },
     "/classes/$classCode/modules": {
       "filePath": "classes.$classCode.modules.lazy.tsx",
@@ -552,6 +578,10 @@ export const routeTree = rootRoute.addChildren({
     "/classes/$classCode/announcements/create": {
       "filePath": "classes.$classCode.announcements.create.lazy.tsx",
       "parent": "/classes/$classCode/announcements"
+    },
+    "/classes/$classCode/assignments/create": {
+      "filePath": "classes.$classCode.assignments.create.lazy.tsx",
+      "parent": "/classes/$classCode/assignments"
     },
     "/classes/$classCode/modules/$moduleCode": {
       "filePath": "classes.$classCode.modules.$moduleCode.lazy.tsx",

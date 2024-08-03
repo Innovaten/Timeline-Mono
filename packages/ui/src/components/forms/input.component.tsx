@@ -12,6 +12,7 @@ type InputProps = {
   label?: string;
   className?: string;
   iconType?: "email" | "password" | "phone";
+  step?: number
   hasValidation?: boolean;
   name?: string;
   placeholder?: string, 

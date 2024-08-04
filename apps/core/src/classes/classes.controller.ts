@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req } from '@nestjs/common';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { ClassModel, IAnnouncementSetDoc, IClassDoc, IUserDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
@@ -202,14 +202,27 @@ export class ClassesController {
         }
     }
 
+    @UseGuards(AuthGuard)
     @Get('count')
     async getClassesCount(
-        @Query('filter') rawFilter: string
+        @Query('filter') rawFilter: string,
+        @Req() req: any,
     ){
         try{
+           
+            const user = req.user;
+            if (user?.role === 'SUDO') {
             const filter = rawFilter ? JSON.parse(rawFilter) : {};
             const classes_count = await this.service.getClassesCount(filter)
             return ServerSuccessResponse<number>(classes_count);
+            } else if (user?.role === 'ADMIN') {
+                return ServerSuccessResponse<number>(user.classes.length); 
+            } else {
+                return ServerErrorResponse(
+                    new Error("Unauthorized Request"),
+                    401
+                )
+            }
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);

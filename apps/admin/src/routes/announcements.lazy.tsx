@@ -1,5 +1,5 @@
 import { Button, DialogContainer } from '@repo/ui';
-import { abstractAuthenticatedRequest, useDialog, useLoading } from '@repo/utils'
+import { abstractAuthenticatedRequest, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useCompositeFilterFlag, useAnnouncements, useSpecificEntity } from '../hooks';
@@ -21,61 +21,90 @@ function Announcements({ }){
 
   const { user } = useLMSContext()
 
-  const { toggleDialog: toggleDeleteDialog, dialogIsOpen: deleteDialogIsOpen } = useDialog();
-  const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
-  const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
-  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag ])
-  const { isLoading: deleteIsLoading, resetLoading: resetDeleteIsLoading, toggleLoading: toggleDeleteIsloading } = useLoading()
+  const initialToggles = {
+    'delete-dialog': false,
+    'delete-is-loading': false,
 
-  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0, {
+    'filter-is-shown': false,
+    'refresh': false,
+  }
+
+  type TogglesType = typeof initialToggles
+  type ToggleKeys = keyof TogglesType
+  const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
+
+  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ toggleManager.get('refresh') ])
+  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0{
     user,
+    createdBy: user?.id,
   })
   
   const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
 
 
-  function handleDeleteAnnouncement(){
-    if(!selectedAnnouncement) return 
 
-    abstractAuthenticatedRequest(
-      "delete",
-      `/api/v1/announcements/${selectedAnnouncement._id}`,
-      {},
+  function DeleteDialog(){
+ 
+    function handleDeleteAnnouncement(){
+      if(!selectedAnnouncement) return 
+  
+      abstractAuthenticatedRequest(
+        "delete",
+        `/api/v1/announcements/${selectedAnnouncement._id}`,
+        {},
+  
+        {},
+        {
+          onSuccess: (data) => {
+            toast.success(`Announcement ${data.code ?? ""} deleted successfully`)
+          },
+          onFailure: (error) => {
+              toast.error(`${error.msg}`)
+          },
+        }
+      )
+    }
 
-      {},
-      {
-        onSuccess: (data) => {
-          toast.success(`Announcement ${data.code ?? ""} deleted successfully`)
-        },
-      }
+    return (
+      <>
+        <DialogContainer
+            title='Delete Announcement'
+            description={`Are you sure you want to delete the ${selectedAnnouncement?.title} announcement?`}
+            isOpen={toggleManager.get('delete-dialog')}
+            toggleOpen={()=>{ toggleManager.toggle('delete-dialog')}}
+        >
+            <div className='flex justify-end gap-4 mt-8'>
+                <Button className='!h-[35px] px-2' 
+                  variant='neutral' 
+                  isDisabled={toggleManager.get('delete-is-loading')} 
+                  onClick={()=> { toggleManager.reset('delete-dialog'); resetSelected() }}
+                >Close</Button>
+                <Button className='!h-[35px] px-2' 
+                  variant='danger' 
+                  isLoading={toggleManager.get('delete-is-loading')} 
+                  onClick={handleDeleteAnnouncement}
+                >Delete Announcement</Button>
+            </div>
+        </DialogContainer>
+      </>
     )
   }
 
   return (
     <>
-        <DialogContainer
-            title='Delete Announcement'
-            description={`Are you sure you want to delete the ${selectedAnnouncement?.title} announcement?`}
-            isOpen={deleteDialogIsOpen}
-            toggleOpen={toggleDeleteDialog}
-        >
-            <div className='flex justify-end gap-4 mt-8'>
-                <Button className='!h-[35px] px-2' variant='neutral' isLoading={deleteIsLoading} onClick={()=> { toggleDeleteDialog(); resetSelected() }}>Close</Button>
-                <Button className='!h-[35px] px-2' variant='danger' isLoading={deleteIsLoading} onClick={() => { handleDeleteAnnouncement }}>Delete Announcement</Button>
-            </div>
-        </DialogContainer>
+        <DeleteDialog />
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
           <div className='mt-2 flex h-fit justify-between items-center'>
               <h3 className='text-blue-800'>All Announcements</h3>
           </div>
           <div className='w-full mt-3 flex flex-wrap gap-4'>
                     <Button
-                        onClick={toggleFiltersAreShown}
+                        onClick={()=>{toggleManager.toggle('filter-is-shown') }}
                         variant='outline'
                         className='!h-[35px] px-2 flex items-center gap-2'
                     >
                         <FunnelIcon className='w-4' />
-                        { filterIsShown ? "Close" : "Show"} Filters    
+                        { toggleManager.get('filter-is-shown') ? "Close" : "Show"} Filters    
                     </Button>
               <div className='flex flex-col gap-2 justify-end'>
                   <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
@@ -116,7 +145,7 @@ function Announcements({ }){
                                             {/* <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleUpdateDialog() }}>              
                                                 <PencilIcon className='w-4 h-4' />
                                             </span> */}
-                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAnnouncement(announcement); toggleDeleteDialog() }}>
+                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAnnouncement(announcement); toggleManager.toggle('delete-dialog') }}>
                                                 <TrashIcon className='w-4 h-4' />
                                             </span>
                                         </span>

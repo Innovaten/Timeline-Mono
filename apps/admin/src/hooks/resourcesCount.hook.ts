@@ -112,3 +112,38 @@ export function usePendingCount(
 
     return { isLoading, pendingCount }
 }
+export function useAnnouncementsCount(
+    refreshFlag: boolean = true,  
+    filter: Record<string,any> = {}
+){
+    const [ isLoadingAnnouncement, setIsLoadingAnnouncement ] = useState<boolean>(true);
+    const [ announcementsCount, setAnnouncementsCount ] = useState<number>(0);
+
+    useEffect(
+        () =>{
+            setIsLoadingAnnouncement(true);
+            makeAuthenticatedRequest(
+                "get",
+                `/api/v1/announcements/count?filter=${JSON.stringify(filter)}`
+            )
+            .then( res => {
+                if(res.status == 200 && res.data.success){
+                    setAnnouncementsCount(res.data.data);
+                } else {
+                    console.log(res.data.error.msg);
+                    toast.error(res.data.error.msg);
+                }
+                setIsLoadingAnnouncement(false);
+            })
+            .catch(err => {
+                if(err.message){
+                    toast.error(err.message)
+                } else {
+                    toast.error(`${err}`)
+                }
+            })
+        },[refreshFlag]
+)
+
+    return { isLoadingAnnouncement, announcementsCount }
+}

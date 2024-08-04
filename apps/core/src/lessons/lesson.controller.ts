@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Request, Query, UseGuards, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Request, Query, UseGuards, UnauthorizedException, Patch } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto, UpdateLessonDto } from './lessons.dto';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { JwtService } from '../common/services/jwt.service';
 
-@Controller('lessons')
+@Controller({
+  path: 'lessons',
+  version: '1',
+})
 export class LessonsController {
 
   constructor(
@@ -73,7 +76,7 @@ export class LessonsController {
     }
   }
 
-  @Put(':id')
+  @Patch(':id')
   async updateLesson(
     @Param('id') id: string, 
     @Body() updateLessonDto: UpdateLessonDto, 
@@ -83,6 +86,7 @@ export class LessonsController {
       if(!updateLessonDto.authToken){
         throw new UnauthorizedException();
       }
+
       
       const actor = await this.jwt.validateToken(updateLessonDto.authToken);
       if(!actor){

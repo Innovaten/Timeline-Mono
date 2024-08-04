@@ -1,10 +1,12 @@
 import { useAdministratorsFilter, useAdministrators } from "./administrators.hook"
 import { useRegistrations } from "./registrations.hook"
 import { useClasses, useClass } from "./classes.hook"
-import { useAdminsCount, useClassesCount, usePendingCount, useStudentsCount} from "./resourcesCount.hook"
+import { useAdminsCount, useClassesCount, usePendingCount, useStudentsCount, useAnnouncementsCount} from "./resourcesCount.hook"
 import useCompositeFilterFlag from "./composite-filter.hook"
 import { useMovileNavigation } from "@repo/utils"
 import { useAnnouncements, useAnnouncement, useAnnouncementStateFilter } from "./announcements.hook,"
+import { useLessons, useLesson, useLessonStateFilter } from "./lessons.hook"
+import { useModules, useModule, useModuleStateFilter } from "./modules.hook"
 import { useSpecificEntity } from "./common.hook"
 export {
 
@@ -23,5 +25,11 @@ export {
     useAnnouncement,
     useAnnouncementStateFilter,
     useSpecificEntity,
-    
+    useAnnouncementsCount,
+    useLessons,
+    useLesson,
+    useLessonStateFilter,
+    useModules,
+    useModule,    
+    useModuleStateFilter
 }

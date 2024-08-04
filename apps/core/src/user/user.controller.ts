@@ -193,6 +193,38 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard)
+    @Get("announcements")
+    async getAnnouncementsForLMS(
+        @Req() req: any,
+    ) {
+     
+        try{
+            const user = req.user;
+            if(!user){
+                return ServerErrorResponse(
+                    new Error('Unauthenticated Request'),
+                    401
+                )
+            }
+            if(user.role != Roles.STUDENT){
+                return ServerErrorResponse(
+                    new Error('Unauthorized Request'),
+                    403
+                )
+            }
+            const announcements = await this.announcements.getAnnouncementsForLMS(user.classes)
+            return ServerSuccessResponse(announcements);
+
+        }catch (err) {
+            return ServerErrorResponse(
+                new Error(`${err}`), 
+                500
+            )
+        }
+    }
+
+
+    @UseGuards(AuthGuard)
     @Get('count')
     async getUserCount( 
         @Query('filter') rawFilter: string

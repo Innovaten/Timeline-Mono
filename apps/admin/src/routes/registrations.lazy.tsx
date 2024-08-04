@@ -18,9 +18,6 @@ export const Route = createLazyFileRoute("/registrations")({
 
 function RegistrationsPage() {
 
-  
-  const { user } = useLMSContext() 
-
   const { dialogIsOpen: newStudentIsSelected, toggleDialog: toggleNewStudentIsSelected} = useDialog();
   const { filter, filterOptions, changeFilter, filterChangedFlag } =
     useRegistrantsFilter();
@@ -37,7 +34,7 @@ function RegistrationsPage() {
   
   const { isLoading: approvalIsLoading, toggleLoading: toggleApprovalIsLoading } = useLoading()
 
-  const { classes: classesUpForApproval, } = useClasses(newStudentIsSelected, { user });
+  const { classes: classesUpForApproval, } = useClasses(newStudentIsSelected, { });
   let [approvedClasses, setApprovedClasses ] = useState<Array<string>>([]);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -192,7 +189,7 @@ function RegistrationsPage() {
         <div className="flex flex-col gap-4 sm:justify-between min-h-[200px]">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-h-48 overflow-y-auto mt-4">
             {
-              classesUpForApproval.map((c, idx) => <div key={idx}
+              classesUpForApproval && classesUpForApproval.map((c, idx) => <div key={idx}
                 className={ cn(
                   'flex gap-2 items-center bg-blue-50 rounded p-2 border-blue-100 hover:border-blue-700/40 cursor-pointer duration-150 border-[1.5px]', 
                   approvedClasses.includes(c._id as string) ? "border-blue-700/40 bg-blue-700 text-white" : "border-bg-blue-100/40",

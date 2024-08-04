@@ -1,33 +1,38 @@
 import { Button, Input, TextEditor } from '@repo/ui'
-import { createLazyFileRoute, Navigate } from '@tanstack/react-router'
-import { Formik, Form, ErrorMessage } from 'formik'
+import { createLazyFileRoute } from '@tanstack/react-router'
+import { Formik, Form } from 'formik'
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 import { $insertNodes, $getRoot } from 'lexical'
 import * as Yup from 'yup'
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { LexicalEditor } from 'lexical'
-import { _getToken, abstractAuthenticatedRequest, abstractUnauthenticatedRequest, useLoading } from '@repo/utils';
+import { _getToken, abstractAuthenticatedRequest, abstractUnauthenticatedRequest, useLoading, useToggleManager } from '@repo/utils';
 import { toast } from 'sonner';
 import { useAnnouncement } from '../hooks';
 
 export const Route = createLazyFileRoute('/classes/$classCode/announcements/$announcementCode/update')({
-    component: CreateAnnouncement
+    component: UpdateAnnouncement
 })
 
 
-function CreateAnnouncement(){
+function UpdateAnnouncement(){
 
-    const { isLoading, toggleLoading, resetLoading } = useLoading()
     const { classCode, announcementCode } = Route.useParams()
+    const navigate = Route.useNavigate()
 
-    const { isLoading: announcementContentUpdated, toggleLoading: toggleAnnouncmentContentUpdated } = useLoading()
-    const { isLoading: publishIsLoading, toggleLoading: togglePublishIsLoading, resetLoading: resetPublishLoading } = useLoading()
-    
     const editorRef = useRef<LexicalEditor>();
 
     const { isLoading: announcementIsLoading, announcement } = useAnnouncement(false, announcementCode, false);
 
-    const navigate = Route.useNavigate()
+    const initialToggles = {
+        'update-is-loading': false,
+        'publish-is-loading': false,
+        'content-hydrated': false,
+    }
+    
+    type TogglesType = typeof initialToggles
+    type ToggleKeys = keyof TogglesType
+    const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
 
 
     function handleUpdateAnnouncement(values: { 
@@ -49,7 +54,7 @@ function CreateAnnouncement(){
             },
             {},
             {
-                onStart: toggleLoading,
+                onStart: ()=>{ toggleManager.toggle('update-is-loading')},
                 onSuccess: (data)=>{ 
                     toast.success("Announcement created successfully")
                     navigate({
@@ -57,7 +62,7 @@ function CreateAnnouncement(){
                     })
                 },
                 onFailure: (err) =>{ toast.error(`${err.msg}`) },
-                finally: resetLoading,
+                finally: ()=>{ toggleManager.reset('update-is-loading')},
             }
         )
     }
@@ -71,7 +76,7 @@ function CreateAnnouncement(){
             {},
             {},
             {
-                onStart: togglePublishIsLoading,
+                onStart: ()=>{ toggleManager.toggle('publish-is-loading') },
                 onSuccess: (data)=>{ 
                     toast.success("Announcement published successfully")
                     setTimeout(() => {
@@ -81,7 +86,7 @@ function CreateAnnouncement(){
                     }, 500)
                 },
                 onFailure: (err) =>{ toast.error(`${err.msg}`) },
-                finally: resetPublishLoading,
+                finally: ()=>{ toggleManager.reset('publish-is-loading')},
             }
         )
     }
@@ -95,7 +100,7 @@ function CreateAnnouncement(){
         if(!announcement) return
         if(!editorRef.current) return
 
-        if(announcementContentUpdated) return  
+        if(toggleManager.get('content-hydrated')) return  
         editorRef.current.update(() => {
             const parser = new DOMParser()
 
@@ -108,7 +113,7 @@ function CreateAnnouncement(){
             $insertNodes(nodes);
         })
 
-        toggleAnnouncmentContentUpdated()
+        toggleManager.toggle('content-hydrated')
 
     }, [announcement])
 
@@ -145,10 +150,18 @@ function CreateAnnouncement(){
                                         </Form> 
                                     </div>
                                     <div className='flex h-16 flex-shrink-0 justify-end items-center w-full gap-4'>
-                                        <Button className='!w-[130px]' isDisabled={!form.isValid} isLoading={isLoading} onClick={form.submitForm}>Save</Button>
+                                        <Button className='!w-[130px]' 
+                                            isDisabled={!form.isValid} 
+                                            isLoading={toggleManager.get('update-is-loading')} 
+                                            onClick={form.submitForm}
+                                        >Save</Button>
                                         {
                                             announcement?.isDraft &&
-                                            <Button className='!w-[130px]' variant='outline' isLoading={publishIsLoading} onClick={handlePublishAnnouncement}>Publish</Button>
+                                            <Button className='!w-[130px]' 
+                                                variant='outline' 
+                                                isLoading={toggleManager.get('publish-is-loading')} 
+                                                onClick={handlePublishAnnouncement}
+                                            >Publish</Button>
                                         }
                                     </div>
                                 </div>

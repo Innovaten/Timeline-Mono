@@ -1,30 +1,28 @@
-import { IAnnouncementDoc, IUserDoc } from "@repo/models";
+import { ILessonDoc, IUserDoc } from "@repo/models";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useLMSContext } from "../app";
 
 
-export function useAnnouncements(refreshFlag: boolean = true, limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
+export function useLessons(refreshFlag: boolean = true,limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
 
-    const [ announcements, setAnnouncements ] = useState<(IAnnouncementDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
+    const [ lessons, setLessons ] = useState<(ILessonDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ count, setCount ] = useState<number>(0);
 
-    const { user } = useLMSContext();
-
-    if(!user) return { announcements: [], isLoading: false, count: 0 }
-
-    const route = user.role == "SUDO" ? "/announcements" : `/users/${user._id}/announcements`
+    const { user, ...actualFilter} = filter
     
+
+    const route = "/lessons"
     useEffect(() => {
         makeAuthenticatedRequest(
             "get",
-            `/api/v1${route}?filter=${JSON.stringify(filter)}&limit=${limit}&offset=${offset}`,
+            `/api/v1${route}?filter=${JSON.stringify(actualFilter)}&limit=${limit}&offset=${offset}`,
         ).then(res => {
             if(res.status == 200 && res.data.success){
-                setAnnouncements(res.data.data.announcements);
-                setCount(res.data.data.count);
+                console.log(res.data.data)
+                setLessons(res.data.data);
+                setCount(res.data.data.length);
             } else {
                 toast.error(res.data.error?.msg);
             }
@@ -42,24 +40,24 @@ export function useAnnouncements(refreshFlag: boolean = true, limit: number = 10
 
     }, [refreshFlag])
 
-    return { announcements, isLoading, count };
+    return { lessons, isLoading, count };
 
 }
 
-export function useAnnouncement(refreshFlag: boolean = true, specifier: string, isId:boolean = true){
+export function useLesson(refreshFlag: boolean = true, specifier: string, isId:boolean = false){
 
-    const [ announcement, setAnnouncement ] = useState<IAnnouncementDoc & { createdBy: IUserDoc, updatedBy:IUserDoc } | null>(null)
+    const [ lesson, setLesson ] = useState<ILessonDoc & { createdBy: IUserDoc, updatedBy:IUserDoc } | null>(null)
     const { isLoading, toggleLoading, resetLoading } = useLoading()
 
     useEffect( () => {
         abstractAuthenticatedRequest(
             "get",
-            `/api/v1/announcements/${specifier}?isId=${isId}`,
+            `/api/v1/lessons/${specifier}?isId=${isId}`,
             {},
             {},
             {
                 onStart: toggleLoading,
-                onSuccess: setAnnouncement,
+                onSuccess: setLesson,
                 onFailure: (err) => {toast.error(`${err.msg}`)},
                 finally: resetLoading
             }
@@ -67,19 +65,16 @@ export function useAnnouncement(refreshFlag: boolean = true, specifier: string, 
 
     }, [refreshFlag])
 
-
-    return { isLoading, announcement }
-
+    return { isLoading, lesson }
 }
 
 
-export function useAnnouncementStateFilter(){
-    const [ filterLabel, setFilterLabel ] = useState<"Public" | "Drafted" | "Deleted">("Public");
+export function useLessonStateFilter(){
+    const [ filterLabel, setFilterLabel ] = useState<"Public" | "Deleted">("Public");
     const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
 
     const resultingFilters = {
-        "Public": { isDraft: false, "meta.isDeleted": { $eq: false }},
-        "Drafted": { isDraft: true, "meta.isDeleted": { $eq: false }},
+        "Public": {"meta.isDeleted": { $eq: false }},
         "Deleted": { "meta.isDeleted": { $eq: true }},
     };
 
@@ -87,7 +82,7 @@ export function useAnnouncementStateFilter(){
     
     const filter = resultingFilters[filterLabel];
 
-    function changeFilter(arg:  "Public" | "Drafted" | "Deleted"){
+    function changeFilter(arg:  "Public"  | "Deleted"){
         setFilterChangedFlag(prev => !prev);
         setFilterLabel(arg);
     };

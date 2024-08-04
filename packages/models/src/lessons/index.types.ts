@@ -18,4 +18,4 @@ export interface ILesson {
     updatedAt: Date 
 }
 
-export interface IlessonDoc extends Document, ILesson{}
+export interface ILessonDoc extends Document, ILesson{}

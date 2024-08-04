@@ -1,9 +1,9 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { Button, DialogContainer, Input, SelectInput } from '@repo/ui'
-import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, validPhoneNumber } from '@repo/utils';
+import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, useToggleManager, validPhoneNumber } from '@repo/utils';
 import { FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { useStudents } from '../hooks/students.hook';
-import { useCompositeFilterFlag } from '../hooks';
+import { useCompositeFilterFlag, useSpecificEntity } from '../hooks';
 import { IUserDoc } from '@repo/models';
 import { useState } from 'react';
 import { toast } from 'sonner'
@@ -18,92 +18,95 @@ export const Route = createLazyFileRoute('/students')({
 
 
 function Students(){
-  const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
-  const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
 
-  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag ])
+  const initialToggles = {
+      'update-is-loading': false,
+      'update-dialog': false,
+      
+      'filter-is-shown': false,
+      'refresh': false,
+  }
+  
+  type TogglesType = typeof initialToggles
+  type ToggleKeys = keyof TogglesType
+  const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
 
+  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ toggleManager.get('refresh') ])
 
   const { students, count: studentsCount, isLoading: studentsIsLoading } = useStudents(compositeFilterFlag);
-  const { dialogIsOpen: updateDialogIsOpen, toggleDialog: toggleUpdateDialog } = useDialog();
-  const { isLoading: updateIsLoading, toggleLoading: toggleUpdateLoading, resetLoading: resetUpdateLoading } = useLoading()
 
-
-  const [ selectedStudent, setSelectedStudent ] = useState<Partial<IUserDoc>>({
-    firstName: '',
-    otherNames: '',
-    lastName: '',
-    gender: 'Male',
-    email: '',
-    phone: '',
-  });
-
-  const updateStudentInitialValues = {
-    firstName: selectedStudent.firstName ?? "",
-    otherNames: selectedStudent.otherNames ?? "",
-    lastName: selectedStudent.lastName ?? "",
+  const { entity: selectedStudent, setSelected, resetSelected } = useSpecificEntity<Partial<IUserDoc>>()
   
-    email: selectedStudent.email ?? "",
-    phone: "0" + selectedStudent.phone?.substring(3) ?? "",
   
-    gender: selectedStudent.gender ?? "Male"
-  }
-
-  function handleUpdateStudentSubmit(values:{
-    firstName: string,
-    otherNames: string,
-    lastName: string,
-    email: string,
-    gender: string,
-    phone: string,
-}){
-    toggleUpdateLoading()
-    values.phone = validPhoneNumber(values.phone)
+  function UpdateDialog(){
     
-    const changedValues = {}
+    const updateStudentInitialValues = {
+      firstName: selectedStudent?.firstName ?? "",
+      otherNames: selectedStudent?.otherNames ?? "",
+      lastName: selectedStudent?.lastName ?? "",
     
-    Object.keys(values).map((field) => {
-        // @ts-ignore
-        if(values[field] !== selectedAdmin[field]){
-            //@ts-ignore
-            changedValues[field] = values[field]
-        }
-    })
+      email: selectedStudent?.email ?? "",
+      phone: "0" + selectedStudent?.phone?.substring(3) ?? "",
+    
+      gender: selectedStudent?.gender ?? "Male"
+    }
 
-    makeAuthenticatedRequest(
-        "patch",
-        `/api/v1/users/${selectedStudent._id}`,
-        {
-            ...changedValues,
-            authToken: _getToken()
-        }
-    ).then( res => {
-        if(res.status == 200 && res.data.success){
-            toast.success("Student Updated Successfully")
-            toggleRefreshFlag()
-        } else {
-            values.phone = "0" + selectedStudent.phone?.substring(3)
-            toast.error(`${res.data.error.msg}`)
-        }
-        toggleUpdateDialog()
-        resetUpdateLoading()
-    })
-    .catch( err => {
-        values.phone = "0" + selectedStudent.phone?.substring(3)
-        toast.error(`${err}`)
-        resetUpdateLoading()
-    })
-}
+    function handleUpdateStudentSubmit(values:{
+      firstName: string,
+      otherNames: string,
+      lastName: string,
+      email: string,
+      gender: string,
+      phone: string,
+  }){
+      if(!selectedStudent) return
 
+      toggleManager.toggle('update-is-loading')
+      values.phone = validPhoneNumber(values.phone)
+      
+      const changedValues = {}
+      
+      Object.keys(values).map((field) => {
+          // @ts-ignore
+          if(values[field] !== selectedAdmin[field]){
+              //@ts-ignore
+              changedValues[field] = values[field]
+          }
+      })
+  
+      makeAuthenticatedRequest(
+          "patch",
+          `/api/v1/users/${selectedStudent._id}`,
+          {
+              ...changedValues,
+              authToken: _getToken()
+          }
+      ).then( res => {
+          if(res.status == 200 && res.data.success){
+              toast.success("Student Updated Successfully")
+              toggleManager.toggle('refresh')
+              toggleManager.reset('update-dialog')
+          } else {
+              values.phone = "0" + selectedStudent.phone?.substring(3)
+              toast.error(`${res.data.error.msg}`)
+          }
+      })
+      .catch( err => {
+          values.phone = "0" + selectedStudent.phone?.substring(3)
+          toast.error(`${err}`)
+      })
+      .finally(()=> {
+        toggleManager.reset('update-is-loading')
+      })
+    }
 
-
-  return (
-    <>
-      <DialogContainer
-          toggleOpen={toggleUpdateDialog}
-          isOpen={updateDialogIsOpen}
+    return (
+      <>
+        <DialogContainer
+          toggleOpen={()=>{ toggleManager.toggle('update-dialog') }}
+          isOpen={toggleManager.get('update-dialog')}
           title={`Update Student`}
-          description={`Update ${ selectedStudent.firstName + " " + selectedStudent.lastName }'s details`}
+          description={`Update ${ selectedStudent?.firstName + " " + selectedStudent?.lastName }'s details`}
       >
           <Formik
               initialValues={updateStudentInitialValues}
@@ -139,15 +142,32 @@ function Students(){
                       <Input name='phone' label='Phone Number' iconType='phone' hasValidation />
                   </span>
                   <span className='flex justify-end gap-4 w-full'>
-                      <Button className='px-3 !h-[35px]' type='button' onClick={()=>{ toggleUpdateDialog(); resetUpdateLoading()}} variant='neutral'>Close</Button>
-                      <Button className='px-3 !h-[35px]' type='submit' isLoading={updateIsLoading}>Update Student</Button>
+                      <Button className='px-3 !h-[35px]' 
+                        type='button' 
+                        onClick={()=>{ toggleManager.reset('update-dialog'); }} 
+                        variant='neutral'
+                      >Close</Button>
+                      <Button className='px-3 !h-[35px]' 
+                        type='submit' 
+                        isLoading={toggleManager.get('update-is-loading')}
+                      >Update Student</Button>
                   </span>
               </Form>
           </Formik>
 
       </DialogContainer>
+      </>
+    )
+  }
+
+
+
+
+  return (
+    <>
+      
       <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
-        <h2 className='text-blue-800 mt-2'>Students</h2>     
+        <h3 className='text-blue-800 mt-2'>Students</h3>     
           <div className='w-full flex gap-3 mt-2'>
               <div  className='w-full flex flex-wrap gap-3'>
                   {/* <Button
@@ -166,7 +186,7 @@ function Students(){
                   } */}
                   
                     <div className='flex flex-col gap-2 justify-end'>
-                    <Button className='!h-[35px] px-2' variant='outline' onClick={toggleRefreshFlag}> <ArrowPathIcon className='w-4' /> </Button>
+                    <Button className='!h-[35px] px-2' variant='outline' onClick={() => {toggleManager.toggle('filter-is-shown') }}> <ArrowPathIcon className='w-4' /> </Button>
                     </div>
               </div> 
           </div>
@@ -194,7 +214,7 @@ function Students(){
                   !studentsIsLoading && students.map((student, idx) => {
                       return (
                       // Onclick trigger a dialog
-                      <div key={idx} onClick={() => { setSelectedStudent(student); toggleUpdateDialog() }} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                      <div key={idx} onClick={() => { setSelected(student); toggleManager.toggle('update-dialog') }} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                         <div className='flex items-center gap-4'>
                             <small className='font-light w-[70px] sm:w-[100px]'>{student.code}</small>
                             <h5 className='flex-1 font-normal truncate'>{student.firstName + " " + student.lastName }</h5>

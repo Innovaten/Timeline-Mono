@@ -2,29 +2,22 @@ import { IAnnouncementDoc, IUserDoc } from "@repo/models";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useLMSContext } from "../app";
 
 
-export function useAnnouncements(refreshFlag: boolean = true, limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
+export function useAnnouncements(refreshFlag: boolean = true){
 
     const [ announcements, setAnnouncements ] = useState<(IAnnouncementDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ count, setCount ] = useState<number>(0);
 
-    const { user } = useLMSContext();
-
-    if(!user) return { announcements: [], isLoading: false, count: 0 }
-
-    const route = user.role == "SUDO" ? "/announcements" : `/users/${user._id}/announcements`
-    
     useEffect(() => {
         makeAuthenticatedRequest(
             "get",
-            `/api/v1${route}?filter=${JSON.stringify(filter)}&limit=${limit}&offset=${offset}`,
+            `/api/v1/users/announcements`,
         ).then(res => {
             if(res.status == 200 && res.data.success){
-                setAnnouncements(res.data.data.announcements);
-                setCount(res.data.data.count);
+                setAnnouncements(res.data.data);
+                setCount(res.data.data.length);
             } else {
                 toast.error(res.data.error?.msg);
             }
@@ -43,7 +36,6 @@ export function useAnnouncements(refreshFlag: boolean = true, limit: number = 10
     }, [refreshFlag])
 
     return { announcements, isLoading, count };
-
 }
 
 export function useAnnouncement(refreshFlag: boolean = true, specifier: string, isId:boolean = true){
@@ -69,29 +61,5 @@ export function useAnnouncement(refreshFlag: boolean = true, specifier: string, 
 
 
     return { isLoading, announcement }
-
-}
-
-
-export function useAnnouncementStateFilter(){
-    const [ filterLabel, setFilterLabel ] = useState<"Public" | "Drafted" | "Deleted">("Public");
-    const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
-
-    const resultingFilters = {
-        "Public": { isDraft: false, "meta.isDeleted": { $eq: false }},
-        "Drafted": { isDraft: true, "meta.isDeleted": { $eq: false }},
-        "Deleted": { "meta.isDeleted": { $eq: true }},
-    };
-
-    const filterOptions = Object.keys(resultingFilters);
-    
-    const filter = resultingFilters[filterLabel];
-
-    function changeFilter(arg:  "Public" | "Drafted" | "Deleted"){
-        setFilterChangedFlag(prev => !prev);
-        setFilterLabel(arg);
-    };
-
-    return { filter, changeFilter, filterOptions, filterChangedFlag };
 
 }

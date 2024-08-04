@@ -17,7 +17,7 @@ import { IAnnouncementDoc } from "./announcement/index.types";
 import { IAnnouncementSetDoc } from "./announcement-set/index.types";
 import { IResourceDoc } from "./resource/index.types";
 import { IModuleDoc } from "./module/index.types";
-import { IlessonDoc } from "./lessons/index.types";
+import { ILessonDoc } from "./lessons/index.types";
 import { ILessonSetDoc } from "./lessonSet/index.types";
 import { ICompletedLessonDoc } from "./completedLessons/index.types";
 
@@ -39,7 +39,7 @@ export {
     type IAnnouncementSetDoc,
     type IResourceDoc,
     type IModuleDoc,
-    type IlessonDoc,
+    type ILessonDoc,
     type ILessonSetDoc,
     type ICompletedLessonDoc,
 

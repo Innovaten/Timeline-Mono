@@ -3,7 +3,7 @@ import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, BuildingLibraryIcon
 
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { _clearToken } from "@repo/utils";
+import { _clearTokens } from "@repo/utils";
 import { useMovileNavigation } from "@repo/utils";
 
 export default function SidebarComponent(){
@@ -104,7 +104,7 @@ export default function SidebarComponent(){
                 </div>
                 <div className="flex flex-col gap-2 pt-2">
                     <div className="flex flex-col sm:flex-row gap-2">
-                        <Link onClick={()=>{_clearToken()}} to="/login" className="w-full flex gap-2 items-center  bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
+                        <Link onClick={()=>{_clearTokens()}} to="/login" className="w-full flex gap-2 items-center  bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
                             <PowerIcon className="w-5 sm:w-4" />
                             <p>LOGOUT</p>
                         </Link>

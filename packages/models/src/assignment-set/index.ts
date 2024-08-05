@@ -19,7 +19,7 @@ export const AssignmentSetSchema = new Schema<IAssignmentSet>({
     },
   
     assignments: {
-        type: [SchemaTypes.ObjectId]
+        type: [{ type: SchemaTypes.ObjectId, ref: "Assignments" }]
     },
 
     updatedBy: {
@@ -31,6 +31,6 @@ export const AssignmentSetSchema = new Schema<IAssignmentSet>({
 }, { timestamps: true })
 
 
-export const AssignmentSetModel = model("AssignmentSet", AssignmentSetSchema);
+export const AssignmentSetModel = model("AssignmentSets", AssignmentSetSchema);
 
 

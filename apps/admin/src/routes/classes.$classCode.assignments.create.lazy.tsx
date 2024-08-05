@@ -1,6 +1,7 @@
-import { Button, DialogContainer, Input, TextEditor } from '@repo/ui'
+import { Button, DialogContainer, FileUploader, Input, TextEditor } from '@repo/ui'
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { Formik, Form } from 'formik'
+import { Formik, Form, FormikProps } from 'formik'
+import { XMarkIcon } from   '@heroicons/react/24/outline'
 import {$generateHtmlFromNodes} from '@lexical/html';
 import * as Yup from 'yup'
 import { useRef, useState } from 'react';
@@ -49,15 +50,16 @@ function CreateAssignment(){
 
         abstractUnauthenticatedRequest(
             "post",
-            `/api/v1/classes/${classCode}/assignments`,
+            `/api/v1/classes/${classCode}/assignments?isId=false`,
             {
                 title: values.title,
                 instructions: values.instructions,
+                accessList,
                 maxScore: values.maxScore,
                 isDraft: false,
-                startDate: values.startDate,
-                endDate: values.endDate,
-                resources: filesHook.files,
+                startDate: new Date(values.startDate).toISOString(),
+                endDate: new Date(values.endDate).toISOString(),
+                resources: filesHook.files.map(f => f._id),
                 authToken: _getToken(),
             },
             {},
@@ -66,9 +68,10 @@ function CreateAssignment(){
                 onSuccess: (data)=>{ 
                     toast.success("Assignment created successfully")
                     toggleManager.reset('additional-dialog')
-                    navigate({
+                    setTimeout(() => {navigate({
                         to: `/classes/${classCode}/assignments`
-                    })
+                    }) },
+                    1000)
                 },
                 onFailure: (err) =>{ toast.error(`${err.msg}`) },
                 finally: ()=>{ toggleManager.reset('create-is-loading')},
@@ -86,15 +89,16 @@ function CreateAssignment(){
 
         abstractUnauthenticatedRequest(
             "post",
-            `/api/v1/classes/${classCode}/assignments`,
+            `/api/v1/classes/${classCode}/assignments?isId=false`,
             {
                 title: values.title,
                 instructions: values.instructions,
                 maxScore: values.maxScore,
-                isDraft: false,
+                isDraft: true,
+                accessList,
                 startDate: values.startDate,
                 endDate: values.endDate,
-                resources: filesHook.files,
+                resources: filesHook.files.map(f => f._id),
                 authToken: _getToken(),
             },
             {},
@@ -108,7 +112,7 @@ function CreateAssignment(){
 
     }
 
-    function AdditionalDataDialog({ form }: {form: any}){
+    function AdditionalDataDialog({ form }: {form: FormikProps<any>}){
 
         function toggleInAccessList(user: IUserDoc){
             if(accessList.includes(`${user._id}`)){
@@ -131,7 +135,7 @@ function CreateAssignment(){
                     description='Enter the more details to create the assignment'
                 >
                     <div className='flex flex-col gap-y-6'>
-                        <div className='flex gap-4 w-full'>
+                        <div className='flex flex-col sm:flex-row  gap-6 sm:gap-4 w-full'>
                             <Input name='startDate' label='Open Date' type='datetime-local' hasValidation />
                             <Input name='endDate' label='Close Date' type='datetime-local' hasValidation />
                         </div>
@@ -139,17 +143,15 @@ function CreateAssignment(){
                         <Input name='maxScore' label='Maximum Score' step={1} type='number' hasValidation />
 
                         <div className='flex flex-col gap-1'>
-                            <div className='w-full flex justify-between items-center'>
-                                <p className='text-blue-900' >Student access</p>
+                            <div className='w-full flex flex-col gap-2 sm:flex-row justify-between sm:items-center'>
+                                <p className='text-blue-700' >Student access</p>
                                 <span className='flex gap-1 items-center'>
-                                    <label htmlFor='select-all' className='mb-[2px]'>{ accessList.length !== students.length? "S": "Uns" }elect all students</label>
-                                    <input type='checkbox' name='select-all' onChange={(e) =>{
-                                        const value = e.target.value
-                                        console.log(value)
-                                        if(value == "on"){
-                                            setAccessList(students.map(s => `${s._id}`))
-                                        } else {
+                                    <label htmlFor='select-all' className='mb-[2px] text-[0.875rem] font-light'>Select all students</label>
+                                    <input type='checkbox' checked={accessList.length == students.length} name='select-all' onChange={(e) => {
+                                        if(accessList.length == students.length){
                                             setAccessList([])
+                                        } else {
+                                            setAccessList(students.map(s => `${s._id}`))
                                         }
                                     }}/>
                                 </span>
@@ -181,22 +183,25 @@ function CreateAssignment(){
                                 }
                             </div>
                         </div>
-                        <div className='flex w-full justify-end gap-4 mt-4'>
-                            <Button className='!w-[130px]' 
+                        <div className='flex flex-col-reverse sm:flex-row w-full sm:justify-end gap-2 sm:gap-4 mt-4'>
+                            <Button className='w-full sm:!w-[130px]' 
                                 variant='neutral' 
                                 isDisabled={toggleManager.get('create-is-loading')} type='button' 
                                 onClick={()=>{ toggleManager.reset('additional-dialog') }}
                             >Close</Button>
-                            <Button className='!w-[130px]' 
+                            <Button className='w-full sm:!w-[130px]' 
                                 variant='outline' 
                                 isDisabled={!form.isValid} 
                                 isLoading={toggleManager.get('create-is-loading')} type='button' 
                                 onClick={()=>{ saveAsDraft(form.values)}}
                             >Save as Draft</Button>
-                            <Button className='!w-[130px]' 
+                            <Button className='w-full sm:!w-[130px]' 
                                 isDisabled={!form.isValid} 
                                 isLoading={toggleManager.get('create-is-loading')} 
-                                onClick={form.submitForm}
+                                onClick={()=> {
+                                    console.log(!form.isValid, form.errors)
+                                    form.handleSubmit()
+                                }}
                             >Save</Button>
                         </div>
                     </div>
@@ -230,19 +235,38 @@ function CreateAssignment(){
                                             <div className='flex flex-col mt-1 flex-1'>
                                                 <TextEditor 
                                                     hasValidation 
-                                                    name="content" 
+                                                    name="instructions" 
                                                     editorRef={editorRef} 
                                                     onChange={(_, editor) => {
                                                         editor.update(() => {
-                                                            form.setFieldValue("content", $generateHtmlFromNodes(editor, null))
+                                                            form.setFieldValue("instructions", $generateHtmlFromNodes(editor, null))
                                                         })
                                                     }} 
                                                 />
                                             </div>
                                         </Form>
                                     </div>
-                                    <div className='flex h-16 flex-shrink-0 justify-end items-center w-full gap-4'>
-                                        <Button className='!w-[130px]' 
+                                    <div className='flex flex-col sm:flex-row h-28 sm:h-16 flex-shrink-0 justify-end items-center w-full gap-2'>
+                                        <div className='flex-1 w-full sm:w-fit flex-shrink-0 flex gap-2 flex-row-reverse justify-between items-center'>
+                                                <div className='flex-shrink-0'>
+                                                    <FileUploader buttonVariant='outline' filesHook={filesHook} />
+                                                </div>
+                                                <div className='flex flex-shrink-0 gap-2 overflow-x-auto'>
+                                                { filesHook.files.map((resource, idx) => {
+                                                        return (
+                                                            <a className='flex max-w-[200px] justify-between gap-2 p-1 rounded-sm bg-blue-600/20' target='_blank' href={resource.link} key={idx}>
+                                                                <small className='truncate font-extralight'>{resource.title}</small>
+                                                                <XMarkIcon className="w-3 flex-shrink-0 text-blue-700" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); filesHook.removeSpecificFile(resource.id)}} />
+                                                            </a>
+                                                        )
+                                                    })    
+                                                }
+                                                { filesHook.files.length == 0 && 
+                                                        <p className='text-blue-700'>No resources uploaded</p>
+                                                }
+                                                </div>
+                                        </div>
+                                        <Button className='!w-[130px] flex-shrink-0' 
                                             onClick={()=>{ toggleManager.toggle('additional-dialog')}}
                                         >Continue</Button>
                                     </div>

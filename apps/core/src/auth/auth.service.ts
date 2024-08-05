@@ -25,7 +25,19 @@ export class AuthService {
             }
             const token = this.jwt.signToken(user)
             return ServerSuccessResponse({
-                user: user,
+                user: {
+                    _id: user._id,
+                    id: user.id,
+                    classes: user.classes,
+                    gender: user.gender,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    otherNames: user.otherNames,
+                    role: user.role,
+                    modeOfClass: user.modeOfClass,
+                    completedLessons: user.completedLessons,
+                },
                 access_token: token,
             })
         } catch (err) {

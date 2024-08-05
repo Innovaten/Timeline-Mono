@@ -1,4 +1,4 @@
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc  } from "@repo/models";
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc, IAssignmentDoc  } from "@repo/models";
 
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
@@ -213,17 +213,23 @@ export class ClassesService {
         return modules
     }
 
-    async createAssignment(classId: string, assignmentData: CreateAssigmentDto, user: IUserDoc){
+    async createAssignment(classSpecifier: string, isId: boolean, assignmentData: CreateAssigmentDto, user: IUserDoc){
 
         const timestamp = new Date()
-        const relatedClass = await ClassModel.findById(classId).populate<{ assignmentSet: IAssignmentSetDoc }>("assignmentSet")
-
+        const filter = isId ? { _id: new Types.ObjectId(classSpecifier)} : { code: classSpecifier }
+        const relatedClass = await ClassModel.findOne(filter)
+        
         if(!relatedClass){
-            throw new BadRequestException()
+            throw new BadRequestException("Related class could not be found")
         }
 
-        if(user.role !== "SUDO" || !relatedClass.administrators.map(id => id.toString()).includes(`${user._id}`) ){
-            throw new ForbiddenException()
+        const relatedAssignmentSet = await AssignmentSetModel.findById(relatedClass.assignmentSet);
+        if(!relatedAssignmentSet){
+            throw new BadRequestException("Related assignment set could not be found")
+        }
+
+        if(user.role !== "SUDO" && !relatedClass.administrators.map(id => id.toString()).includes(`${user._id}`) ){
+            throw new ForbiddenException("You are not allowed to perform this action")
         }
 
         const newAssignment = new AssignmentModel({
@@ -233,7 +239,7 @@ export class ClassesService {
             instructions: assignmentData.instructions,
             maxScore: assignmentData.maxScore,
 
-            assignmentSet: relatedClass.assignmentSet._id,
+            assignmentSet: relatedClass.assignmentSet,
             
             class: relatedClass.id,
             classCode: relatedClass.code,
@@ -241,8 +247,8 @@ export class ClassesService {
             resources: assignmentData.resources.map( a => new Types.ObjectId(a)),
             accessList: assignmentData.accessList.map( a => new Types.ObjectId(a)),
 
-            startDate: assignmentData.startDate,
-            endDate: assignmentData.endDate,
+            startDate: new Date(assignmentData.startDate),
+            endDate: new Date(assignmentData.endDate),
             
             meta: {
                 isDeleted: false,
@@ -253,15 +259,54 @@ export class ClassesService {
             updatedBy: new Types.ObjectId(`${user._id}`),
         })
 
-        relatedClass.assignmentSet.assignments.push(newAssignment._id)
-        relatedClass.assignmentSet.updatedAt = timestamp;
-        relatedClass.assignmentSet.updatedBy = new Types.ObjectId(`${user._id}`)
+
+        relatedAssignmentSet.assignments.push(newAssignment._id)
+        relatedAssignmentSet.updatedAt = timestamp;
+        relatedAssignmentSet.updatedBy = new Types.ObjectId(`${user._id}`)
 
         relatedClass.updatedAt = timestamp;
         relatedClass.updatedBy = new Types.ObjectId(`${user._id}`) 
         
         // create event
+
         await newAssignment.save()
         await relatedClass.save()
+        await relatedAssignmentSet.save()
+
+        return newAssignment;
+    }
+
+    async getClassAssignments(
+        limit: number = 50, 
+        offset: number = 0, 
+        filter: Record<string, any> = {},
+        specifier: string, 
+        isId: boolean, 
+        user: IUserDoc){
+
+        const classFilter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
+        const relatedClass = await ClassModel.findOne(classFilter).populate<{ assignmentSet?: { assignments?: IAssignmentDoc[] } }>({
+            path: "assignmentSet",
+            populate: {
+                path: "assignments",
+                populate: {
+                    path: "createdBy updatedBy"
+                }
+            }
+        }).lean()
+
+        if(!relatedClass){
+            throw new NotFoundException("Specified class could not be found")
+        }
+
+        if (
+            user.role != "SUDO" && 
+            !relatedClass.administrators.map(a => a.toString()).includes(`${user._id}`) &&
+            !relatedClass.students.map(a => a.toString()).includes(`${user._id}`)
+        ){
+            throw new ForbiddenException("You are not authorized to make this request")
+        }
+        
+        return relatedClass.assignmentSet?.assignments?.filter(a => a.meta.isDeleted !== true).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) ?? [];
     }
 }

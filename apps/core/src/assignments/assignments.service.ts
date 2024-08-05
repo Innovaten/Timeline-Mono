@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { AssignmentModel, IAssignmentSetDoc, IClassDoc, IUserDoc } from '@repo/models';
+import { AssignmentModel, AssignmentSetModel, IAssignmentSetDoc, IClassDoc, IUserDoc } from '@repo/models';
 import { Types } from 'mongoose';
 import { UpdateAssignmentDto } from './assignments.dto';
 
@@ -12,14 +12,14 @@ export class AssignmentsService {
         filter: Record<string, any> = {}
     ) {
 
-        const result = await AssignmentModel.find(
-            {
-                ...filter,
-                meta: {
-                    isDeleted: false
-                }
-            }
-        )
+        const finalFilter = {
+            ...filter,
+            "meta.isDeleted": false
+        }
+
+        console.log(finalFilter)
+
+        const result = await AssignmentModel.find(finalFilter)
         .limit(limit)
         .skip(offset)
         .populate("assignmentSet createdBy updatedBy resources")
@@ -29,7 +29,10 @@ export class AssignmentsService {
     }
 
     async getCount(filter: Record<string, any> = {}){
-        return AssignmentModel.countDocuments({ ...filter, meta: { isDeleted: false }})
+        return AssignmentModel.countDocuments({
+            ...filter,
+            "meta.isDeleted": false
+        })
     }
 
     async getAssignment(specifier: string, isId: boolean, user: IUserDoc){
@@ -40,12 +43,11 @@ export class AssignmentsService {
         .populate<{ class: IClassDoc }>("assignmentSet class createdBy updatedBy resources")
         .lean()
 
-
         if(!result){
-            return null;
+            throw new NotFoundException("Assignment could not be found");
         }
 
-        if(user.role == "SUDO" || ( user.role == "ADMIN" && result.class.administrators.map(id => id.toString()).includes(`${user._id}`) )){
+        if(user.role !== "SUDO" && ( user.role == "ADMIN" && result.class.administrators.map(id => id.toString()).includes(`${user._id}`) )){
            return result;
         }
 
@@ -61,7 +63,7 @@ export class AssignmentsService {
 
     async updateAssignment(id: string, updateData: UpdateAssignmentDto, user: IUserDoc){
 
-        const assignment = await AssignmentModel.findById(id).populate<{ class: IClassDoc, assignmentSet: IAssignmentSetDoc }>("assignment class");
+        const assignment = await AssignmentModel.findById(id).populate<{ class: IClassDoc, assignmentSet: IAssignmentSetDoc }>("assignmentSet class");
 
         if(!assignment){
             throw new NotFoundException()
@@ -104,7 +106,9 @@ export class AssignmentsService {
             throw new NotFoundException();
         }
 
-        if(user.role !== "SUDO" || !result.class.administrators.map(id => id.toString()).includes(`${user._id}`) ){
+        if(
+            user.role !== "SUDO" && 
+            !result.class.administrators.map(id => id.toString()).includes(`${user._id}`) ){
            throw new ForbiddenException()
         }
 
@@ -120,7 +124,7 @@ export class AssignmentsService {
 
     async deleteAssignment(id: string, user: IUserDoc){
 
-        const assignment = await AssignmentModel.findById(id).populate<{ class: IClassDoc, assignmentSet: IAssignmentSetDoc }>("assignment class");
+        const assignment = await AssignmentModel.findById(id).populate<{ class: IClassDoc, assignmentSet: IAssignmentSetDoc }>("assignmentSet class");
 
         if(!assignment){
             throw new NotFoundException()
@@ -130,12 +134,19 @@ export class AssignmentsService {
             throw new ForbiddenException()
         }
 
+        const relatedAssignmentSet = await AssignmentSetModel.findById(assignment.assignmentSet._id);
+
+        if(!relatedAssignmentSet){
+            throw new NotFoundException("Could not find related assignment set")
+        }
+
         assignment.meta.isDeleted = true;
         assignment.updatedBy =  new Types.ObjectId(`${user._id}`)
 
-        assignment.assignmentSet.assignments = assignment.assignmentSet.assignments.filter( a => a._id.toString() != id);
-        assignment.assignmentSet.updatedBy = new Types.ObjectId(`${user._id}`);
+        relatedAssignmentSet.assignments = assignment.assignmentSet.assignments.filter( a => a._id.toString() != id);
+        relatedAssignmentSet.updatedBy = new Types.ObjectId(`${user._id}`);
 
+        await relatedAssignmentSet.save()
         await assignment.save();
 
         return assignment;

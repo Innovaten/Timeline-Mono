@@ -72,7 +72,7 @@ export class AssignmentsController {
     @Get(":specifier/publish")
     async publisjAssignment(
         @Param('specifier') specifier: string,
-        @Query('isID') isId: string,
+        @Query('isId') isId: string,
         @Req() req: any
     ) {
         try {
@@ -89,7 +89,6 @@ export class AssignmentsController {
             return ServerSuccessResponse(assignment)
         
         } catch(err: any) {
-            console.log(err)
             return ServerErrorResponse(
                 new Error(`${ err.message ? err.message : err }`),
                 500
@@ -103,7 +102,7 @@ export class AssignmentsController {
     @Get(":specifier")
     async getAssignment(
         @Param('specifier') specifier: string,
-        @Query('isID') isId: string,
+        @Query('isId') isId: string,
         @Req() req: any
     ) {
         try {
@@ -124,7 +123,6 @@ export class AssignmentsController {
             return ServerSuccessResponse(assignment)
         
         } catch(err: any) {
-            console.log(err)
             return ServerErrorResponse(
                 new Error(`${ err.message ? err.message : err }`),
                 500
@@ -157,7 +155,6 @@ export class AssignmentsController {
             return ServerSuccessResponse(updatedAssignment)
 
         } catch(err: any) {
-            console.log(err)
             return ServerErrorResponse(
                 new Error(`${ err.message ? err.message : err }`),
                 500
@@ -170,7 +167,6 @@ export class AssignmentsController {
     @Delete(":specifier")
     async deleteAssignment(
         @Param('specifier') specifier: string,
-        @Query('isID') isId: string,
         @Req() req: any
     ) {
 
@@ -182,22 +178,15 @@ export class AssignmentsController {
                 throw new UnauthorizedException()
             }
             
-            const IsId = isId === "true";
-            const assignment = await this.service.getAssignment(specifier, IsId, user);
-
-            if(!assignment){
-                throw new NotFoundException()
-            }
+            const assignment = await this.service.deleteAssignment(specifier, user);
 
             return ServerSuccessResponse(assignment)
         
         } catch(err: any) {
-            console.log(err)
             return ServerErrorResponse(
                 new Error(`${ err.message ? err.message : err }`),
                 500
             )
-
         }
     }
 

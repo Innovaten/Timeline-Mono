@@ -1,5 +1,5 @@
 import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router'
-import { _getToken, _setUser } from '@repo/utils';
+import { _getToken, _setTokenExpiration, _setUser } from '@repo/utils';
 import { Input, Button } from '@repo/ui'
 import {  Form, Formik } from 'formik'
 import * as Yup from 'yup'
@@ -11,6 +11,7 @@ import { useLMSContext } from '../app'
 import { IUserDoc } from '@repo/models'
 import { HydratedDocument } from 'mongoose'
 import OtpInput from 'react-otp-input'
+import dayjs from 'dayjs';
 YupPassword(Yup);
 
 
@@ -112,6 +113,9 @@ function Login({ componentRef, pages }: LoginProps){
               const user: HydratedDocument<IUserDoc> = res.data.data.user;
               _setUser(user)
               setUser(user);
+
+              _setTokenExpiration(dayjs().add(3, 'hours').toISOString())
+
               router.navigate({ 
                 ...( searchParams.destination == '' ?  {to: '/' } : { to: searchParams.destination })
                 })

@@ -83,6 +83,6 @@ export const AssignmentSchema = new Schema<IAssignment>({
 }, { timestamps: true })
 
 
-export const AssignmentModel = model("Assignment", AssignmentSchema);
+export const AssignmentModel = model("Assignments", AssignmentSchema);
 
 

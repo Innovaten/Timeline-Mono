@@ -1,4 +1,4 @@
-import { _getToken, _setToken, _clearToken, _getUser, _setUser } from "./auth-token";
+import { _getToken, _setToken, _clearTokens, _getUser, _setUser, _setTokenExpiration, _getTokenExpiration } from "./auth-token";
 import { cn } from "./cn";
 
 import { useLoading, useDialog, useMovileNavigation, useCountdown, useFileUploader, useToggleManager } from "./hooks";
@@ -11,7 +11,11 @@ export {
   // Auth Tokens
   _getToken,
   _setToken,
-  _clearToken,
+  _clearTokens,
+
+  // Token expiration
+  _setTokenExpiration,
+  _getTokenExpiration,
 
   // Session user object
   _getUser,

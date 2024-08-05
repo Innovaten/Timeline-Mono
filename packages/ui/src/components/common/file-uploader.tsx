@@ -47,9 +47,9 @@ export function FileUploader({ filesHook, buttonVariant }: FileUploaderProps) {
         );
 
     useUppyEvent(uppy, 'upload-success', (file, response) => {
-        if(response?.body?.success){
-            console.log(response)
-            filesHook.addToFiles(response!.body!.data)
+        if(response?.body){
+            // @ts-ignore
+            filesHook.addToFiles(response.body)
         }
     })
     

@@ -284,9 +284,10 @@ export class ClassesController {
         }
     }
 
-    @Post(":_id/assignments")
+    @Post(":specifier/assignments")
     async createAssignment(
-        @Param('_id') classId: string, 
+        @Param('specifier') specifier: string,
+        @Query("isId") isId: string = "true", 
         @Body() assignmentData: CreateAssigmentDto
     ) {
         try {
@@ -300,7 +301,8 @@ export class ClassesController {
                 throw new UnauthorizedException();
             }
 
-            const newAssignment = await this.service.createAssignment(classId, assignmentData, user);
+            const IsId = isId === "true"
+            const newAssignment = await this.service.createAssignment(specifier, IsId, assignmentData, user);
 
             return ServerSuccessResponse(newAssignment);
 
@@ -312,6 +314,46 @@ export class ClassesController {
         }
     }
 
+    @UseGuards(AuthGuard)
+    @Get(":specifier/assignments")
+    async getClassAssignments( 
+        @Param("specifier") specifier: string,
+        @Query('isId') isId: string = "true",
+        @Request() req: Request,
+        @Query('limit') rawLimit: string,
+        @Query('offset') rawOffset: string,
+        @Query('filter') rawFilter: string,
+    ) {
+
+        try {
+            // @ts-ignore
+            const user = req["user"]
+
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+            let limit;
+            let offset;
+    
+            if(rawLimit){
+                limit = parseInt(rawLimit);
+            }
+    
+            if(rawOffset){
+                offset = parseInt(rawOffset)
+            } 
+          
+            const assignments = await this.service.getClassAssignments(limit, offset, filter, specifier, isId === "true", user)
+            const count = await this.service.getCount(filter);
+
+            return ServerSuccessResponse({
+                assignments,
+                count,
+            })
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+
+    }
 
 
 

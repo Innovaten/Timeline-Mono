@@ -2,7 +2,7 @@ import { Button, DialogContainer, FileUploader } from '@repo/ui';
 import { _getToken, abstractAuthenticatedRequest, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon, ShareIcon } from '@heroicons/react/24/outline';
-import { useCompositeFilterFlag, useAssignments, useSpecificEntity, useAssignmentStateFilter } from '../hooks';
+import { useCompositeFilterFlag, useSpecificEntity, useAssignmentStateFilter, useAssignmentsByClass } from '../hooks';
 import dayjs from 'dayjs';
 import { toast } from 'sonner';
 import { IAssignmentDoc } from '@repo/models';
@@ -38,7 +38,7 @@ function ClassAssignments(){
   
   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ toggleManager.get('refresh'), filterChangedFlag ])
 
-  const { isLoading: assignmentsIsLoading, assignments, count: assignmentsCount } = useAssignments(compositeFilterFlag, 50, 0, filter)
+  const { isLoading: assignmentsIsLoading, assignments, count: assignmentsCount } = useAssignmentsByClass(compositeFilterFlag, 50, 0, filter, classCode, false)
     
   const { entity: selectedAssignment, setSelected: setSelectedAssignment, resetSelected} = useSpecificEntity<IAssignmentDoc>();
 
@@ -50,7 +50,7 @@ function ClassAssignments(){
     
         abstractAuthenticatedRequest(
           "delete",
-          `/api/v1/assignments/${selectedAssignment._id}?isId=true`,
+          `/api/v1/assignments/${selectedAssignment._id}`,
           {},
           {},
           {
@@ -179,6 +179,7 @@ function ClassAssignments(){
                                 <span className='flex-1 font-normal truncate'>TITLE</span>
                             </div>
                             <div className='flex gap-4 items-center font-light'>
+                                <span className='w-[150px] hidden sm:flex justify-end'>STATUS</span>
                                 <span className='w-[150px] hidden sm:flex justify-end'>AUTHOR</span>
                                 <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
                                 <span className='w-[120px] flex justify-end'>ACTIONS</span>
@@ -197,11 +198,12 @@ function ClassAssignments(){
                             !assignmentsIsLoading && assignments?.length != 0 && assignments.map((assignment, idx) => {
                                 return (
                                 <Link to={`/classes/${classCode}/assignments/${assignment.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
-                                    <div className='flex items-center gap-4'>
+                                    <div className='flex items-center gap-4 truncate'>
                                         <span className='flex-1 font-normal truncate'>{assignment.title}</span>
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{assignment.createdBy.firstName + " " + assignment.createdBy.lastName}</span>
+                                        <span className='w-[150px] hidden sm:flex justify-end'>{assignment.meta.isDraft ? "Drafted": "Public"}</span>
+                                        <span className='w-[150px] hidden sm:flex justify-end'>{(assignment.createdBy?.firstName ?? "N") + " " + (assignment.createdBy?.lastName ?? "A")}</span>
                                         <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(assignment.createdAt).format("HH:mm - DD/MM/YY")}</span>
                                         <span className='w-[120px] flex gap-2 justify-end'>
                                             <Link to={`/classes/${classCode}/assignments/${assignment.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              

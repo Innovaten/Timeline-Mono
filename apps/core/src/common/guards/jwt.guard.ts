@@ -16,7 +16,8 @@ import { JwtService } from '../services/jwt.service';
         const user = await this.jwtService.validateToken(token);
         if(!user) return false;
         request['user'] = user;
-      } catch {
+      } catch (err) {
+
         return false;
       }
       return true;

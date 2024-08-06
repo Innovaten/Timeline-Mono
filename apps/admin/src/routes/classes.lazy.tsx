@@ -525,10 +525,11 @@ function Classes(){
                         !classesIsLoading && classes && classes.length != 0 && classes.map((tClass, idx) => {
                             return (
                             // Onclick trigger a dialog
-                            <div 
-                                key={idx} 
-                                className = 'w-full text-blue-700 cursor-pointer py-2 px-1 sm:px-3 bg-white border-blue-700/40 border-b-[0.5px] flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
-                                >
+                            <Link 
+                              to={`/classes/${tClass.code}`}
+                              key={idx} 
+                              className = 'w-full text-blue-700 cursor-pointer py-2 px-1 sm:px-3 bg-white border-blue-700/40 border-b-[0.5px] flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
+                            >
                                 <div className='flex items-center gap-4 truncate'>
                                     <h5 className='flex-1 font-normal truncate'>{tClass.name}</h5>
                                 </div>
@@ -537,19 +538,16 @@ function Classes(){
                                   { user!.role == "SUDO" && <span className='w-[120px] hidden sm:flex justify-end'>{tClass.administrators.length} Admin(s)</span> }
                                   <span className='w-[100px] hidden sm:flex justify-end'>{dayjs(tClass.updatedAt).format("DD/MM/YY")}</span>
                                   <div className='w-[120px] flex justify-end gap-2'>
-                                        <Link to={`/classes/${tClass.code}`}  className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' >
-                                            <EyeIcon className='w-4 h-4' />
-                                        </Link>
                                         { 
                                             user!.role == "SUDO" && 
                                             <> 
-                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={()=>{ setSelectedClass(tClass), toggleManager.toggle('assign-dialog')}}>              
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e)=>{ e.preventDefault(); setSelectedClass(tClass), toggleManager.toggle('assign-dialog')}}>              
                                                     <UserPlusIcon className='w-4 h-4' />
                                                 </span>
-                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={()=>{ setSelectedClass(tClass), toggleManager.toggle('update-dialog')}}>              
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e)=>{ e.preventDefault(); setSelectedClass(tClass), toggleManager.toggle('update-dialog')}}>              
                                                     <PencilIcon className='w-4 h-4' />
                                                 </span>
-                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedClass(tClass); toggleManager.toggle('delete-dialog') }}>
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); setSelectedClass(tClass); toggleManager.toggle('delete-dialog') }}>
                                                     <TrashIcon className='w-4 h-4' />
                                                 </span>
                                             </> 
@@ -558,7 +556,7 @@ function Classes(){
                             
                                 </div>
 
-                            </div>
+                            </Link>
                             )
                         })
                         }

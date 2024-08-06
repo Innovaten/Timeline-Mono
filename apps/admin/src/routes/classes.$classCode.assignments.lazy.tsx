@@ -1,5 +1,5 @@
 import { Button, DialogContainer, FileUploader } from '@repo/ui';
-import { _getToken, abstractAuthenticatedRequest, useToggleManager } from '@repo/utils'
+import { _getToken, abstractAuthenticatedRequest, cn, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { useCompositeFilterFlag, useSpecificEntity, useAssignmentStateFilter, useAssignmentsByClass } from '../hooks';
@@ -118,7 +118,7 @@ function ClassAssignments(){
             >
                 <div className='flex justify-end gap-4 mt-8'>
                     <Button className='!h-[35px] px-2' variant='neutral' isDisabled={toggleManager.get('publish-is-loading')} onClick={()=> { toggleManager.reset('publish-dialog'); resetSelected() }}>Close</Button>
-                    <Button className='!h-[35px] px-2' variant='danger' isLoading={toggleManager.get('publish-is-loading')} onClick={handlePublishAssignment}>Publish assignment</Button>
+                    <Button className='!h-[35px] px-2' isLoading={toggleManager.get('publish-is-loading')} onClick={handlePublishAssignment}>Publish assignment</Button>
                 </div>
             </DialogContainer>
         </>
@@ -181,7 +181,7 @@ function ClassAssignments(){
                             <div className='flex gap-4 items-center font-light'>
                                 <span className='w-[150px] hidden sm:flex justify-end'>STATUS</span>
                                 <span className='w-[150px] hidden sm:flex justify-end'>AUTHOR</span>
-                                <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
+                                <span className='w-[120px] hidden sm:flex justify-end'>DATE CREATED</span>
                                 <span className='w-[120px] flex justify-end'>ACTIONS</span>
                             </div>
                         </div>
@@ -202,18 +202,27 @@ function ClassAssignments(){
                                         <span className='flex-1 font-normal truncate'>{assignment.title}</span>
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{assignment.meta.isDraft ? "Drafted": "Public"}</span>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{(assignment.createdBy?.firstName ?? "N") + " " + (assignment.createdBy?.lastName ?? "A")}</span>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(assignment.createdAt).format("HH:mm - DD/MM/YY")}</span>
+                                        <span className='w-[100px] flex items-center gap-2 justify-end'>
+                                            {assignment.meta.isDraft ? "Draft" : "Public"}
+                                            <span className={cn(
+                                                "w-2 h-2 rounded-full border-[1px] ",
+                                                assignment.meta.isDraft ? "bg-yellow-600 border-yellow-600" : "bg-green-600 border-green-600",
+                                            )}></span>
+                                        </span>
+                                        <span className='w-[150px] hidden sm:flex justify-end truncate'>{(assignment.createdBy?.firstName ?? "N") + " " + (assignment.createdBy?.lastName ?? "A")}</span>
+                                        <span className='w-[120px] hidden sm:flex justify-end'>{dayjs(assignment.createdAt).format("HH:mm - DD/MM/YY")}</span>
                                         <span className='w-[120px] flex gap-2 justify-end'>
+                                            {
+                                                assignment.meta.isDraft &&
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAssignment(assignment); toggleManager.toggle('publish-dialog') }}>
+                                                    <ShareIcon className='w-4 h-4' />
+                                                </span>
+                                            }
                                             <Link to={`/classes/${classCode}/assignments/${assignment.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
                                                 <PencilIcon className='w-4 h-4' />
                                             </Link>
                                             <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAssignment(assignment); toggleManager.toggle('delete-dialog') }}>
                                                 <TrashIcon className='w-4 h-4' />
-                                            </span>
-                                            <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAssignment(assignment); toggleManager.toggle('publish-dialog') }}>
-                                                <ShareIcon className='w-4 h-4' />
                                             </span>
                                         </span>
                                     </div>

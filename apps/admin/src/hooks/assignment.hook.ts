@@ -3,6 +3,7 @@ import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } fr
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLMSContext } from "../app";
+import { IResourceDoc } from "@repo/models";
 
 
 export function useAssignments(refreshFlag: boolean = true, limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
@@ -46,9 +47,9 @@ export function useAssignments(refreshFlag: boolean = true, limit: number = 10, 
 
 }
 
-export function useAssignment(refreshFlag: boolean = true, specifier: string, isId:boolean = true){
+export function useAssignment(refreshFlag: boolean = true, specifier: string, isId:boolean =true){
 
-    const [ assignment, setAssignment ] = useState<IAssignmentDoc & { createdBy?: IUserDoc, updatedBy?:IUserDoc } | null>(null)
+    const [ assignment, setAssignment ] = useState< Omit<IAssignmentDoc, "createdBy" | "updatedBy" | "resources"> & { resources?: IResourceDoc[], createdBy?: IUserDoc, updatedBy?: IUserDoc }| null>(null)
     const { isLoading, toggleLoading, resetLoading } = useLoading()
 
     useEffect( () => {

@@ -110,7 +110,7 @@ export class AssignmentsController {
             const user = req.user as IUserDoc | null
 
             if(!user){
-                throw new UnauthorizedException()
+                throw new UnauthorizedException("Unauthenticated Request")
             }
             
             const IsId = isId === "true";

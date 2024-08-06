@@ -53,7 +53,7 @@ export class AssignmentsService {
 
         const stringAccessList =  result.accessList.map( _id => _id.toString())
         
-        if(!stringAccessList.includes(`${user._id}`)){
+        if(user.role !== "SUDO" && !stringAccessList.includes(`${user._id}`)){
             throw new ForbiddenException()
         }
 

@@ -257,6 +257,8 @@ export class ClassesService {
 
             createdBy: new Types.ObjectId(`${user._id}`),
             updatedBy: new Types.ObjectId(`${user._id}`),
+            createdAt: timestamp,
+            updatedAt: timestamp
         })
 
 

@@ -1,7 +1,8 @@
 import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { AssignmentModel, AssignmentSetModel, IAssignmentSetDoc, IClassDoc, IUserDoc } from '@repo/models';
+import { AssignmentModel, AssignmentSetModel, AssignmentSubmissionModel, IAssignmentSetDoc, IAssignmentSubmissionDoc, IClassDoc, IUserDoc } from '@repo/models';
 import { Types } from 'mongoose';
 import { UpdateAssignmentDto } from './assignments.dto';
+import { Roles } from '../common/enums/roles.enum';
 
 @Injectable()
 export class AssignmentsService {
@@ -58,6 +59,64 @@ export class AssignmentsService {
         }
 
         return result;
+
+    }
+
+    async listAssignmentSubmissionsByAssignment(
+        specifier: string,
+        isId: boolean,
+        user: IUserDoc,
+        limit: number = 10,
+        offset: number = 10,
+        filter: Record<string, any> = {},
+    ): Promise<IAssignmentSubmissionDoc[]>{
+
+        const specifierFilter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
+
+        const relatedAssignment = await AssignmentModel.findOne(specifierFilter).populate<{ class: IClassDoc }>("class");
+
+        if(!relatedAssignment){
+            throw new NotFoundException(`Specified assignment${ isId ? "" : " #" + specifier} could not be found`)
+        }
+
+        if(!relatedAssignment.class._id){
+            throw new Error(`Specified class ${relatedAssignment.classCode} could not be found`)
+        }
+
+
+        if(
+            user.role != Roles.SUDO && 
+            !relatedAssignment.class.administrators.map(a => a._id.toString()).includes(`${user._id}`)
+        ){
+            throw new ForbiddenException("You are not authorized to access this information")
+        }
+
+        const finalFilter = {
+            ...filter,
+            assignmentCode: relatedAssignment.code,
+            "meta.isDeleted": false,
+        }
+
+        const assignmentSubmissions = await AssignmentSubmissionModel
+            .find(finalFilter)
+            .limit(limit)
+            .sort({ createdAt: -1 })
+            .skip(offset)
+            .populate("submittedBy")
+
+        return assignmentSubmissions;
+
+    }
+
+    async getAssignmentSubmissionsCount(specifier: string, isId: boolean, filter: Record<string, any> = {}){
+        
+        const finalFilter = {
+            ...filter,
+            ...( isId ? { assignment: new Types.ObjectId(specifier) } : { assignmentCode: specifier }),
+            "meta.isDeleted": false,
+        }
+
+        return AssignmentSubmissionModel.countDocuments(finalFilter);
 
     }
 

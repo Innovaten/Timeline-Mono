@@ -70,7 +70,7 @@ export class AssignmentsController {
 
     @UseGuards(AuthGuard)
     @Get(":specifier/publish")
-    async publisjAssignment(
+    async publishAssignment(
         @Param('specifier') specifier: string,
         @Query('isId') isId: string,
         @Req() req: any
@@ -97,6 +97,52 @@ export class AssignmentsController {
         }
     }
 
+    @UseGuards(AuthGuard)
+    @Get(':specifier/submissions')
+    async listAssignmentSubmissionsByAssignment(
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+        @Query('limit') rawLimit: string,
+        @Query('offset') rawOffset: string,
+        @Query('filter') rawFilter: string,
+        @Req() req: any
+    ){  
+        try {
+
+            const user = req.user as IUserDoc
+            if(user.role == Roles.STUDENT){
+                throw new ForbiddenException()
+            }
+
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+            let limit;
+            let offset;
+    
+            if(rawLimit){
+                limit = parseInt(rawLimit);
+            }
+    
+            if(rawOffset){
+                offset = parseInt(rawOffset)
+            } 
+
+            const assignmentSubmissions = await this.service.listAssignmentSubmissionsByAssignment(specifier, isId === "true", user, limit, offset, filter);
+            const count = await this.service.getAssignmentSubmissionsCount(specifier, isId === "true", filter);
+
+            return ServerSuccessResponse({
+                assignmentSubmissions,
+                count
+            })
+
+        } catch(err: any) {
+            return ServerErrorResponse(
+                new Error(`${ err.message ? err.message : err }`),
+                500
+            )
+
+        }
+
+    }
 
     @UseGuards(AuthGuard)
     @Get(":specifier")

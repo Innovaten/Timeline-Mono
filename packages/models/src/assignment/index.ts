@@ -46,6 +46,12 @@ export const AssignmentSchema = new Schema<IAssignment>({
         required: true,
     },
 
+    assignmentSubmissionSet: {
+        type: SchemaTypes.ObjectId,
+        ref: "AssignmentSubmissionSets",
+        required: false,
+    },
+
     startDate: {
         type: SchemaTypes.Date,
         default: new Date(),

@@ -11,6 +11,8 @@ import { LessonSetModel, LessonSetSchema } from "./lessonSet";
 import { CompletedLessonSchema, CompletedLessonsModel } from "./completedLessons";
 import { AssignmentSetModel, AssignmentSetSchema } from "./assignment-set";
 import { AssignmentModel, AssignmentSchema } from "./assignment";
+import { AssignmentSubmissionSetModel, AssignmentSubmissionSetSchema } from "./assignment-submission-set";
+import { AssignmentSubmissionModel, AssignmentSubmissionSchema } from "./assignment-submission";
 
 import { IUserDoc } from "./user/index.types";
 import { IRegistrationDoc } from "./registration/index.types";
@@ -24,13 +26,14 @@ import { ILessonSetDoc } from "./lessonSet/index.types";
 import { ICompletedLessonDoc } from "./completedLessons/index.types";
 import { IAssignmentSet, IAssignmentSetDoc } from "./assignment-set/index.types";
 import { IAssignment, IAssignmentDoc } from "./assignment/index.types";
+import { IAssignmentSubmissionSetDoc, IAssignmentSubmissionSet } from "./assignment-submission-set/index.types";
+import { IAssignmentSubmission, IAssignmentSubmissionDoc } from "./assignment-submission/index.types";
 
 ( async function index(){
     await mongoose.connect(process.env.MONGODB_URI!, {
         dbName: process.env.MONGODB_DATABASE
     });
     console.log('--- MongoDB Connected ---');
-    // console.log('URI: ', process.env.MONGODB_URI, "  DB: ", process.env.MONGODB_DATABASE)
 })()
 
 export {
@@ -50,6 +53,10 @@ export {
     type IAssignmentSetDoc,
     type IAssignment,
     type IAssignmentDoc,
+    type IAssignmentSubmissionSet,
+    type IAssignmentSubmissionSetDoc,
+    type IAssignmentSubmission,
+    type IAssignmentSubmissionDoc,
 
     //Models
     UserModel,
@@ -64,6 +71,8 @@ export {
     CompletedLessonsModel,
     AssignmentSetModel,
     AssignmentModel,
+    AssignmentSubmissionSetModel,
+    AssignmentSubmissionModel,
 
     // Schema
     UserSchema,
@@ -78,4 +87,7 @@ export {
     CompletedLessonSchema,
     AssignmentSetSchema,
     AssignmentSchema,
+    AssignmentSubmissionSetSchema,
+    AssignmentSubmissionSchema,
+
 }

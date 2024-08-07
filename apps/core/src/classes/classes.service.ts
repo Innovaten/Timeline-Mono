@@ -1,4 +1,4 @@
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc, IAssignmentDoc  } from "@repo/models";
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc, IAssignmentDoc, AssignmentSubmissionSetModel  } from "@repo/models";
 
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
@@ -232,8 +232,15 @@ export class ClassesService {
             throw new ForbiddenException("You are not allowed to perform this action")
         }
 
+        const newAssignmentSubmissionSet = new AssignmentSubmissionSetModel({
+            class: relatedClass._id,
+            classCode: relatedClass.code,
+
+            submissions: [],
+        })
+
         const newAssignment = new AssignmentModel({
-            code: await generateCode( (await AssignmentModel.countDocuments()), "ASMNT"),
+            code: await generateCode( (await AssignmentModel.countDocuments()), "ASMNT", 8),
             
             title: assignmentData.title,
             instructions: assignmentData.instructions,
@@ -246,6 +253,8 @@ export class ClassesService {
 
             resources: assignmentData.resources.map( a => new Types.ObjectId(a)),
             accessList: assignmentData.accessList.map( a => new Types.ObjectId(a)),
+
+            assignmentSubmissionSet: newAssignmentSubmissionSet._id,
 
             startDate: new Date(assignmentData.startDate),
             endDate: new Date(assignmentData.endDate),
@@ -269,11 +278,15 @@ export class ClassesService {
         relatedClass.updatedAt = timestamp;
         relatedClass.updatedBy = new Types.ObjectId(`${user._id}`) 
         
+        newAssignmentSubmissionSet.assignment = newAssignment._id;
+        newAssignmentSubmissionSet.assignmentCode = newAssignment.code
+
         // create event
 
         await newAssignment.save()
         await relatedClass.save()
         await relatedAssignmentSet.save()
+        await newAssignmentSubmissionSet.save()
 
         return newAssignment;
     }
@@ -309,6 +322,6 @@ export class ClassesService {
             throw new ForbiddenException("You are not authorized to make this request")
         }
         
-        return relatedClass.assignmentSet?.assignments?.filter(a => a.meta.isDeleted !== true).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) ?? [];
+        return relatedClass.assignmentSet?.assignments?.filter(a => a.meta.isDeleted !== true).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) ?? [];
     }
 }

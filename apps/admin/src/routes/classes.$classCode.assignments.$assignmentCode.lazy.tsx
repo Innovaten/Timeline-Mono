@@ -54,10 +54,11 @@ function Assignments(){
                     <span className='mt-4 text-blue-700 font-light'>Instructions</span>
                     <div className='flex-1 overflow-y-auto text-blue-700' dangerouslySetInnerHTML={{ __html: assignment.instructions }}>
                     </div>
+                    <div className='flex flex-col sm:flex-row gap-4 sm:gap-2 sm:justify-between sm:items-end '>
                     {
                         assignment.resources && 
                         <>
-                            <div>
+                            <div className='flex-1'>
                                 <span className='mt-4 text-blue-700 font-light'>Resources</span>
                                 <div className='mt-2 grid grid-cols-1 text-blue-700 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-2'>
                                     { assignment.resources.map((resource, idx) => {
@@ -84,6 +85,22 @@ function Assignments(){
                             </div>
                         </>
                     }
+
+                    <div className='w-full sm:w-fit shrink-0 flex flex-col sm:flex-row gap-2'>
+                        <Link to={`/classes/${classCode}/assignments/${assignmentCode}/update`} className='w-full'>
+                            <Button
+                                variant='outline'
+                                className='w-full'
+                            >Edit Assignment</Button>
+                        </Link>    
+                        <Link to={`/classes/${classCode}/assignments/${assignmentCode}/submissions`} className='w-full'>
+                            <Button
+                                className='w-full sm:!w-[150px]'
+                            >View Submissions</Button>
+                        </Link>    
+                    </div>
+
+                    </div>
                 </div>
             }
 

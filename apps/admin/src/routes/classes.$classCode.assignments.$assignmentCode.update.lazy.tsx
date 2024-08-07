@@ -50,7 +50,7 @@ function UpdateAssignment(){
 
         //@ts-ignore
         setAccessList(assignment.accessList)
-        assignment.resources.forEach((r) =>{ filesHook.addToFiles(r) })
+        assignment.resources?.forEach((r) =>{ filesHook.addToFiles(r) })
         
     
         editorRef.current.update(() => {
@@ -316,7 +316,7 @@ function UpdateAssignment(){
                                                         }
                                                         </div>
                                                 </div>
-                                                <Button className='!w-[130px] flex-shrink-0' 
+                                                <Button className='w-full sm:!w-[130px] flex-shrink-0' 
                                                     onClick={()=>{ toggleManager.toggle('additional-dialog')}}
                                                 >Continue</Button>
                                             </div>

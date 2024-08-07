@@ -1,7 +1,7 @@
 import { Button, DialogContainer, FileUploader } from '@repo/ui';
 import { _getToken, abstractAuthenticatedRequest, cn, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
-import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon, MegaphoneIcon } from '@heroicons/react/24/outline';
 import { useCompositeFilterFlag, useSpecificEntity, useAssignmentStateFilter, useAssignmentsByClass } from '../hooks';
 import dayjs from 'dayjs';
 import { toast } from 'sonner';
@@ -215,7 +215,7 @@ function ClassAssignments(){
                                             {
                                                 assignment.meta.isDraft &&
                                                 <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedAssignment(assignment); toggleManager.toggle('publish-dialog') }}>
-                                                    <ShareIcon className='w-4 h-4' />
+                                                    <MegaphoneIcon className='w-4 h-4' />
                                                 </span>
                                             }
                                             <Link to={`/classes/${classCode}/assignments/${assignment.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              

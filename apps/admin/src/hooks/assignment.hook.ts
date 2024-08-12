@@ -28,12 +28,12 @@ export function useAssignments(refreshFlag: boolean = true, limit: number = 10, 
                 setAssignments(res.data.data.assignments);
                 setCount(res.data.data.count);
             } else {
-                toast.error(res.data.error?.msg);
+                toast.error(`${res.data.error?.msg}`);
             }
         })
         .catch(err => {
             if(err.message){
-                toast.error(err.message)
+                toast.error(`${err.message}`)
             } else {
                 toast.error(`${err}`)
             }
@@ -114,12 +114,12 @@ export function useAssignmentsByClass(refreshFlag: boolean, limit: number = 10, 
                 setAssignments(res.data.data.assignments);
                 setCount(res.data.data.count);
             } else {
-                toast.error(res.data.error?.msg);
+                toast.error(`${res.data.error?.msg}`);
             }
         })
         .catch(err => {
             if(err.message){
-                toast.error(err.message)
+                toast.error(`${err.message}`)
             } else {
                 toast.error(`${err}`)
             }
@@ -156,7 +156,7 @@ export function useAssignmentSubmissions(refreshFlag: boolean, limit: number = 1
         })
         .catch(err => {
             if(err.message){
-                toast.error(err.message)
+                toast.error(`${err.message}`)
             } else {
                 toast.error(`${err}`)
             }

@@ -6,6 +6,8 @@ export interface IAnnouncement {
   content: string;
   announcementSet: Types.ObjectId;
 
+  class: Types.ObjectId;
+
   meta: {
     isDeleted: boolean;
   };

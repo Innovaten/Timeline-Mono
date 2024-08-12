@@ -166,7 +166,7 @@ export class UserService {
             otherNames: userData.otherNames,
             lastName: userData.lastName,
             email: userData.email,
-            phone: `+${validPhoneNumber(userData.phone)}`,
+            phone: `${validPhoneNumber(userData.phone)}`,
             gender: userData.gender,
             
             meta: {
@@ -189,7 +189,7 @@ export class UserService {
 
         const emptyCompletedLessons = new CompletedLessonsModel({
             user: user.id,
-            lesson: [],
+            lessons: [],
             createdAt: new Date(),
             updatedAt: new Date(),
         })
@@ -280,7 +280,7 @@ export class UserService {
         })
 
         return user?.classes?.assignmentSet?.assignments ?
-            user?.classes?.assignmentSet?.assignments?.filter(a => a.accessList.map(a => a._id.toString()).includes(`${user._id}`)) :
+            user?.classes?.assignmentSet?.assignments?.filter(a => a.accessList.map(a => a._id.toString()).includes(`${user._id}`) && a.meta.isDeleted == false ) :
             []
     }
 }

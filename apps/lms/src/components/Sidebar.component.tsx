@@ -1,10 +1,9 @@
-import { AdjustmentsVerticalIcon, CalendarIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
-import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, FolderIcon, HomeIcon, XMarkIcon, Bars2Icon } from '@heroicons/react/24/outline'
+import { NewspaperIcon, PaperClipIcon } from "@heroicons/react/24/solid";
+import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, HomeIcon, XMarkIcon, Bars2Icon } from '@heroicons/react/24/outline'
 
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useMovileNavigation } from "@repo/utils";
-
 const menuTabs = [
     {
         label: "Home",
@@ -17,9 +16,14 @@ const menuTabs = [
         icon: MegaphoneIcon,
     },
     {
-        label: "Calendar",
-        path: "/calendar",
-        icon: CalendarIcon,
+        label: "Assignments",
+        path: "/assignments",
+        icon: NewspaperIcon,
+    },
+    {
+        label: "Classes",
+        path: "/classes",
+        icon: BookOpenIcon,
     },
     
 ]
@@ -50,32 +54,26 @@ const classesTabs = [
         icon: BookOpenIcon,    
     },
     {
-        title: "Resources",
-        path: "resources",
-        icon: FolderIcon,    
-    },
-    {
         title: "Assignments",
         path: "assignments",
         icon: PaperClipIcon,    
     },
-    {
-        title: "Quizzes",
-        path: "quizzes",
-        icon: PencilSquareIcon,    
-    },
-    {
-        title: "Settings",
-        path: "settings",
-        icon: AdjustmentsVerticalIcon,
-    },
+    // {
+    //     title: "Quizzes",
+    //     path: "quizzes",
+    //     icon: PencilSquareIcon,    
+    // },
+    // {
+    //     title: "Settings",
+    //     path: "settings",
+    //     icon: AdjustmentsVerticalIcon,
+    // },
 ]
 
 export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
     const routerState = useRouterState();
     const { navIsOpen, toggleNav } = useMovileNavigation(routerState.location.pathname);
- 
 
     return (
         <>
@@ -106,37 +104,6 @@ export default function SidebarComponent(){
                                             <MenuIcon className="w-5" />
                                             <p>{label}</p>
                                         </Link>
-                                    )
-                                })
-                            }
-                        </div>
-                    </div>
-
-                    <div className="mt-4">
-                        <small className="text-blue-600">CLASSES</small>
-                        <div className="mt-2 flex flex-col gap-2">
-                            {
-                                classes.map(({title, code }, index) => {
-                                    
-                                    return (
-                                        <div className="group duration-150" key={index}>
-                                            <Link to={`/classes/${code}`} className={`flex gap-4 items-center ${ routePathIsEqual(`/classes/${code}`) ? 'bg-blue-700 text-white hover:bg-blue-600' : 'bg-white hover:bg-blue-400/10 text-blue-600' } duration-150 pl-4 py-4 rounded shadow-sm`}>
-                                                <BookOpenIcon className="w-5" />
-                                                <p>{title}</p>
-                                            </Link>
-                                            <div className="h-0 rounded-b shadow-sm overflow-hidden group-hover:h-fit bg-white/50 flex flex-col duration-150">
-                                                { classesTabs.map(({ title: tabTitle, path, icon }, idx) => {
-                                                    const TabIcon = icon;
-
-                                                    return (
-                                                        <Link to={`/classes/${code}/${path}`} key={idx} className={`flex pl-4 py-2 ${ routePathIsEqual(`/classes/${code}/${path}`) ? 'bg-blue-700 text-white border-b-[1px] border-bg-blue-600 hover:bg-blue-600' : 'bg-white border-b-[1px] border-b-blue-400/10 hover:bg-blue-400/10 text-blue-600' } duration-150 items-center gap-4 truncate`}>
-                                                            <TabIcon className="w-4" />
-                                                            {tabTitle}
-                                                        </Link>
-                                                    )
-                                                })}
-                                            </div>
-                                        </div>
                                     )
                                 })
                             }

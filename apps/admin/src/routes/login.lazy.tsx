@@ -118,7 +118,7 @@ function Login({ componentRef, multiPage }: PageProps){
                         const token = res.data.data.access_token;
                         setToken(token);
                     
-                        const loginUser: HydratedDocument<IUserDoc> = res.data.data.user;
+                        const loginUser = res.data.data.user;
                         setUser(loginUser);
 
                         // Automatically send OTP
@@ -131,7 +131,7 @@ function Login({ componentRef, multiPage }: PageProps){
                                 multiPage.goTo('twoFA')
                             } else {
                                 if(res.data.error.msg){
-                                    toast.error(res.data.error.msg);
+                                    toast.error(`res.data.error.msg`);
                                 } else {
                                     toast.error("We encountered an issue while sending you an OTP. Please try again later");
                                 }

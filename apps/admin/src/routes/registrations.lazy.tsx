@@ -196,7 +196,7 @@ function RegistrationsPage() {
                 )}
                 onClick={
                   () =>{ setApprovedClasses( prev => [
-                    ...(prev.includes(c._id as string) ? approvedClasses.filter( d => d != c._id as string) : [...approvedClasses, c._id as string ] )
+                    ...(prev.includes(c._id as string) ? approvedClasses.filter( d => d != c._id as string) : [...prev, c._id as string ] )
                   ]); }
                 }
               >

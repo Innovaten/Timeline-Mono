@@ -1,7 +1,5 @@
-import { IUserDoc } from '@repo/models'
 
-
-type MinifiedUser = {
+export type MinifiedUser = {
     _id: string,
     id: string,
     classes: string[],

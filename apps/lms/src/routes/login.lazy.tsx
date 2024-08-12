@@ -110,7 +110,7 @@ function Login({ componentRef, pages }: LoginProps){
               const token = res.data.data.access_token;
               _setToken(token);
               
-              const user: HydratedDocument<IUserDoc> = res.data.data.user;
+              const user = res.data.data.user;
               _setUser(user)
               setUser(user);
 
@@ -121,12 +121,12 @@ function Login({ componentRef, pages }: LoginProps){
                 })
               toggleLoading()
           } else {
-              toast.error(res.data.error.msg)
+              toast.error(`${res.data.error.msg}`)
               toggleLoading()
           }
       })
       .catch( err => {
-          toast.error(err)
+          toast.error(`${err}`)
           toggleLoading()
       })
   }
@@ -214,12 +214,12 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
               sessionStorage.setItem('e', values.email);
               fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-verification'], 'flex')
           } else {
-              toast.error(res.data.error.msg)
+              toast.error(`${res.data.error.msg}`)
           }
           toggleLoading()
 
       }).catch(err => {
-          toast.error(err)
+          toast.error(`${err}`)
           toggleLoading()
       })
   }
@@ -310,12 +310,12 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
               sessionStorage.setItem('o', OTP);
               fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-new-password'], 'flex')
           } else {
-              toast.error(res.data.error.msg)
+              toast.error(`${res.data.error.msg}`)
           }
           toggleLoading()
 
       }).catch(err => {
-          toast.error(err)
+          toast.error(`${err}`)
           setOTPHasError(false)
           toggleLoading()
       })
@@ -397,12 +397,12 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
               }), 1000)
               toggleLoading()
           } else {
-              toast.error(res.data.error.msg)
+              toast.error(`${res.data.error.msg}`)
               toggleLoading()
           }
       })
       .catch( err => {
-          toast.error(err)
+          toast.error(`${err}`)
           toggleLoading()
       })
   }

@@ -6,9 +6,10 @@ import { Toaster } from 'sonner';
 import { IUserDoc } from "@repo/models";
 import { useLMSContext } from '../app';
 import { makeAuthenticatedRequest } from '@repo/utils';
+import { MinifiedUser } from '../context';
 
 export interface ConsoleRouterContext {
-  user: IUserDoc | null,
+  user: MinifiedUser | null,
 }
 
 

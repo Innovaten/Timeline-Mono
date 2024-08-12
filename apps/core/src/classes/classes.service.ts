@@ -178,7 +178,7 @@ export class ClassesService {
             throw new Error("Specified class could not be found");
         }
 
-        const announcements = await AnnouncementModel.find({ announcementSet: classDoc.announcementSet}).populate("createdBy updatedBy");
+        const announcements = await AnnouncementModel.find({ class: classDoc._id}).populate("createdBy updatedBy");
 
         return announcements;
     }

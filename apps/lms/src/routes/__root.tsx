@@ -5,6 +5,7 @@ import SidebarComponent from '../components/Sidebar.component';
 import { Toaster } from 'sonner';
 import { IUserDoc } from "@repo/models";
 import { useLMSContext } from '../app';
+import { useMemo } from 'react';
 
 export interface ConsoleRouterContext {
   user: IUserDoc | null,
@@ -12,51 +13,51 @@ export interface ConsoleRouterContext {
 
 export const Route = createRootRouteWithContext<ConsoleRouterContext>()({
   component: RootPage,
-  // beforeLoad: ( {  location }) => {
-  //   const authToken = _getToken()
-  //   const userToken = _getUser()
-  //   const expirationDate = _getTokenExpiration()
-  //   const userTokensAreNotSet = !authToken || !userToken || ( new Date(expirationDate ?? "").getTime() < new Date().getTime() ) 
-  //   const isNotLoginPage = !location.href.startsWith('/login')
+  beforeLoad: ( {  location }) => {
+    const authToken = _getToken()
+    const userToken = _getUser()
+    const expirationDate = _getTokenExpiration()
+    const userTokensAreNotSet = !authToken || !userToken || ( new Date(expirationDate ?? "").getTime() < new Date().getTime() ) 
+    const isNotLoginPage = !location.href.startsWith('/login') && !location.href.startsWith('/register')
 
-  //   if(isNotLoginPage && userTokensAreNotSet ){ // If we don't know you
-  //     if(new Date(expirationDate ?? "").getTime() < new Date().getTime()){
-  //       _clearTokens()
-  //     }
-  //   throw redirect ({
-  //       to: "/login", 
-  //       search: { 
-  //         destination: "", 
-  //         ...location.search 
-  //       } 
-  //     })
-  //   } else if( location.href.startsWith('register')){
-  //     return;
-  //   } else if(authToken && !userToken){ //  You have a token but user context is not set
-  //       makeAuthenticatedRequest(
-  //         "get",
-  //         '/api/v1/auth/verify-token'
-  //       ).then(res => {
-  //         if(res.data.success){
-  //           _setUser(res.data.data);
-  //         } else {
-  //           throw redirect ({
-  //             to: "/login", 
-  //             search: {
-  //               destination: "",
-  //               ...location.search
-  //             } 
-  //           })
-  //         }
-  //       })
-  //   }
-  // }
+    if(isNotLoginPage && userTokensAreNotSet ){ // If we don't know you
+      if(new Date(expirationDate ?? "").getTime() < new Date().getTime()){
+        _clearTokens()
+      }
+    throw redirect ({
+        to: "/login", 
+        search: { 
+          destination: "", 
+          ...location.search 
+        } 
+      })
+    } else if( location.href.startsWith('register')){
+      return;
+    } else if(authToken && !userToken){ //  You have a token but user context is not set
+        makeAuthenticatedRequest(
+          "get",
+          '/api/v1/auth/verify-token'
+        ).then(res => {
+          if(res.data.success){
+            _setUser(res.data.data);
+          } else {
+            throw redirect ({
+              to: "/login", 
+              search: {
+                destination: "",
+                ...location.search
+              } 
+            })
+          }
+        })
+    }
+  }
 
 })
 
 function RootPage(){
   const path = useRouterState().location.pathname
-  const isRegisterOrLogin = path.startsWith("/register") || path.startsWith("/login");
+  const isRegisterOrLogin = useMemo(() => path.startsWith("/register") || path.startsWith("/login"), [path]);
 
   if(isRegisterOrLogin){
     return (

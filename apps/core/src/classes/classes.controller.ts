@@ -231,16 +231,19 @@ export class ClassesController {
     }
 
     @UseGuards(AuthGuard)
-    @Get(':_id/announcements')
+    @Get(':specifier/announcements')
     async getAnnouncementsByClass(
-        @Param('_id') classId: string,
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
         @Request() req: Request,
     ) {
         try {
             // @ts-ignore
             const user = req["user"];
 
-            const relatedClass = await ClassModel.findById(classId).populate<{ announcementSet: IAnnouncementSetDoc }>("announcementSet");
+            const filter = isId === 'true' ?  { _id: new Types.ObjectId(specifier)} : { code: specifier };
+
+            const relatedClass = await ClassModel.findOne(filter).populate<{ announcementSet: IAnnouncementSetDoc }>("announcementSet");
 
             if(!relatedClass){
                 return ServerErrorResponse(
@@ -259,7 +262,7 @@ export class ClassesController {
                 )
             }
 
-            const announcements = await this.service.getAnnouncementsByClass(classId);
+            const announcements = await this.service.getAnnouncementsByClass(`${relatedClass._id}`);
             
             return ServerSuccessResponse(announcements);
             

@@ -8,6 +8,8 @@ import { JwtService } from '../common/services/jwt.service';
 import { Roles } from '../common/enums/roles.enum';
 import { ClassesService } from '../classes/classes.service';
 import { AnnouncementsService } from '../announcements/announcements.service';
+import { Types } from 'mongoose';
+import { AssignmentsService } from '../assignments/assignments.service';
 
 @Controller({
     path: 'users',
@@ -20,7 +22,8 @@ export class UsersController {
         private user: UserService,
         private jwt: JwtService,
         private classes: ClassesService,
-        private announcements: AnnouncementsService
+        private announcements: AnnouncementsService,
+        private assignments: AssignmentsService,
     ) { }
 
     @UseGuards(AuthGuard)
@@ -243,7 +246,8 @@ export class UsersController {
     @Get(":_id/classes")
     async getClassesByUser(
         @Param("_id") _id: string,
-        @Request() req: Request, @Query('limit') rawLimit: string,
+        @Request() req: Request, 
+        @Query('limit') rawLimit: string,
         @Query('offset') rawOffset: string,
         @Query('filter') rawFilter: string,
     ){  
@@ -279,6 +283,30 @@ export class UsersController {
             return ServerErrorResponse(new Error(`${err}`), 500);
         } 
     }
+
+    @UseGuards(AuthGuard)
+    @Get(":_id/classes/count")
+    async getClassesNumberByUser(
+        @Param("_id") _id: string,
+        @Request() req: Request,
+        @Query('filter') rawFilter: string,
+    ){  
+        try {
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+    
+            // @ts-ignore
+            const user = req["user"] as IUserDoc;
+
+            const count = await this.classes.getClassesCount({ _id: { $in: user.classes }, ...filter })
+
+            return ServerSuccessResponse(count);
+        
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+
 
 
     @UseGuards(AuthGuard)
@@ -318,7 +346,32 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard)
-    @Get(':specifier/completed-lessons')
+    @Get(":_id/announcements/count")
+    async getAnnouncementNumberByUser(
+        @Param("_id") _id: string,
+        @Request() req: Request,
+        @Query('filter') rawFilter: string,
+    ){  
+        try {
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+    
+            // @ts-ignore
+            const user = req["user"] as IUserDoc;
+
+            const classes = await this.classes.getClasses(100, 0, { _id: { $in: user.classes.map( c => new Types.ObjectId(c)) } })
+
+            const count = await this.announcements.getAnnouncementsCount({ announcementSet: { $in: classes.map( c => c.announcementSet ) }, "meta.isDeleted": false, ...filter})
+
+            return ServerSuccessResponse(count);
+        
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+
+    @UseGuards(AuthGuard)
+    @Get(':specifier/assignments')
     async getUserAssignments( 
         @Param('specifier') specifier: string,
         @Query('isId') isId: string = "true",
@@ -331,6 +384,29 @@ export class UsersController {
 
             const assignments = await this.user.getUserAssignments(specifier, IsId, user)
             return ServerSuccessResponse(assignments);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+
+    @UseGuards(AuthGuard)
+    @Get(":_id/assignments/count")
+    async getAssignmentsNumberByUser(
+        @Param("_id") _id: string,
+        @Request() req: Request,
+        @Query('filter') rawFilter: string,
+    ){  
+        try {
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+    
+            // @ts-ignore
+            const user = req["user"] as IUserDoc;
+
+            const count = await this.assignments.getCount({ class: { $in: user.classes }, ...filter })
+
+            return ServerSuccessResponse(count);
+        
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);

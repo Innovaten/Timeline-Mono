@@ -48,17 +48,23 @@ export class AssignmentsService {
             throw new NotFoundException("Assignment could not be found");
         }
 
-        if(user.role !== "SUDO" && ( user.role == "ADMIN" && result.class.administrators.map(id => id.toString()).includes(`${user._id}`) )){
-           return result;
+        if(user.role == Roles.SUDO){
+            return { assignment: result, submission: null}
+        }
+
+        if((user.role == Roles.ADMIN) && result.class.administrators.map(id => id.toString()).includes(`${user._id}`)){
+           return { assignment: result, submission: null}
         }
 
         const stringAccessList =  result.accessList.map( _id => _id.toString())
         
-        if(user.role !== "SUDO" && !stringAccessList.includes(`${user._id}`)){
+        if(!stringAccessList.includes(`${user._id}`)){
             throw new ForbiddenException()
         }
 
-        return result;
+        const relatedSubmission = await AssignmentSubmissionModel.findOne({ assignment: result._id.toString(), submittedBy: `${user._id}` }).populate("gradedBy").lean()
+
+        return { assignment: result, submission: relatedSubmission}
 
     }
 

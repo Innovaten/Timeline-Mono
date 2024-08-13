@@ -2,10 +2,10 @@ import { Button, DialogContainer, FileUploader } from '@repo/ui';
 import { _getToken, abstractAuthenticatedRequest, cn, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { FunnelIcon } from '@heroicons/react/24/outline';
-import { useAssignmentSubmissionStatusFilter, useAssignments } from '../hooks';
+import { useAssignmentSubmissionStatusFilter, useAssignments } from '../../hooks';
 import dayjs from 'dayjs';
 
-export const Route = createLazyFileRoute('/assignments')({
+export const Route = createLazyFileRoute('/assignments/')({
   component: Assignments
 })
 
@@ -96,7 +96,7 @@ function Assignments(){
                             </div>
                         } 
                         { 
-                            !assignmentsIsLoading && assignments?.length != 0 && assignments.map((assignment, idx) => {
+                            !assignmentsIsLoading && assignments && assignments.length != 0 && assignments.map((assignment, idx) => {
                                 return (
                                 <Link to={`/classes/${assignment.classCode}/assignments/${assignment.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                     <div className='flex items-center gap-4 truncate'>
@@ -119,7 +119,7 @@ function Assignments(){
                     </div>
                 </div>
                 <div className='flex justify-end text-blue-700 mt-2 pb-2'>
-                    <p>Showing <span className='font-semibold'>{assignments.length}</span> of <span className='font-semibold'>{assignmentsCount}</span></p>
+                    <p>Showing <span className='font-semibold'>{assignments.length ?? 0}</span> of <span className='font-semibold'>{assignmentsCount ?? 0}</span></p>
                 </div>
             </div>
         </>

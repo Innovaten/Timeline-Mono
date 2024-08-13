@@ -382,7 +382,7 @@ export class UsersController {
             const IsId = isId === "true";
             const user = req.user as IUserDoc;
 
-            const assignments = await this.user.getUserAssignments(specifier, IsId, user)
+            const assignments = await this.user.getUserAssignments(user)
             return ServerSuccessResponse(assignments);
 
         } catch(err) {

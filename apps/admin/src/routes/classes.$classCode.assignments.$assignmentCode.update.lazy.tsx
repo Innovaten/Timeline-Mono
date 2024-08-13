@@ -346,7 +346,6 @@ const updateAssignmentValidationSchema = Yup.object({
     instructions: Yup.string().required("Instruction is required"),
     maxScore: Yup.number().required("Maximum grade is required").min(0, "Grade cannot be less than 0").max(200, "Grade cannot be greater thatn 200"),
     startDate: Yup.string().required("Start date is required")
-        .test("startDate", "Must be later than the current time", (value) =>{ return new Date(value).getTime() > new Date().getTime()  })
         .test("startDate", "Must be in this year", (value) =>{ return new Date(value).getTime() < dayjs().endOf("year").toDate().getTime() }),
     endDate: Yup.string().required("End date is required")
     .test('end-is-after-start', "Must be later than the start date", (endDate, ctx) => {

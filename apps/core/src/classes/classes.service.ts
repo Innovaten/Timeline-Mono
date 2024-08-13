@@ -1,10 +1,11 @@
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc, IAssignmentDoc, AssignmentSubmissionSetModel  } from "@repo/models";
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc, IAssignmentDoc, AssignmentSubmissionSetModel, AssignmentSubmissionModel  } from "@repo/models";
 
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
 import { generateCode } from "../utils";
 import { CreateAssigmentDto } from "../assignments/assignments.dto";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
+import { Roles } from "../common/enums/roles.enum";
 
 export class ClassesService {
    
@@ -300,28 +301,90 @@ export class ClassesService {
         user: IUserDoc){
 
         const classFilter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
-        const relatedClass = await ClassModel.findOne(classFilter).populate<{ assignmentSet?: { assignments?: IAssignmentDoc[] } }>({
-            path: "assignmentSet",
-            populate: {
-                path: "assignments",
-                populate: {
-                    path: "createdBy updatedBy"
-                }
-            }
-        }).lean()
+        const relatedClass = await ClassModel.findOne(classFilter).lean()
 
         if(!relatedClass){
             throw new NotFoundException("Specified class could not be found")
         }
 
-        if (
-            user.role != "SUDO" && 
-            !relatedClass.administrators.map(a => a.toString()).includes(`${user._id}`) &&
-            !relatedClass.students.map(a => a.toString()).includes(`${user._id}`)
-        ){
-            throw new ForbiddenException("You are not authorized to make this request")
+        const finalFilter = { 
+            ...filter, 
+            class: relatedClass._id,
+            "meta.isDeleted": false,
         }
+
+        const relatedAssignments = await AssignmentModel.find(finalFilter)
+            .populate("createdBy")
+            .sort({ createdAt: -1})
+            .limit(limit)
+            .skip(offset)
+            .lean()
+
+        if(user.role == Roles.SUDO){
+            return relatedAssignments;
+        }
+
+        if (
+            user.role == Roles.ADMIN && 
+            relatedClass.administrators.map(a => a.toString()).includes(`${user._id}`)
+        ){
+            return relatedAssignments;
+        }
+
         
-        return relatedClass.assignmentSet?.assignments?.filter(a => a.meta.isDeleted !== true).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) ?? [];
+        const accessibleAssignments = relatedAssignments.filter(
+            a => {
+                return a.accessList.map(
+                    id => id.toString()
+                ).includes(`${user._id}`)
+            }
+        ) 
+
+        const relatedAssignmentSubmissions = await AssignmentSubmissionModel.find({ submittedBy: user.id, assignment: { $in: accessibleAssignments.map(a => a._id)} })
+        
+        for( let i = 0; i< accessibleAssignments.length; i++){
+
+            const assignment = accessibleAssignments[i];
+
+            let relatedAssignmentSubmissionIndex = relatedAssignmentSubmissions.findIndex(s => s.assignment.toString() == assignment._id.toString())
+
+            if(relatedAssignmentSubmissionIndex == -1){
+                // @ts-ignore
+                accessibleAssignments[i].status = 'Pending'
+                continue;
+            }
+            // @ts-ignore
+            accessibleAssignments[i].status = relatedAssignmentSubmissions[relatedAssignmentSubmissionIndex].status
+
+        }
+
+        return accessibleAssignments
+    }
+
+    async getClassAssignmentsCount(
+        filter: Record<string, any> = {},
+        specifier: string, 
+        isId: boolean, 
+        user: IUserDoc
+    ){
+        
+        const classFilter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
+        const relatedClass = await ClassModel.findOne(classFilter).lean()
+
+        if(!relatedClass){
+            throw new NotFoundException("Specified class could not be found")
+        }
+
+        const finalFilter = { 
+            ...filter, 
+            class: relatedClass._id,
+            "meta.isDeleted": false,
+        }
+
+        // TODO: More robust filtering by user
+
+        const count = await AssignmentModel.countDocuments(finalFilter)
+
+        return count
     }
 }

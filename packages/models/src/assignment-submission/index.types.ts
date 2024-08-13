@@ -9,7 +9,8 @@ export interface IAssignmentSubmission {
     class: Types.ObjectId;
     classCode: string,
     assignmentSubmissionSet: Types.ObjectId;
-    
+    assignment: Types.ObjectId;
+
     resources: Types.ObjectId[];
     
     status: AssignmentSubmissionStatusType,
@@ -24,7 +25,7 @@ export interface IAssignmentSubmission {
     
     createdBy: Types.ObjectId;
     submittedBy: Types.ObjectId;
-    gradedBy: Types.ObjectId[];
+    gradedBy: Types.ObjectId;
 
     submittedAt: Date;
     gradedAt: Date;

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -260,28 +260,44 @@ export class UserService {
         return user.completedLessons.lessons;
     }
 
-    async getUserAssignments(specifier: string, isId: boolean, requestingUser: IUserDoc){
-
-        const filter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
-
+    async getUserAssignments(requestingUser: IUserDoc){
         if(requestingUser.role == "SUDO"){
-            return AssignmentModel.find({ meta: { isDeleted: false } }).populate("createdBy updatedBy")
+            return AssignmentModel.find({ meta: { isDeleted: false} }).populate("createdBy updatedBy")
         }
 
-        const user = await UserModel.findOne(filter).populate<{ classes?: { assignmentSet?: { assignments?: IAssignmentDoc[] } }}>({
-            path: "classes",
-            populate: {
-                path: "assignmentSet",
-                populate: {
-                    path: "assignments",
-                    populate: "createdBy updatedBy"
-                }
-            }
-        })
 
-        return user?.classes?.assignmentSet?.assignments ?
-            user?.classes?.assignmentSet?.assignments?.filter(a => a.accessList.map(a => a._id.toString()).includes(`${user._id}`) && a.meta.isDeleted == false ) :
-            []
+        // Students
+
+        const filter = { 
+            class: { 
+                $in: requestingUser.classes
+            }, 
+            "meta.isDeleted": false,
+        } 
+
+        const assignments = await AssignmentModel.find(filter).populate("createdBy").sort({ createdAt: -1}).lean()
+        const accessibleAssignments = assignments.filter(a => a.accessList.map(id => id.toString()).includes(`${requestingUser._id}`))
+
+        const relatedAssignmentSubmissions = await AssignmentSubmissionModel.find({ submittedBy: requestingUser.id, assignment: { $in: accessibleAssignments.map(a => a._id)} })
+        
+        for( let i = 0; i< accessibleAssignments.length; i++){
+
+            const assignment = accessibleAssignments[i];
+
+            let relatedAssignmentSubmissionIndex = relatedAssignmentSubmissions.findIndex(s => s.assignment.toString() == assignment._id.toString())
+
+            if(relatedAssignmentSubmissionIndex == -1){
+                // @ts-ignore
+                accessibleAssignments[i].status = 'Pending'
+                continue;
+            }
+            // @ts-ignore
+            accessibleAssignments[i].status = relatedAssignmentSubmissions[relatedAssignmentSubmissionIndex].status
+
+        }
+
+
+        return accessibleAssignments;
     }
 }
 

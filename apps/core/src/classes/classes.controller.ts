@@ -345,7 +345,7 @@ export class ClassesController {
             } 
           
             const assignments = await this.service.getClassAssignments(limit, offset, filter, specifier, isId === "true", user)
-            const count = await this.service.getCount(filter);
+            const count = await this.service.getClassAssignmentsCount(filter, specifier, isId === "true", user);
 
             return ServerSuccessResponse({
                 assignments,

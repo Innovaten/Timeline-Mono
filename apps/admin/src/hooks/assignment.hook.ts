@@ -60,8 +60,7 @@ export function useAssignment(refreshFlag: boolean = true, specifier: string, is
             {},
             {},
             {
-                onStart: toggleLoading,
-                onSuccess: setAssignment,
+                onSuccess: (data) => setAssignment(data.assignment),
                 onFailure: (err) => {toast.error(`${err.msg}`)},
                 finally: resetLoading
             }

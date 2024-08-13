@@ -1,5 +1,5 @@
-import { NewspaperIcon, PaperClipIcon } from "@heroicons/react/24/solid";
-import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, HomeIcon, XMarkIcon, Bars2Icon } from '@heroicons/react/24/outline'
+import { PaperClipIcon } from "@heroicons/react/24/solid";
+import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, HomeIcon, XMarkIcon, Bars2Icon, NewspaperIcon } from '@heroicons/react/24/outline'
 
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";

@@ -13,8 +13,6 @@ export interface IAssignment {
     resources: Types.ObjectId[],
     accessList: Types.ObjectId[],
 
-    assignmentSubmissionSet?: Types.ObjectId,
-
     startDate: Date,
     endDate: Date,
     

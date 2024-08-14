@@ -26,12 +26,7 @@ export const AssignmentSubmissionSchema = new Schema<IAssignmentSubmission>({
         required:[true, "Please indicate the submission status"],
         enum: AssignmentSubmissionStatuses,
     },
-
-    assignmentSubmissionSet: {
-        type: SchemaTypes.ObjectId,
-        ref: "AssignmentSubmissionSets",
-        required: true,
-    },
+    
     assignment: {
         type: SchemaTypes.ObjectId,
         ref: "Assignments",

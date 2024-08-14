@@ -59,16 +59,6 @@ function ClassDetails(){
           </div>
           <div className='mt-4'>
             <div className='flex w-full gap-8 text-blue-700'>
-              <div className='w-max flex flex-shrink-0 flex-col gap-1'>
-                <small className='font-light'>Created By</small>
-                <div className={`flex gap-2 items-center rounded p-2 bg-blue-100/40 border-blue-100 duration-150 border-2 `}>
-                    <div className='rounded-full flex-shrink-0 aspect-square h-full bg-blue-100 text-blue-700 font-light grid place-items-center'>{thisClass.createdBy.firstName[0]+thisClass.createdBy.lastName[0]}</div>
-                    <div className='flex flex-col truncate'>
-                        <p>{thisClass.createdBy.firstName} {thisClass.createdBy.lastName}</p>
-                        <small className='font-light'>{thisClass.createdBy.email}</small>
-                    </div>
-                </div>
-              </div>
               <div className='flex-1 flex flex-col gap-1'>
                 <small className='font-light'>Administrators</small>
                 <div className='w-full flex gap-4 overflow-y-auto '>

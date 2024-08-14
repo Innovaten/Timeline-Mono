@@ -23,9 +23,9 @@ function ClassAssignments(){
     'filter-is-shown': false,
     }
 
-    type TogglesType = typeof initialToggles
-    type ToggleKeys = keyof TogglesType
-    const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
+  type TogglesType = typeof initialToggles
+  type ToggleKeys = keyof TogglesType
+  const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
 
   const { changeFilter, filter, filterChangedFlag, filterOptions} = useAssignmentSubmissionStatusFilter()
   

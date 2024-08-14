@@ -1,4 +1,4 @@
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc, IAssignmentDoc, AssignmentSubmissionSetModel, AssignmentSubmissionModel  } from "@repo/models";
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc, IAssignmentDoc, AssignmentSubmissionModel  } from "@repo/models";
 
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
@@ -232,14 +232,6 @@ export class ClassesService {
         if(user.role !== "SUDO" && !relatedClass.administrators.map(id => id.toString()).includes(`${user._id}`) ){
             throw new ForbiddenException("You are not allowed to perform this action")
         }
-
-        const newAssignmentSubmissionSet = new AssignmentSubmissionSetModel({
-            class: relatedClass._id,
-            classCode: relatedClass.code,
-
-            submissions: [],
-        })
-
         const newAssignment = new AssignmentModel({
             code: await generateCode( (await AssignmentModel.countDocuments()), "ASMNT", 8),
             
@@ -254,8 +246,6 @@ export class ClassesService {
 
             resources: assignmentData.resources.map( a => new Types.ObjectId(a)),
             accessList: assignmentData.accessList.map( a => new Types.ObjectId(a)),
-
-            assignmentSubmissionSet: newAssignmentSubmissionSet._id,
 
             startDate: new Date(assignmentData.startDate),
             endDate: new Date(assignmentData.endDate),
@@ -279,15 +269,12 @@ export class ClassesService {
         relatedClass.updatedAt = timestamp;
         relatedClass.updatedBy = new Types.ObjectId(`${user._id}`) 
         
-        newAssignmentSubmissionSet.assignment = newAssignment._id;
-        newAssignmentSubmissionSet.assignmentCode = newAssignment.code
 
         // create event
 
         await newAssignment.save()
         await relatedClass.save()
         await relatedAssignmentSet.save()
-        await newAssignmentSubmissionSet.save()
 
         return newAssignment;
     }

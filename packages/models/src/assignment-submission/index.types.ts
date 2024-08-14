@@ -8,7 +8,6 @@ export interface IAssignmentSubmission {
 
     class: Types.ObjectId;
     classCode: string,
-    assignmentSubmissionSet: Types.ObjectId;
     assignment: Types.ObjectId;
 
     resources: Types.ObjectId[];

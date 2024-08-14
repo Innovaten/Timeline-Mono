@@ -1,9 +1,10 @@
-import { Button, DialogContainer } from '@repo/ui';
-import { _getToken } from '@repo/utils'
+import { Button, DialogContainer, FileUploader } from '@repo/ui';
+import { _getToken, abstractAuthenticatedRequest, useFileUploader, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import dayjs from 'dayjs';
 import { useAssignment } from '../../../../hooks';
-import { PhotoIcon, DocumentIcon, PaperClipIcon, ShareIcon } from   '@heroicons/react/24/outline'
+import { PhotoIcon, DocumentIcon, PaperClipIcon, ShareIcon, ExclamationTriangleIcon } from   '@heroicons/react/24/outline'
+import { toast } from 'sonner';
 
 export const Route = createLazyFileRoute('/classes/$classCode/assignments/$assignmentCode')({
   component: Assignments
@@ -17,10 +18,108 @@ function Assignments(){
     return <Outlet />
   } 
 
+  
+  const filesHook = useFileUploader();
+
+
+  const initialToggles = {
+    'submit-is-loading': false,
+
+    'submit-dialog': false,
+  }
+
+  type TogglesType = typeof initialToggles
+  type ToggleKeys = keyof TogglesType
+  const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
+
+  function SubmitDialog(){
+
+    function handleSubmitAssignment(){
+    
+        abstractAuthenticatedRequest(
+          "post",
+          `/api/v1/assignments/${assignmentCode}/submissions?isId=false`,
+          {
+            resources: filesHook.files.map(resource => `${resource._id}`),
+            authToken: _getToken()
+          },
+          {},
+          {
+            onStart: ()=>{ toggleManager.toggle(('submit-is-loading')) },
+            onSuccess: (data) => {
+              toggleManager.reset('submit-dialog')
+              toast.success(`Assignment submitted successfully`)
+            },
+            onFailure: (err) => { toast.error(`${err.msg}`)},
+            finally: ()=>{ toggleManager.reset('submit-is-loading') }
+          }
+        )
+      }
+
+    return (
+        <>
+            <DialogContainer
+            title='Submit Assignment'
+            description={`Upload your submission documents below`}
+            isOpen={toggleManager.get('submit-dialog')}
+            toggleOpen={()=>{ toggleManager.toggle('submit-dialog')}}
+            >
+                <div className='flex h-fit max-h-[70vh] overflow-y-auto'>
+                  {
+                    filesHook.files.length == 0 && 
+                    <div className='flex gap-2 w-full p-2 rounded-sm text-yellow-500 bg-yellow-300/10 border-[1.5px] border-yellow-600/10 ' >
+                      <ExclamationTriangleIcon className='w-5' />
+                      No files uploaded
+                    </div>
+                    }
+
+                    {filesHook.files && filesHook.files.map((f, idx) => {
+                      return (
+                          <a className='flex w-full gap-2 p-2 rounded-sm bg-blue-300/10 border-[1.5px] border-blue-600/10 ' target='_blank' href={f.link} key={idx}>
+                            { f.type == "Image" &&
+                                <PhotoIcon className='w-4 shrink-0' />
+                            }
+                            { f.type == "Document" &&
+                                <DocumentIcon className='w-4 shrink-0' />
+                            }
+                            { f.type == "Link" &&
+                                <ShareIcon className='w-4 shrink-0' />
+                            }
+                            { f.type == "Other" &&
+                                <PaperClipIcon className='w-4 shrink-0' />
+                            }
+                            <p className='font-light truncate'>{f.title}</p>
+                        </a>
+                      )
+                    })}
+                </div>
+                <div className='flex justify-between gap-4 mt-8'>
+                  <div>
+                    <FileUploader filesHook={filesHook} buttonVariant='outline' />
+                  </div>
+                  <div className='flex gap-4'>
+                      <Button className='!h-[35px] px-2' 
+                        variant='neutral' 
+                        isDisabled={toggleManager.get('submit-is-loading')} 
+                        onClick={()=> { toggleManager.reset('submit-dialog');}}
+                      >Close</Button>
+                      <Button className='!h-[35px] px-2' 
+                        isDisabled={filesHook.files.length === 0} 
+                        isLoading={toggleManager.get('submit-is-loading')} 
+                        onClick={handleSubmitAssignment}
+                      >Submit Assignment</Button>
+                  </div>
+                </div>
+            </DialogContainer>
+        </>
+    )
+  }
+
 
   const { isLoading, assignment, submission } = useAssignment(true, assignmentCode, false)
   return (
     <>
+        { toggleManager.get('submit-dialog') && <SubmitDialog /> }
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
             { isLoading &&
                 <div className='w-full h-full m-auto mt-4'>
@@ -96,6 +195,7 @@ function Assignments(){
                         <div className='w-full'>
                             <Button
                                 className='w-full'
+                                onClick={()=>{ toggleManager.toggle('submit-dialog')}}
                             >Submit Assignment</Button>
                         </div>    
                       }
@@ -103,13 +203,6 @@ function Assignments(){
                     </div>
 
                     </div>
-                </div>
-            }
-
-            { !isLoading && !assignment &&
-
-                <div className='mt-2 flex gap-2'>
-                    <h3 className='text-blue-800'>404 - Could not find Assignment</h3>
                 </div>
             }
          </div>

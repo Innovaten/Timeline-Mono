@@ -1,8 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { AssignmentModel, AssignmentSetModel, AssignmentSubmissionModel, IAssignmentSetDoc, IAssignmentSubmissionDoc, IClassDoc, IUserDoc } from '@repo/models';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { AssignmentModel, AssignmentSetModel, AssignmentSubmissionModel, IAssignmentSetDoc, IAssignmentSubmissionDoc, IClassDoc, IUserDoc, ResourcesModel } from '@repo/models';
 import { Types } from 'mongoose';
-import { UpdateAssignmentDto } from './assignments.dto';
+import { CreateSubmissionDto, UpdateAssignmentDto } from './assignments.dto';
 import { Roles } from '../common/enums/roles.enum';
+import { generateCode } from '../utils';
 
 @Injectable()
 export class AssignmentsService {
@@ -215,6 +216,50 @@ export class AssignmentsService {
         await assignment.save();
 
         return assignment;
+    }
+
+    async createAssignmentSubmission(specifier: string, isId: boolean, data: CreateSubmissionDto, user: IUserDoc){
+
+        const timestamp = new Date();
+
+        const assignmentFilter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
+
+        const relatedAssignment = await AssignmentModel.findOne(assignmentFilter).lean();
+
+        if(!relatedAssignment){
+            throw new NotFoundException("Specified assignment not found")
+        }
+
+        if( (timestamp.getTime() < new Date(relatedAssignment.startDate).getTime()) || (timestamp.getTime() > new Date(relatedAssignment.endDate).getTime()) ){
+            throw new BadRequestException("Submission time is not within assignment deadlines")
+        }
+
+        const newSubmission = new AssignmentSubmissionModel({
+            code: await generateCode( await AssignmentModel.countDocuments(), "ASSUB", 10),
+            
+            class: relatedAssignment.class,
+            classCode: relatedAssignment.classCode,
+            assignment: relatedAssignment._id,
+
+            resources: data.resources.map(r => new Types.ObjectId(r)),
+            status: "Submitted",
+
+            meta: {
+                isDeleted: false,
+                isDraft: false,
+            },
+
+            createdBy: new Types.ObjectId(`${user._id}`),
+            submittedBy: new Types.ObjectId(`${user._id}`),
+            
+            submittedAt: timestamp,
+        })
+
+        await newSubmission.save()
+
+        return newSubmission
+
+
     }
 }
 

@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, ForbiddenException, Get, NotFoundException, Param, Patch, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, NotFoundException, Param, Patch, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { AssignmentsService } from './assignments.service';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { IUserDoc } from '@repo/models';
 import { Roles } from '../common/enums/roles.enum';
-import { UpdateAssignmentDto } from './assignments.dto';
+import { CreateSubmissionDto, UpdateAssignmentDto } from './assignments.dto';
 import { JwtService } from '../common/services/jwt.service';
 
 @Controller({
@@ -144,6 +144,43 @@ export class AssignmentsController {
 
     }
 
+    @Post(':specifier/submissions')
+    async createAssignmentSubmission(
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+        @Body() submissionData: CreateSubmissionDto,
+    ){  
+        try {
+            if(!submissionData.authToken){
+                throw new UnauthorizedException()
+            }
+
+            const user = await this.jwt.validateToken(submissionData.authToken)
+
+            if(!user){
+                throw new UnauthorizedException();
+            }
+
+            if(user.role != Roles.STUDENT){
+                throw new BadRequestException()
+            }
+
+            const submission = await this.service.createAssignmentSubmission(specifier, isId === "true", submissionData, user);
+
+            return ServerSuccessResponse(submission)
+
+        } catch(err: any) {
+            return ServerErrorResponse(
+                new Error(`${ err.message ? err.message : err }`),
+                500
+            )
+
+        }
+
+    }
+
+
+
     @UseGuards(AuthGuard)
     @Get(":specifier")
     async getAssignment(
@@ -153,12 +190,9 @@ export class AssignmentsController {
     ) {
         try {
 
-            const user = req.user as IUserDoc | null
-
-            if(!user){
-                throw new UnauthorizedException("Unauthenticated Request")
-            }
+            const user = req.user as IUserDoc
             
+
             const IsId = isId === "true";
             const assignment = await this.service.getAssignment(specifier, IsId, user);
 

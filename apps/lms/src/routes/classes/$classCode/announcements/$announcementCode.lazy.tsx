@@ -34,16 +34,16 @@ function Announcements({ }){
                     <div className='mt-2'>
                         <h3 className='text-blue-800'>{announcement.title}</h3>
                         <span className='mt-3 flex gap-2 flex-wrap items-center'>
-                        <span className='bg-blue-300/10 border-blue-600/10 border-[1.5px] flex gap-1 items-center text-blue-700 rounded px-2 py-1 shadow-sm'>
+                            <span className='bg-blue-300/10 border-blue-600/10 border-[1.5px] flex gap-1 items-center text-blue-700 rounded px-2 py-1 shadow-sm'>
                                 <span>Author:</span>
-                                <span className='font-light'>{announcement.createdBy.firstName + " " + announcement.createdBy.lastName}</span>
+                                <span className='font-light'>{announcement.createdBy?.firstName + " " + announcement.createdBy?.lastName}</span>
                             </span>
                             <span className='bg-blue-300/10 border-blue-600/10 border-[1.5px] flex gap-1 items-center text-blue-700 rounded px-2 py-1 shadow-sm'>
                                 <span>Created:</span>
                                 <span className='font-light'>{dayjs(announcement.createdAt).format("HH:mm - DD/MM/YY")}</span>
                             </span>
                             { announcement.createdAt != announcement.updatedAt && 
-                                 <span className='bg-blue-300/10 border-blue-600/10 border-[1.5px] flex gap-1 items-center text-blue-700 rounded px-2 py-1 shadow-sm'>
+                                <span className='bg-blue-300/10 border-blue-600/10 border-[1.5px] flex gap-1 items-center text-blue-700 rounded px-2 py-1 shadow-sm'>
                                     <span>Updated:</span>
                                     <span className='font-light'>{dayjs(announcement.updatedAt).format("HH:mm - DD/MM/YY")}</span>
                                 </span>
@@ -53,13 +53,6 @@ function Announcements({ }){
                     <span className='mt-4 text-blue-700 font-light'>Content</span>
                     <div className='mt-4 flex-1 overflow-y-auto' dangerouslySetInnerHTML={{ __html: announcement.content }}>
                     </div>
-                </div>
-            }
-
-            { !isLoading && !announcement &&
-
-                <div className='mt-2 flex gap-2'>
-                    <h3 className='text-blue-800'>404 - Could not find Announcement</h3>
                 </div>
             }
          </div>

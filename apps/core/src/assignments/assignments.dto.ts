@@ -59,3 +59,11 @@ export class UpdateAssignmentDto{
     authToken?: string;
     
 }
+
+export class CreateSubmissionDto {
+    @IsArray()
+    resources: Array<string>;
+
+    @IsString()
+    authToken?: string;
+}

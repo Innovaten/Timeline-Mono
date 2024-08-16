@@ -1,9 +1,9 @@
 import { PaperClipIcon } from "@heroicons/react/24/solid";
-import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, HomeIcon, XMarkIcon, Bars2Icon, NewspaperIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, HomeIcon, XMarkIcon, Bars2Icon, NewspaperIcon, PowerIcon } from '@heroicons/react/24/outline'
 
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useMovileNavigation } from "@repo/utils";
+import { _clearTokens, useMovileNavigation } from "@repo/utils";
 const menuTabs = [
     {
         label: "Home",
@@ -111,10 +111,16 @@ export default function SidebarComponent(){
                     </div>
                 </div>
                 <div className="flex flex-col gap-2 mt-8 sm:mt-0">
-                    <Link to='/' className="flex gap-4 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
-                        <InformationCircleIcon className="w-5" />
-                        <p>SUPPORT</p>
-                    </Link>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <Link search={{ destination: ""}} onClick={()=>{_clearTokens()}} to="/login" className="w-full flex gap-2 items-center  bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
+                            <PowerIcon className="w-5 sm:w-4" />
+                            <p>LOGOUT</p>
+                        </Link>
+                        <Link to='/' className="flex w-full gap-2 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
+                            <InformationCircleIcon className="w-5 sm:w-4" />
+                            <p>SUPPORT</p>
+                        </Link>
+                    </div>
                     <Link to='/' className="flex gap-4 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
                         <div className="w-10 aspect-square rounded-full border-[1px] border-blue-600 grid place-items-center">
                             { ( user?.firstName[0] || "N") + (user?.lastName[0] || "A" ) }

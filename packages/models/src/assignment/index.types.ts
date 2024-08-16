@@ -18,7 +18,7 @@ export interface IAssignment {
     
     meta: {
       isDeleted: boolean;
-      isDraft: Boolean;
+      isDraft: boolean;
     };
   
     createdBy: Types.ObjectId;

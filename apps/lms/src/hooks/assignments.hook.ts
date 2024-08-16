@@ -73,7 +73,7 @@ export function useAssignmentSubmissionStatusFilter(){
 export function useAssignment(refreshFlag: boolean = true, specifier: string, isId:boolean =true){
 
     const [ assignment, setAssignment ] = useState< Omit<IAssignmentDoc, "createdBy" | "updatedBy" | "resources"> & { resources?: IResourceDoc[], createdBy?: IUserDoc, updatedBy?: IUserDoc, status?: AssignmentSubmissionStatusType }| null>(null)
-    const [ submission, setSubmission ] = useState< Omit<IAssignmentSubmissionDoc, "createdBy"> & {createdBy?: IUserDoc}| null>(null)
+    const [ submission, setSubmission ] = useState< Omit<IAssignmentSubmissionDoc, "createdBy" | "gradedBy" | "resources"> & {createdBy?: IUserDoc, resources?: IResourceDoc[], gradedBy?: IUserDoc}| null>(null)
     const { isLoading, resetLoading } = useLoading()
 
     useEffect( () => {
@@ -105,7 +105,7 @@ export function useClassAssignments(
     isId:boolean =true
 ){
 
-    const [ assignments, setAssignments ] = useState< (Omit<IAssignmentDoc, "createdBy" | "updatedBy" | "resources"> & { resources?: IResourceDoc[], createdBy?: IUserDoc, updatedBy?: IUserDoc } )[]| null>(null)
+    const [ assignments, setAssignments ] = useState< (Omit<IAssignmentDoc, "createdBy" | "updatedBy" | "resources"> & { resources?: IResourceDoc[], createdBy?: IUserDoc, updatedBy?: IUserDoc, status: AssignmentSubmissionStatusType } )[]| null>(null)
     const [ count, setCount ] = useState<number>(0);
     const { isLoading, resetLoading } = useLoading()
 

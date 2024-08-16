@@ -20,12 +20,10 @@ export class AssignmentsService {
             "meta.isDeleted": false
         }
 
-        console.log(finalFilter)
-
         const result = await AssignmentModel.find(finalFilter)
         .limit(limit)
         .skip(offset)
-        .populate("assignmentSet createdBy updatedBy resources")
+        .populate("createdBy updatedBy resources")
         .lean()
 
         return result;
@@ -64,7 +62,7 @@ export class AssignmentsService {
             throw new ForbiddenException()
         }
 
-        const relatedSubmission = await AssignmentSubmissionModel.findOne({ assignment: result._id.toString(), submittedBy: `${user._id}` }).populate("gradedBy").lean()
+        const relatedSubmission = await AssignmentSubmissionModel.findOne({ assignment: result._id.toString(), submittedBy: `${user._id}` }).populate("gradedBy resources").lean()
 
         return { assignment: result, submission: relatedSubmission}
 
@@ -324,8 +322,6 @@ export class AssignmentsService {
         if(submission.assignment.toString() != assignment._id.toString()) {
             throw new BadRequestException("Specified assignment or submission is mismatched")
         }
-
-        console.log(submission.class)
 
         if(
             user.role !== Roles.SUDO ||

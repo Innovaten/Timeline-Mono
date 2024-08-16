@@ -62,8 +62,8 @@ function Assignments(){
 
     }
     const gradeFormInitialValues = {
-      score: 0,
-      feedback: ""
+      score: submission?.score ?? 0,
+      feedback: submission?.feedback ?? ""
     }
 
     const gradeValidationSchema = Yup.object({
@@ -245,18 +245,18 @@ function Assignments(){
                           <>
                               <div className='flex-1'>
                                   <span className='mt-4 text-blue-700 font-light'>Grade Details</span>
-                                  <div className='mt-3 flex gap-2 flex-wrap items-center'>
-                                    <span className='bg-blue-300/10 border-blue-600/10 border-[1.5px] flex gap-1 items-center text-blue-700 rounded px-2 py-1 shadow-sm'>
+                                  <div className='mt-3 flex flex-col gap-2 bg-blue-300/10 border-blue-600/10 border-[1.5px] p-2'>
+                                    <span className='flex gap-1 text-blue-700 items-center'>
                                       <span>Graded By:</span>
                                       <span className='font-light'>{submission.gradedBy?.firstName + " " + submission.gradedBy?.lastName}</span>
                                     </span>
-                                    <span className='bg-blue-300/10 border-blue-600/10 border-[1.5px] flex gap-1 items-center text-blue-700 rounded px-2 py-1 shadow-sm'>
-                                      <span>Score Allocated:</span>
-                                      <span className='font-light'>{submission.score}/{assignment.maxScore}</span>
-                                    </span>
-                                    <span className='bg-blue-300/10 border-blue-600/10 border-[1.5px] flex gap-1 items-center text-blue-700 rounded px-2 py-1 shadow-sm'>
+                                    <span className='flex gap-1 text-blue-700 items-center'>
                                       <span>Feedback Provided:</span>
                                       <span className='font-light'>{submission.feedback}</span>
+                                    </span>
+                                    <span className='flex gap-1 text-blue-700 items-center'>
+                                      <span>Score Allocated:</span>
+                                      <span className='font-light'>{submission.score}/{assignment.maxScore}</span>
                                     </span>
                                   </div>
                               </div>
@@ -274,8 +274,8 @@ function Assignments(){
                             <Button
                               variant={submission.status == "Graded" ? "neutral" : "primary"}
                               onClick={()=> toggleManager.toggle('grade-dialog')}
-                               className='w-full sm:!w-[150px]'
-                            >Grade Assignment</Button>
+                               className=''
+                            >{submission.status == "Graded" ? 'Reg' : 'G'}rade Assignment</Button>
                         </div>    
                     </div>
                     

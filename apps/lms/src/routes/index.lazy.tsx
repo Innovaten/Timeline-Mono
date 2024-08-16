@@ -110,7 +110,7 @@ function IndexPage() {
                 </div>
               </div>
             </div>
-            <div className='mt-4 w-full flex flex-col gap-2'>
+            {/* <div className='mt-4 w-full flex flex-col gap-2'>
               <h4>Latest Resources</h4>
               <div className='w-full min-h-[100px] bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
                   <div className='bg-white w-full h-full flex flex-col gap-2 rounded p-1'>
@@ -129,7 +129,7 @@ function IndexPage() {
                     }
                   </div>
                 </div>
-            </div>
+            </div> */}
           </div> 
        </>
     )

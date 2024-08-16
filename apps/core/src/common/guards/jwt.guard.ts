@@ -26,7 +26,6 @@ import { JwtService } from '../services/jwt.service';
     private extractTokenFromHeader(request: Request): string | undefined {
       if(["post", "patch", "put"].includes(request.method.toLowerCase())) {
         const [type, token] = request.body.headers.authorization?.split(' ') ?? [];
-        console.log(token)
         return type === 'Bearer' ? token : undefined;
       } else {
         const [type, token] = request.headers.authorization?.split(' ') ?? [];

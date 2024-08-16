@@ -23,6 +23,7 @@ const RegistrationsLazyImport = createFileRoute('/registrations')()
 const LoginLazyImport = createFileRoute('/login')()
 const ClassesLazyImport = createFileRoute('/classes')()
 const CalendarLazyImport = createFileRoute('/calendar')()
+const AssignmentsLazyImport = createFileRoute('/assignments')()
 const AnnouncementsLazyImport = createFileRoute('/announcements')()
 const AdministratorsLazyImport = createFileRoute('/administrators')()
 const IndexLazyImport = createFileRoute('/')()
@@ -112,6 +113,11 @@ const CalendarLazyRoute = CalendarLazyImport.update({
   path: '/calendar',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/calendar.lazy').then((d) => d.Route))
+
+const AssignmentsLazyRoute = AssignmentsLazyImport.update({
+  path: '/assignments',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/assignments.lazy').then((d) => d.Route))
 
 const AnnouncementsLazyRoute = AnnouncementsLazyImport.update({
   path: '/announcements',
@@ -339,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnnouncementsLazyImport
       parentRoute: typeof rootRoute
     }
+    '/assignments': {
+      id: '/assignments'
+      path: '/assignments'
+      fullPath: '/assignments'
+      preLoaderRoute: typeof AssignmentsLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/calendar': {
       id: '/calendar'
       path: '/calendar'
@@ -523,6 +536,7 @@ export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   AdministratorsLazyRoute,
   AnnouncementsLazyRoute,
+  AssignmentsLazyRoute,
   CalendarLazyRoute,
   ClassesLazyRoute: ClassesLazyRoute.addChildren({
     ClassesClassCodeLazyRoute: ClassesClassCodeLazyRoute.addChildren({
@@ -585,6 +599,7 @@ export const routeTree = rootRoute.addChildren({
         "/",
         "/administrators",
         "/announcements",
+        "/assignments",
         "/calendar",
         "/classes",
         "/login",
@@ -601,6 +616,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/announcements": {
       "filePath": "announcements.lazy.tsx"
+    },
+    "/assignments": {
+      "filePath": "assignments.lazy.tsx"
     },
     "/calendar": {
       "filePath": "calendar.lazy.tsx"

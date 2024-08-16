@@ -1,4 +1,4 @@
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc, IAssignmentDoc, AssignmentSubmissionModel  } from "@repo/models";
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IAnnouncementSetDoc, IClassDoc, IUserDoc, UserModel, IModuleDoc, ModuleModel, AssignmentSetModel, IAssignmentSet, IAssignment, AssignmentModel, IAssignmentSetDoc, IAssignmentDoc, AssignmentSubmissionModel, AssignmentSubmissionStatusType  } from "@repo/models";
 
 import { CreateClassDto, UpdateClassDto } from "./classes.dto";
 import { Types } from "mongoose";
@@ -285,7 +285,10 @@ export class ClassesService {
         filter: Record<string, any> = {},
         specifier: string, 
         isId: boolean, 
-        user: IUserDoc){
+        user: IUserDoc
+    ){
+
+        const timestamp = new Date();
 
         const classFilter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
         const relatedClass = await ClassModel.findOne(classFilter).lean()
@@ -335,14 +338,18 @@ export class ClassesService {
 
             let relatedAssignmentSubmissionIndex = relatedAssignmentSubmissions.findIndex(s => s.assignment.toString() == assignment._id.toString())
 
+            let status: AssignmentSubmissionStatusType = "Pending";
+
             if(relatedAssignmentSubmissionIndex == -1){
-                // @ts-ignore
-                accessibleAssignments[i].status = 'Pending'
-                continue;
+                if( new Date(assignment.endDate).getTime() < timestamp.getTime() ){
+                    status = 'PastDeadline'
+                }
+            } else {
+                const userSubmission = relatedAssignmentSubmissions[relatedAssignmentSubmissionIndex]
+                status = userSubmission.status
             }
             // @ts-ignore
-            accessibleAssignments[i].status = relatedAssignmentSubmissions[relatedAssignmentSubmissionIndex].status
-
+            assignment.status = status
         }
 
         return accessibleAssignments

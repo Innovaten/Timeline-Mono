@@ -1,5 +1,5 @@
 import { AdjustmentsVerticalIcon, CalendarIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
-import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, BuildingLibraryIcon, ComputerDesktopIcon, UserGroupIcon, FolderIcon, HomeIcon, UsersIcon, PowerIcon, Bars2Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, NewspaperIcon, BuildingLibraryIcon, ComputerDesktopIcon, UserGroupIcon, FolderIcon, HomeIcon, UsersIcon, PowerIcon, Bars2Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
@@ -24,10 +24,15 @@ export default function SidebarComponent(){
             icon: MegaphoneIcon,
         },
         {
-            label: "Calendar",
-            path: "/calendar",
-            icon: CalendarIcon,
+            label: "Assignments",
+            path: "/assignments",
+            icon: NewspaperIcon,
         },
+        // {
+        //     label: "Calendar",
+        //     path: "/calendar",
+        //     icon: CalendarIcon,
+        // },
         {
             label: "Classes",
             path: "/classes",
@@ -62,10 +67,15 @@ export default function SidebarComponent(){
             icon: BookOpenIcon,
         },
         {
-            label: "System Overview",
-            path: "/overview",
-            icon: ComputerDesktopIcon,
+            label: "Assignments",
+            path: "/assignments",
+            icon: NewspaperIcon,
         },
+        // {
+        //     label: "System Overview",
+        //     path: "/overview",
+        //     icon: ComputerDesktopIcon,
+        // },
     ]
     
     return (

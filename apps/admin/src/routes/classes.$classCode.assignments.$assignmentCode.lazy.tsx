@@ -61,7 +61,7 @@ function Assignments(){
                             <div className='flex-1'>
                                 <span className='mt-4 text-blue-700 font-light'>Resources</span>
                                 <div className='mt-2 grid grid-cols-1 text-blue-700 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-2'>
-                                    { assignment.resources.map((resource, idx) => {
+                                    { assignment.resources && assignment.resources.length > 0 && assignment.resources.map((resource, idx) => {
                                             return (
                                                 <a className='flex max-w-[200px] gap-2 p-2 rounded-sm bg-blue-300/10 border-[1.5px] border-blue-600/10 ' target='_blank' href={resource.link} key={idx}>
                                                     { resource.type == "Image" &&
@@ -81,6 +81,15 @@ function Assignments(){
                                             )
                                         })    
                                     }
+                                    {
+                                        (!assignment.resources || assignment.resources.length == 0 ) && 
+                                         <>
+                                          <div className='flex gap-2 p-2 rounded-sm bg-blue-300/10 border-[1.5px] border-blue-600/10 '>
+                                              <PaperClipIcon className='w-4 shrink-0' />                                            
+                                              <p className='font-light'>No resources</p>
+                                          </div>
+                                         </>
+                                      }
                                 </div>    
                             </div>
                         </>
@@ -101,13 +110,6 @@ function Assignments(){
                     </div>
 
                     </div>
-                </div>
-            }
-
-            { !isLoading && !assignment &&
-
-                <div className='mt-2 flex gap-2'>
-                    <h3 className='text-blue-800'>404 - Could not find Assignment</h3>
                 </div>
             }
          </div>

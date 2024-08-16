@@ -25,8 +25,14 @@ export function useAssignments(refreshFlag: boolean = true, limit: number = 10, 
             `/api/v1${route}?filter=${JSON.stringify(filter)}&limit=${limit}&offset=${offset}`,
         ).then(res => {
             if(res.status == 200 && res.data.success){
-                setAssignments(res.data.data.assignments);
-                setCount(res.data.data.count);
+
+                if(user.role == "SUDO"){
+                    setAssignments(res.data.data.assignments)
+                    setCount(res.data.data.count);
+                } else {
+                    setAssignments(res.data.data);
+                    setCount(res.data.data.length);
+                }
             } else {
                 toast.error(`${res.data.error?.msg}`);
             }
@@ -222,21 +228,20 @@ export function useAssignmentSubmissions(refreshFlag: boolean, limit: number = 1
 
 export function useAssignmentSubmissionStatusFilter(){
 
-    const [ filterLabel, setFilterLabel ] = useState<"All"| "Pending"| "Submitted" | "Graded">("All");
+    const [ filterLabel, setFilterLabel ] = useState<"All"| "Public" | "Draft">("All");
     const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
 
     const resultingFilters = {
-        "All": { status: { $in: ["Pending", "Submitted", "Graded"]}, "meta.isDraft": false },
-        "Pending": { status: "Pending", "meta.isDraft": false  },
-        "Submitted": { status: "Submitted", "meta.isDraft": false  },
-        "Graded": { status: "Graded", "meta.isDraft": false  },
+        "All": {},
+        "Public": { "meta.isDraft": false  },
+        "Draft": {"meta.isDraft": true  },
     };
 
     const filterOptions = Object.keys(resultingFilters);
     
     const filter = resultingFilters[filterLabel];
 
-    function changeFilter(arg:  "All" | "Pending" | "Submitted" | "Graded"){
+    function changeFilter(arg:  "All" | "Public" | "Draft"){
         setFilterChangedFlag(prev => !prev);
         setFilterLabel(arg);
     };

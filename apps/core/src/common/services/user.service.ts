@@ -262,12 +262,15 @@ export class UserService {
 
     async getUserAssignments(requestingUser: IUserDoc){
         if(requestingUser.role == "SUDO"){
-            return AssignmentModel.find({ meta: { isDeleted: false} }).populate("createdBy updatedBy")
+            return AssignmentModel.find({ meta: { isDeleted: false} }).populate("createdBy updatedBy").sort({ createdAt: -1}).lean()
+        }
+
+
+        if(requestingUser.role == Roles.ADMIN){
+            return AssignmentModel.find({ class: { $in: requestingUser.classes.map(c => `${c}`) }, "meta.isDeleted": false }).populate("createdBy updatedBy").sort({ createdAt: -1}).lean()
         }
 
         const timestamp = new Date();
-
-        // Students
 
         const filter = { 
             class: { 

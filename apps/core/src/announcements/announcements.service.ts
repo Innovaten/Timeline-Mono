@@ -50,6 +50,7 @@ export class AnnouncementsService {
                 code: await generateCode(await AnnouncementModel.countDocuments(), prefix),
                 ...actualData,
                 announcementSet: relatedAnnouncementSet._id,
+                class: relatedAnnouncementSet.class,
                 meta: {
                     isDeleted: false
                 },
@@ -69,7 +70,6 @@ export class AnnouncementsService {
         const newAnnouncementToEveryOne = new AnnouncementModel({
             code: await generateCode(await AnnouncementModel.countDocuments(), prefix),
             ...actualData,
-            announcementSet: "*",
             meta: {
                 isDeleted: false
             },

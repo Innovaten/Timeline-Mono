@@ -1,5 +1,5 @@
 import { createLazyFileRoute, useRouter, useRouteContext } from '@tanstack/react-router'
-import { _getToken, _setUser, useCountdown } from '@repo/utils';
+import { _getToken, _setTokenExpiration, _setUser, useCountdown } from '@repo/utils';
 import { Input, Button } from '@repo/ui'
 import { Form, Formik, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
@@ -11,6 +11,7 @@ import { useLMSContext } from '../app'
 import { IUserDoc } from '@repo/models'
 import { HydratedDocument } from 'mongoose'
 import OtpInput from 'react-otp-input'
+import dayjs from 'dayjs';
 YupPassword(Yup);
 
 
@@ -117,7 +118,7 @@ function Login({ componentRef, multiPage }: PageProps){
                         const token = res.data.data.access_token;
                         setToken(token);
                     
-                        const loginUser: HydratedDocument<IUserDoc> = res.data.data.user;
+                        const loginUser = res.data.data.user;
                         setUser(loginUser);
 
                         // Automatically send OTP
@@ -130,7 +131,7 @@ function Login({ componentRef, multiPage }: PageProps){
                                 multiPage.goTo('twoFA')
                             } else {
                                 if(res.data.error.msg){
-                                    toast.error(res.data.error.msg);
+                                    toast.error(`res.data.error.msg`);
                                 } else {
                                     toast.error("We encountered an issue while sending you an OTP. Please try again later");
                                 }
@@ -236,8 +237,9 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
         )
         .then(res => {
               if(res.status == 200 && res.data.success){
-								_setUser(user);
-								_setToken(token!);
+                _setUser(user);
+                _setToken(token!);
+                _setTokenExpiration(dayjs().add(3, 'hours').toISOString())
                 context.user = user;
                 
                 toast.success("Verification successful!")

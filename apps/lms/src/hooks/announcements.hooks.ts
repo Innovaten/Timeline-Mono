@@ -2,6 +2,7 @@ import { IAnnouncementDoc, IUserDoc } from "@repo/models";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useLMSContext } from "../app";
 
 
 export function useAnnouncements(refreshFlag: boolean = true){
@@ -41,7 +42,7 @@ export function useAnnouncements(refreshFlag: boolean = true){
 export function useAnnouncement(refreshFlag: boolean = true, specifier: string, isId:boolean = true){
 
     const [ announcement, setAnnouncement ] = useState<IAnnouncementDoc & { createdBy: IUserDoc, updatedBy:IUserDoc } | null>(null)
-    const { isLoading, toggleLoading, resetLoading } = useLoading()
+    const { isLoading, resetLoading } = useLoading()
 
     useEffect( () => {
         abstractAuthenticatedRequest(
@@ -50,8 +51,7 @@ export function useAnnouncement(refreshFlag: boolean = true, specifier: string, 
             {},
             {},
             {
-                onStart: toggleLoading,
-                onSuccess: setAnnouncement,
+                onSuccess: (data)=>{ setAnnouncement(data) },
                 onFailure: (err) => {toast.error(`${err.msg}`)},
                 finally: resetLoading
             }
@@ -61,5 +61,30 @@ export function useAnnouncement(refreshFlag: boolean = true, specifier: string, 
 
 
     return { isLoading, announcement }
+
+}
+
+export function useAnnouncementsByClass(refreshFlag: boolean = true, specifier: string, isId:boolean = true){
+
+    const [ announcements, setAnnouncements ] = useState<(IAnnouncementDoc & { createdBy: IUserDoc, updatedBy:IUserDoc })[] | null>(null)
+    const { isLoading, toggleLoading, resetLoading } = useLoading()
+
+    useEffect( () => {
+        abstractAuthenticatedRequest(
+            "get",
+            `/api/v1/classes/${specifier}/announcements/?isId=${isId}`,
+            {},
+            {},
+            {
+                onSuccess: (data) => setAnnouncements(data),
+                onFailure: (err) => {toast.error(`${err.msg}`)},
+                finally: resetLoading
+            }
+        )
+
+    }, [refreshFlag])
+
+
+    return { isLoading, announcements }
 
 }

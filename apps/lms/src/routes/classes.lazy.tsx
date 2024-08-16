@@ -1,172 +1,82 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute, Link, useRouterState, Outlet } from '@tanstack/react-router';
+import { _getToken, useToggleManager } from '@repo/utils';
+import { useClasses } from '../hooks';
 
 export const Route = createLazyFileRoute('/classes')({
-  component: () => <Classes />
+    component: Classes
 })
 
-function Classes({}){
 
-  const files = [
+function Classes(){
+    const routerState = useRouterState();
 
-    //just a mockup ...actual thing is gonna be done after implementation from backend 
+    if(routerState.location.pathname !== "/classes"){
+        return <Outlet />
+      } 
 
-    {
-      title: 'FILE 1',
-      date: '3 Jun',
-    },
-    {
-      title: 'FILE 2',
-      date: '1 Jun',
-    },
-    {
-      title: 'FILE 3',
-      date: '21 May',
-    },
-    {
-      title: 'FILE 4',
-      date: '22 May'
-    },
-    {
-      title: 'FILE 5',
-      date: '23 May'
-    },
-    {
-      title: 'FILE 6',
-      date: '24 May'
-    },
-    {
-      title: 'FILE 7',
-      date: '25 May'
-    },
-    {
-      title: 'FILE 8',
-      date: '26 May'
-    },
-    {
-      title: 'FILE 9',
-      date: '27 May'
-    },
-    {
-      title: 'FILE 10',
-      date: '28 May'
-    },
-    {
-      title: 'FILE 11',
-      date: '29 May'
-    },
-    {
-      title: 'FILE 12',
-      date: '30 May'
-    },
-    {
-      title: 'FILE 13',
-      date: '31 May'
-    },
-    {
-      title: 'FILE 14',
-      date: '1 Jun'
-    },
-    {
-      title: 'FILE 15',
-      date: '2 Jun'
-    },
-    {
-      title: 'FILE 16',
-      date: '3 Jun'
-    },
-    {
-      title: 'FILE 17',
-      date: '4 Jun'
-    },
-    {
-      title: 'FILE 18',
-      date: '5 Jun'
-    },
-    {
-      title: 'FILE 19',
-      date: '6 Jun'
-    },
-    {
-      title: 'FILE 20',
-      date: '7 Jun'
-    },
-    {
-      title: 'FILE 21',
-      date: '8 Jun'
-    },
-    {
-      title: 'FILE 22',
-      date: '9 Jun'
-    },
-    {
-      title: 'FILE 23',
-      date: '10 Jun'
-    },
-    {
-      title: 'FILE 24',
-      date: '11 Jun'
-    },
-    {
-      title: 'FILE 25',
-      date: '12 Jun'
-    },
-    {
-      title: 'FILE 26',
-      date: '13 Jun'
-    },
-    {
-      title: 'FILE 27',
-      date: '14 Jun'
-    },
-    {
-      title: 'FILE 28',
-      date: '15 Jun'
-    },
-    {
-      title: 'FILE 29',
-      date: '16 Jun'
-    },
-    {
-      title: 'FILE 30',
-      date: '17 Jun'
-    },
-    {
-      title: 'FILE 31',
-      date: '18 Jun'
-    },
-    {
-      title: 'FILE 32',
-      date: '19 Jun'
-    },
-    {
-      title: 'FILE 33',
-      date: '20 Jun'
-    }  
-  ]
+    const initialToggles = {
+        'refresh': false,
+    }
 
-  return (
-    <>
-      <div className='text-blue-900'>
-        <h2>Resources</h2>
-      </div> 
-      <div className='w-full min-h-[300px] bg-blue-50 p-1 rounded-sm shadow-sm mt-2'>
-        <div className='bg-white w-full h-full rounded p-1 gap-2 flex flex-col '>
-          {
-            files.map(({ title, date}, idx) => {
-              return (
-                <div key={idx} className='w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10 text-blue-800'>
-                  <h5 className='flex-1 truncate'>{title}</h5>
-                  <div className='flex gap-4 items-center'>
-                    <span className='text-sm'>{date}</span>
-                  </div>
+    type TogglesType = typeof initialToggles
+    type ToggleKeys = keyof TogglesType
+    const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
+
+
+    const { isLoading: classesIsLoading, classes, count: classesCount } = useClasses(toggleManager.get('refresh'), {});
+
+    return (
+        <>
+
+            <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
+                <div className='mt-2 flex h-fit justify-between items-center'>
+                    <h3 className='text-blue-800'>Classes</h3>
                 </div>
-              );
-            })
-          }
-        </div>
+                <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>
+                    <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
+                        <div className = 'w-full text-blue-700 py-2 px-1 sm:px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
+                                <div className='flex items-center gap-4'>
+                                    <span className='flex-1 font-normal truncate'>NAME</span>
+                                </div>
+                                <div className='flex gap-4 items-center font-light'>
+                                  <span className='w-[100px]  hidden sm:flex justify-end'>MODE</span>
+                                </div>
+                            </div>
+                        {
+                            classesIsLoading && 
+                             <div className='w-full h-full m-auto'>
+                                <div
+                                    className='w-5 aspect-square m-auto mt-4 rounded-full border-[1px] border-t-blue-500 animate-spin' 
+                                ></div>
+                            </div>
+                        } 
+                        { 
+                        !classesIsLoading && classes && classes.length != 0 && classes.map((tClass, idx) => {
+                            return (
+                            // Onclick trigger a dialog
+                            <Link 
+                              to={`/classes/${tClass.code}`}
+                              key={idx} 
+                              className = 'w-full text-blue-700 cursor-pointer py-2 px-1 sm:px-3 bg-white border-blue-700/40 border-b-[0.5px] flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
+                            >
+                                <div className='flex items-center gap-4 truncate'>
+                                    <span className='flex-1 font-normal truncate'>{tClass.name}</span>
+                                </div>
+                                <div className='flex gap-4 items-center font-light'>
+                                  <span className='hidden w-[100px] sm:flex justify-end'>{tClass.modeOfClass}</span>
+                                </div>
 
-      </div>
-    </>
-  )
+                            </Link>
+                            )
+                        })
+                        }
+                    </div>
+                </div>
+                <div className='flex justify-end text-blue-700 mt-2 pb-2'>
+                    <p>Showing <span className='font-semibold'>{classes?.length ?? 0}</span> of <span className='font-semibold'>{classesCount}</span></p>
+                </div>
+            </div>
+        </>
+    )
 
 }

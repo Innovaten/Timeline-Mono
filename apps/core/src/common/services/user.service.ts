@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -166,7 +166,7 @@ export class UserService {
             otherNames: userData.otherNames,
             lastName: userData.lastName,
             email: userData.email,
-            phone: `+${validPhoneNumber(userData.phone)}`,
+            phone: `${validPhoneNumber(userData.phone)}`,
             gender: userData.gender,
             
             meta: {
@@ -189,7 +189,7 @@ export class UserService {
 
         const emptyCompletedLessons = new CompletedLessonsModel({
             user: user.id,
-            lesson: [],
+            lessons: [],
             createdAt: new Date(),
             updatedAt: new Date(),
         })
@@ -258,6 +258,52 @@ export class UserService {
             throw new BadRequestException(`Specified user could not be found`)
         }
         return user.completedLessons.lessons;
+    }
+
+    async getUserAssignments(requestingUser: IUserDoc){
+        if(requestingUser.role == "SUDO"){
+            return AssignmentModel.find({ meta: { isDeleted: false} }).populate("createdBy updatedBy").sort({ createdAt: -1}).lean()
+        }
+
+
+        if(requestingUser.role == Roles.ADMIN){
+            return AssignmentModel.find({ class: { $in: requestingUser.classes.map(c => `${c}`) }, "meta.isDeleted": false }).populate("createdBy updatedBy").sort({ createdAt: -1}).lean()
+        }
+
+        const timestamp = new Date();
+
+        const filter = { 
+            class: { 
+                $in: requestingUser.classes
+            }, 
+            "meta.isDeleted": false,
+        } 
+
+        const assignments = await AssignmentModel.find(filter).populate("createdBy").sort({ createdAt: -1}).lean()
+        const accessibleAssignments = assignments.filter(a => a.accessList.map(id => id.toString()).includes(`${requestingUser._id}`))
+
+        const relatedAssignmentSubmissions = await AssignmentSubmissionModel.find({ submittedBy: requestingUser.id, assignment: { $in: accessibleAssignments.map(a => a._id)} })
+        
+        for( let i = 0; i< accessibleAssignments.length; i++){
+
+            const assignment = accessibleAssignments[i];
+
+            let relatedAssignmentSubmissionIndex = relatedAssignmentSubmissions.findIndex(s => s.assignment.toString() == assignment._id.toString())
+
+            let status: AssignmentSubmissionStatusType = "Pending";
+
+            if(relatedAssignmentSubmissionIndex == -1){
+                if( new Date(assignment.endDate).getTime() < timestamp.getTime() ){
+                    status = 'PastDeadline'
+                }
+            } else {
+                const userSubmission = relatedAssignmentSubmissions[relatedAssignmentSubmissionIndex]
+                status = userSubmission.status
+            }
+            // @ts-ignore
+            assignment.status = status
+        }
+        return accessibleAssignments;
     }
 }
 

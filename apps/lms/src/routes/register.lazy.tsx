@@ -292,7 +292,7 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
             return ({
                 ...prev,
                 modeOfClass: values.modeOfClass,
-                classes: Object.keys(classes).filter(c => classes[c])
+                classes: Object.keys(classes).filter(c => classes[c] == true)
             })
         })
         fadeParentAndReplacePage(registrationPages.parent, componentRef, registrationPages['summary-details'], 'flex')

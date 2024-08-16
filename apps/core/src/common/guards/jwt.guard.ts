@@ -16,14 +16,20 @@ import { JwtService } from '../services/jwt.service';
         const user = await this.jwtService.validateToken(token);
         if(!user) return false;
         request['user'] = user;
-      } catch {
+      } catch (err) {
+
         return false;
       }
       return true;
     }
   
     private extractTokenFromHeader(request: Request): string | undefined {
-      const [type, token] = request.headers.authorization?.split(' ') ?? [];
-      return type === 'Bearer' ? token : undefined;
+      if(["post", "patch", "put"].includes(request.method.toLowerCase())) {
+        const [type, token] = request.body.headers.authorization?.split(' ') ?? [];
+        return type === 'Bearer' ? token : undefined;
+      } else {
+        const [type, token] = request.headers.authorization?.split(' ') ?? [];
+        return type === 'Bearer' ? token : undefined;
+      }
     }
   }

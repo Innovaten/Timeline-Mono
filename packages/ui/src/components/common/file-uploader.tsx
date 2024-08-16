@@ -16,10 +16,11 @@ type FileUploaderProps = {
         addToFiles: (file: IResourceDoc) => void,
     };
     buttonVariant?: "primary" | "outline" | "secondary" | "neutral";
+    buttonClass?: string;
     allowMultipleFiles?: boolean;
 }
 
-export function FileUploader({ filesHook, buttonVariant }: FileUploaderProps) {
+export function FileUploader({ filesHook, buttonVariant, buttonClass }: FileUploaderProps) {
    
     const { dialogIsOpen: modalIsOpen, toggleDialog: toggleUploadModal } = useDialog();
 
@@ -38,7 +39,7 @@ export function FileUploader({ filesHook, buttonVariant }: FileUploaderProps) {
                 headers: (file) => {
                     const headerData: Record<string, any> =  {
                         authorization: `Bearer ` + _getToken(),
-                        "original-file-name": file.name,
+                        "original-file-name": encodeURI(`${file.name}`),
                         "original-file-ext": file.extension
                     }
                     return headerData;
@@ -47,9 +48,9 @@ export function FileUploader({ filesHook, buttonVariant }: FileUploaderProps) {
         );
 
     useUppyEvent(uppy, 'upload-success', (file, response) => {
-        if(response?.body?.success){
-            console.log(response)
-            filesHook.addToFiles(response!.body!.data)
+        if(response?.body){
+            // @ts-ignore
+            filesHook.addToFiles(response.body)
         }
     })
     
@@ -60,6 +61,7 @@ export function FileUploader({ filesHook, buttonVariant }: FileUploaderProps) {
                 open={modalIsOpen}
             />
             <Button
+                className={buttonClass}
                 { ...(buttonVariant ? { variant: buttonVariant } : {} )}
                 onClick={toggleUploadModal}
             >Upload Files</Button>

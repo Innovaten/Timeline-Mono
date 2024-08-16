@@ -94,7 +94,7 @@ export default function TextEditor({
         <div className="editor-inner">
           <RichTextPlugin
             contentEditable={
-              <ContentEditable className="editor-input"
+              <ContentEditable className="editor-input text-blue-700"
                 aria-placeholder={"Enter some text..."}
               />
             }

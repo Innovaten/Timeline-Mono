@@ -16,10 +16,10 @@ export interface IClass {
   students: Types.ObjectId[];
   modules: Types.ObjectId[];
   resources: Types.ObjectId[];
-  assignments: Types.ObjectId[];
   quizzes: Types.ObjectId[];
   timetable: Types.ObjectId;
   announcementSet: Types.ObjectId;
+  assignmentSet: Types.ObjectId;
   
   // settings: {};
 

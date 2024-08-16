@@ -36,20 +36,20 @@ export function useAdministrators(
 }
 
 export function useAdministratorsFilter(){
-    const [ filterLabel, setFilterLabel ] = useState< "All" | "Super Users" | "Administrators">("All");
+    const [ filterLabel, setFilterLabel ] = useState< "All" | "Sudo" | "Admin">("All");
     const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
 
     const resultingFilters = {
         "All": { role: { $in: ["SUDO", "ADMIN"] } },
-        "Super Users": { role: { $in: ["SUDO"] } },
-        "Administrators": { role: { $in: ["ADMIN"] } },
+        "Sudo": { role: { $in: ["SUDO"] } },
+        "Admin": { role: { $in: ["ADMIN"] } },
     };
 
     const filterOptions = Object.keys(resultingFilters);
     
     const filter = resultingFilters[filterLabel];
 
-    function changeFilter(arg:  "All" | "Super Users" | "Administrators" ){
+    function changeFilter(arg:  "All" | "Sudo" | "Admin" ){
         setFilterChangedFlag(prev => !prev);
         setFilterLabel(arg);
     };

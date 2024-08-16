@@ -127,7 +127,7 @@ function AssignmentSubmissions(){
                                                 submission.status == "Graded" && "bg-green-600 border-green-600"
                                             )}></span>
                                         </span>
-                                        <span className='w-[150px] hidden sm:flex justify-end truncate'>{submission.score}</span>
+                                        <span className='w-[150px] hidden sm:flex justify-end truncate'>{submission.score ?? "N/A"}</span>
                                         <span className='w-[120px] hidden sm:flex justify-end'>{dayjs(submission.createdAt).format("HH:mm - DD/MM/YY")}</span>
                                     </div>
                                 </Link>

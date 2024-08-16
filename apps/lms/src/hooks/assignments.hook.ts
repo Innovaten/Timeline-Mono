@@ -1,4 +1,4 @@
-import { IAssignmentDoc, IAssignmentSubmissionDoc, IResourceDoc, IUserDoc } from "@repo/models";
+import { AssignmentSubmissionStatusType, IAssignmentDoc, IAssignmentSubmissionDoc, IResourceDoc, IUserDoc } from "@repo/models";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -7,7 +7,7 @@ import { useLMSContext } from "../app";
 
 export function useAssignments(refreshFlag: boolean = true, limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
 
-    const [ assignments, setAssignments ] = useState<(IAssignmentDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
+    const [ assignments, setAssignments ] = useState<(IAssignmentDoc & { status?: AssignmentSubmissionStatusType ,createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ count, setCount ] = useState<number>(0);
 
@@ -72,7 +72,7 @@ export function useAssignmentSubmissionStatusFilter(){
 
 export function useAssignment(refreshFlag: boolean = true, specifier: string, isId:boolean =true){
 
-    const [ assignment, setAssignment ] = useState< Omit<IAssignmentDoc, "createdBy" | "updatedBy" | "resources"> & { resources?: IResourceDoc[], createdBy?: IUserDoc, updatedBy?: IUserDoc }| null>(null)
+    const [ assignment, setAssignment ] = useState< Omit<IAssignmentDoc, "createdBy" | "updatedBy" | "resources"> & { resources?: IResourceDoc[], createdBy?: IUserDoc, updatedBy?: IUserDoc, status?: AssignmentSubmissionStatusType }| null>(null)
     const [ submission, setSubmission ] = useState< Omit<IAssignmentSubmissionDoc, "createdBy"> & {createdBy?: IUserDoc}| null>(null)
     const { isLoading, resetLoading } = useLoading()
 

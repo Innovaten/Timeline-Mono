@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeImport } from './routes/classes.$classCode.assignments.$assignmentCode.submissions.$submissionCode'
 
 // Create Virtual Routes
 
@@ -293,6 +294,15 @@ const ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyRoute =
     ).then((d) => d.Route),
   )
 
+const ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeRoute =
+  ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeImport.update(
+    {
+      path: '/$submissionCode',
+      getParentRoute: () =>
+        ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute,
+    } as any,
+  )
+
 const ClassesClassCodeModulesModuleCodeLessonsLessonCodeUpdateLazyRoute =
   ClassesClassCodeModulesModuleCodeLessonsLessonCodeUpdateLazyImport.update({
     path: '/update',
@@ -476,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeUpdateLazyImport
       parentRoute: typeof ClassesClassCodeModulesModuleCodeLazyImport
     }
+    '/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode': {
+      id: '/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode'
+      path: '/$submissionCode'
+      fullPath: '/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode'
+      preLoaderRoute: typeof ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeImport
+      parentRoute: typeof ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyImport
+    }
     '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode': {
       id: '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode'
       path: '/$lessonCode'
@@ -521,7 +538,12 @@ export const routeTree = rootRoute.addChildren({
         ClassesClassCodeAssignmentsLazyRoute.addChildren({
           ClassesClassCodeAssignmentsAssignmentCodeLazyRoute:
             ClassesClassCodeAssignmentsAssignmentCodeLazyRoute.addChildren({
-              ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute,
+              ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute:
+                ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute.addChildren(
+                  {
+                    ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeRoute,
+                  },
+                ),
               ClassesClassCodeAssignmentsAssignmentCodeUpdateLazyRoute,
             }),
           ClassesClassCodeAssignmentsCreateLazyRoute,
@@ -675,7 +697,10 @@ export const routeTree = rootRoute.addChildren({
     },
     "/classes/$classCode/assignments/$assignmentCode/submissions": {
       "filePath": "classes.$classCode.assignments.$assignmentCode.submissions.lazy.tsx",
-      "parent": "/classes/$classCode/assignments/$assignmentCode"
+      "parent": "/classes/$classCode/assignments/$assignmentCode",
+      "children": [
+        "/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode"
+      ]
     },
     "/classes/$classCode/assignments/$assignmentCode/update": {
       "filePath": "classes.$classCode.assignments.$assignmentCode.update.lazy.tsx",
@@ -692,6 +717,10 @@ export const routeTree = rootRoute.addChildren({
     "/classes/$classCode/modules/$moduleCode/update": {
       "filePath": "classes.$classCode.modules.$moduleCode.update.lazy.tsx",
       "parent": "/classes/$classCode/modules/$moduleCode"
+    },
+    "/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode": {
+      "filePath": "classes.$classCode.assignments.$assignmentCode.submissions.$submissionCode.tsx",
+      "parent": "/classes/$classCode/assignments/$assignmentCode/submissions"
     },
     "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode": {
       "filePath": "classes.$classCode.modules.$moduleCode.lessons.$lessonCode.lazy.tsx",

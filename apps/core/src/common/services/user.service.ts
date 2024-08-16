@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -265,6 +265,7 @@ export class UserService {
             return AssignmentModel.find({ meta: { isDeleted: false} }).populate("createdBy updatedBy")
         }
 
+        const timestamp = new Date();
 
         // Students
 
@@ -286,17 +287,19 @@ export class UserService {
 
             let relatedAssignmentSubmissionIndex = relatedAssignmentSubmissions.findIndex(s => s.assignment.toString() == assignment._id.toString())
 
+            let status: AssignmentSubmissionStatusType = "Pending";
+
             if(relatedAssignmentSubmissionIndex == -1){
-                // @ts-ignore
-                accessibleAssignments[i].status = 'Pending'
-                continue;
+                if( new Date(assignment.endDate).getTime() < timestamp.getTime() ){
+                    status = 'PastDeadline'
+                }
+            } else {
+                const userSubmission = relatedAssignmentSubmissions[relatedAssignmentSubmissionIndex]
+                status = userSubmission.status
             }
             // @ts-ignore
-            accessibleAssignments[i].status = relatedAssignmentSubmissions[relatedAssignmentSubmissionIndex].status
-
+            assignment.status = status
         }
-
-
         return accessibleAssignments;
     }
 }

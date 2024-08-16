@@ -1,7 +1,7 @@
 import { Types, Document } from "mongoose";
 
-export const AssignmentSubmissionStatuses = ["Pending","Submitted", "Graded"] as const;
-type AssignmentSubmissionStatusType = typeof AssignmentSubmissionStatuses[number] 
+export const AssignmentSubmissionStatuses = ["Pending","Submitted", "Graded", "PastDeadline"] as const;
+export type AssignmentSubmissionStatusType = typeof AssignmentSubmissionStatuses[number] 
 
 export interface IAssignmentSubmission {
     code: string;

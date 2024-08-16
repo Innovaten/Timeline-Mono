@@ -73,6 +73,57 @@ export function useAssignment(refreshFlag: boolean = true, specifier: string, is
 
 }
 
+export function useAssignmentSubmission(
+    refreshFlag: boolean = true, 
+    assignmentSpecifier: string, 
+    submissionSpecifier: string,
+    isId: boolean =true
+){
+
+    const [ submission, setSubmission ] = useState<
+        Omit<
+            IAssignmentSubmissionDoc, 
+            "submittedBy" | "resources" | "gradedBy"
+        > & { 
+            resources?: IResourceDoc[], 
+            submittedBy?: IUserDoc,
+            gradedBy?: IUserDoc,
+        }
+    | null>(null)
+    const [assignment, setAssignment] = useState<(
+        Omit<
+            IAssignmentDoc, 
+            "createdBy" | "updatedBy" | "resources"
+        > & { 
+            resources?: IResourceDoc[], 
+            createdBy?: IUserDoc, 
+            updatedBy?: IUserDoc 
+        }
+    | null)>(null)
+    const { isLoading, resetLoading } = useLoading()
+
+    useEffect( () => {
+        abstractAuthenticatedRequest(
+            "get",
+            `/api/v1/assignments/${assignmentSpecifier}/submissions/${submissionSpecifier}?isId=${isId}`,
+            {},
+            {},
+            {
+                onSuccess: (data) => {
+                    setSubmission(data.submission)
+                    setAssignment(data.assignment)
+                },
+                onFailure: (err) => {toast.error(`${err.msg}`)},
+                finally: resetLoading
+            }
+        )
+
+    }, [refreshFlag])
+
+
+    return { isLoading, assignment, submission }
+
+}
 
 export function useAssignmentStateFilter(){
     const [ filterLabel, setFilterLabel ] = useState<"Public" | "Drafted">("Public");

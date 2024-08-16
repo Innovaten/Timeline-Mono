@@ -25,7 +25,7 @@ import { ILessonSetDoc } from "./lessonSet/index.types";
 import { ICompletedLessonDoc } from "./completedLessons/index.types";
 import { IAssignmentSet, IAssignmentSetDoc } from "./assignment-set/index.types";
 import { IAssignment, IAssignmentDoc } from "./assignment/index.types";
-import { IAssignmentSubmission, IAssignmentSubmissionDoc } from "./assignment-submission/index.types";
+import { IAssignmentSubmission, IAssignmentSubmissionDoc, AssignmentSubmissionStatusType } from "./assignment-submission/index.types";
 
 ( async function index(){
     await mongoose.connect(process.env.MONGODB_URI!, {
@@ -53,6 +53,7 @@ export {
     type IAssignmentDoc,
     type IAssignmentSubmission,
     type IAssignmentSubmissionDoc,
+    type AssignmentSubmissionStatusType,
 
     //Models
     UserModel,

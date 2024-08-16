@@ -100,7 +100,10 @@ function ClassAssignments(){
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
                                         <span className='w-[100px] flex items-center gap-2 justify-end'>
-                                            {assignment.meta.isDraft ? "Available" : "Pending"}
+                                            {
+                                                // @ts-ignore - This field technically does not exist
+                                                assignment.status
+                                            }
                                             <span className={cn(
                                                 "w-2 h-2 rounded-full border-[1px] ",
                                             )}></span>

@@ -4,7 +4,7 @@ import { AssignmentsService } from './assignments.service';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { IUserDoc } from '@repo/models';
 import { Roles } from '../common/enums/roles.enum';
-import { CreateSubmissionDto, UpdateAssignmentDto } from './assignments.dto';
+import { CreateSubmissionDto, GradeSubmissionDto, UpdateAssignmentDto } from './assignments.dto';
 import { JwtService } from '../common/services/jwt.service';
 
 @Controller({
@@ -174,10 +174,57 @@ export class AssignmentsController {
                 new Error(`${ err.message ? err.message : err }`),
                 500
             )
-
         }
-
     }
+
+    @UseGuards(AuthGuard)
+    @Get(":assignmentSpecifier/submissions/:submissionSpecifier")
+    async getAssignmentSubmission(
+        @Param('assignmentSpecifier') assignmentSpecifier: string,
+        @Param('submissionSpecifier') submissionSpecifier: string,
+        @Query('isId') isId: string = "true",
+        @Req() req: any,
+    ) {
+        try {
+            const user = req.user
+            const { submission, assignment} = await this.service.getAssignmentSubmission(assignmentSpecifier, submissionSpecifier, isId === "true", user);
+
+            return ServerSuccessResponse({
+                submission,
+                assignment
+            })
+
+        } catch(err: any) {
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                500
+            )
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Post(":assignmentSpecifier/submissions/:submissionSpecifier")
+    async gradeAssignmentSubmission(
+        @Param('assignmentSpecifier') assignmentSpecifier: string,
+        @Param('submissionSpecifier') submissionSpecifier: string,
+        @Query('isId') isId: string = "true",
+        @Body() gradeData : GradeSubmissionDto,
+        @Req() req: any,
+    ) {
+        try {
+            const user = req.user
+            const submission = await this.service.gradeAssignmentSubmission(assignmentSpecifier, submissionSpecifier, isId === "true", gradeData, user);
+
+            return ServerSuccessResponse(submission)
+
+        } catch(err: any) {
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                500
+            )
+        }
+    }
+
 
 
 

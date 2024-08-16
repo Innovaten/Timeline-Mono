@@ -17,10 +17,12 @@ type InputProps = {
   name?: string;
   placeholder?: string, 
   type?: string,
+  max?: number,
+  min?: number,
 } & HtmlHTMLAttributes<HTMLInputElement>;
 
 export default function Input(props: InputProps) {
-  const { label, className, iconType, placeholder, hasValidation, name, type, ...defaultProps } =
+  const { label, className, iconType, placeholder, hasValidation, name, type, max, min, ...defaultProps } =
     props;
 
   const LeftIcon: (typeof EnvelopeIcon ) | null = iconType
@@ -34,6 +36,8 @@ export default function Input(props: InputProps) {
         className={`${className ? className : ''} text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[40px] px-2 ${iconType && "pl-9"}`}
         name={name}
         placeholder={placeholder}
+        max={max ?? 1000000}
+        min={min ?? -65840 }
         type={type || 'text'}
         {...defaultProps}
       />

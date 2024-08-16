@@ -188,8 +188,8 @@ function Assignments(){
                       {/* TODO: Disable submission if endDate from the server has been passed */}
                       {
                         submission ? 
-                        <div>
-                          Submitted at {dayjs(submission.submittedAt).format("HH:mm DD/MM/YYY")}
+                        <div className='text-blue-600 font-medium'>
+                          Submitted at {dayjs(submission.submittedAt).format("HH:mm - DD/MM/YYYY")}
                         </div>
                         :
                         <div className='w-full'>

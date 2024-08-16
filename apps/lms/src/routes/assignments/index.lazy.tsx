@@ -4,6 +4,7 @@ import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/rea
 import { FunnelIcon } from '@heroicons/react/24/outline';
 import { useAssignmentSubmissionStatusFilter, useAssignments } from '../../hooks';
 import dayjs from 'dayjs';
+import lodash from 'lodash'
 
 export const Route = createLazyFileRoute('/assignments/')({
   component: Assignments
@@ -83,7 +84,7 @@ function Assignments(){
                             <div className='flex gap-4 items-center font-light'>
                                 <span className='w-[150px] hidden sm:flex justify-end'>STATUS</span>
                                 <span className='w-[150px] hidden sm:flex justify-end'>AUTHOR</span>
-                                <span className='w-[120px] hidden sm:flex justify-end'>DATE CREATED</span>
+                                <span className='w-[120px] hidden sm:flex justify-end'>DATE DUE</span>
                             </div>
                         </div>
                         {
@@ -103,14 +104,19 @@ function Assignments(){
                                         <span className='flex-1 font-normal truncate'>{assignment.title}</span>
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
-                                        <span className='w-[100px] flex items-center gap-2 justify-end'>
-                                            {assignment.meta.isDraft ? "Available" : "Pending"}
+                                        <span className='w-[150px] flex items-center gap-2 justify-end'>
+                                            {lodash.startCase(assignment.status)}
                                             <span className={cn(
                                                 "w-2 h-2 rounded-full border-[1px] ",
+                                                assignment?.status == 'Pending' ? "border-yellow-600" : "",
+                                                assignment?.status == 'Submitted' ? "border-green-600" : "",
+                                                assignment?.status == 'PastDeadline' ? "border-red-600" : "",
+                                                assignment?.status == 'Graded' ? "border-green-600 bg-green-600" : "",
+
                                             )}></span>
                                         </span>
                                         <span className='w-[150px] hidden sm:flex justify-end truncate'>{(assignment.createdBy?.firstName ?? "N") + " " + (assignment.createdBy?.lastName ?? "A")}</span>
-                                        <span className='w-[120px] hidden sm:flex justify-end'>{dayjs(assignment.createdAt).format("HH:mm - DD/MM/YY")}</span>
+                                        <span className='w-[120px] hidden sm:flex justify-end'>{dayjs(assignment.endDate).format("HH:mm - DD/MM/YY")}</span>
                                     </div>
                                 </Link>
                                 )

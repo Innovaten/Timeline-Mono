@@ -67,3 +67,13 @@ export class CreateSubmissionDto {
     @IsString()
     authToken?: string;
 }
+
+export class GradeSubmissionDto {
+
+    @IsString()
+    feedback?: string;
+
+    @IsNumber()
+    score: number;
+
+}

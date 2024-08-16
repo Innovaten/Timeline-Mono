@@ -66,12 +66,13 @@ export const AssignmentSubmissionSchema = new Schema<IAssignmentSubmission>({
     submittedBy: {
         type: SchemaTypes.ObjectId,
         required: true,
+        ref: 'Users',
     },
 
 
     gradedBy: {
-        type: SchemaTypes.ObjectId, 
         ref: 'Users',
+        type: SchemaTypes.ObjectId, 
     },
 
     submittedAt: {

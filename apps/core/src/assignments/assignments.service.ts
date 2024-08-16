@@ -1,9 +1,10 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AssignmentModel, AssignmentSetModel, AssignmentSubmissionModel, IAssignmentSetDoc, IAssignmentSubmissionDoc, IClassDoc, IUserDoc, ResourcesModel } from '@repo/models';
 import { Types } from 'mongoose';
-import { CreateSubmissionDto, UpdateAssignmentDto } from './assignments.dto';
+import { CreateSubmissionDto, GradeSubmissionDto, UpdateAssignmentDto } from './assignments.dto';
 import { Roles } from '../common/enums/roles.enum';
 import { generateCode } from '../utils';
+import { assert } from 'console';
 
 @Injectable()
 export class AssignmentsService {
@@ -86,11 +87,6 @@ export class AssignmentsService {
             throw new NotFoundException(`Specified assignment${ isId ? "" : " #" + specifier} could not be found`)
         }
 
-        if(!relatedAssignment.class._id){
-            throw new Error(`Specified class ${relatedAssignment.classCode} could not be found`)
-        }
-
-
         if(
             user.role != Roles.SUDO && 
             !relatedAssignment.class.administrators.map(a => a._id.toString()).includes(`${user._id}`)
@@ -100,7 +96,7 @@ export class AssignmentsService {
 
         const finalFilter = {
             ...filter,
-            assignmentCode: relatedAssignment.code,
+            assignment: relatedAssignment._id,
             "meta.isDeleted": false,
         }
 
@@ -261,6 +257,99 @@ export class AssignmentsService {
 
 
     }
+
+    async getAssignmentSubmission(assignmentSpecifier: string, submissionSpecifier: string, isId: boolean, user: IUserDoc){
+
+        const assignmentFilter = isId ? { _id: new Types.ObjectId(assignmentSpecifier)} : { code: assignmentSpecifier}
+        const submissionFilter = isId ? { _id: new Types.ObjectId(submissionSpecifier)} : { code: submissionSpecifier}
+    
+        const submission = await AssignmentSubmissionModel.findOne(submissionFilter).populate<{ class?: IClassDoc, submittedBy?: IUserDoc, gradedBy?: IUserDoc }>('class submittedBy resources gradedBy').lean()
+    
+        if(!submission){
+          throw new NotFoundException("Specified assignment submission could not be found")
+        }
+    
+        const assignment = await AssignmentModel.findOne(assignmentFilter).populate("resources createdBy updatedBy");
+     
+        if(!assignment){
+          throw new NotFoundException("Related assignment could not be found");
+        }
+
+        if(submission.assignment.toString() != assignment._id.toString()) {
+            throw new BadRequestException("Specified assignment or submission is mismatched")
+        }
+
+    
+        if(user.role == Roles.SUDO){
+          return { submission, assignment };
+        }
+    
+        if(
+          user.role == Roles.ADMIN &&
+          submission.class?.administrators.map(a => `${a}`).includes(`${user._id}`)
+        ) {
+          return { submission, assignment}
+        }
+    
+        if(
+          user.role == Roles.STUDENT &&
+          (submission.submittedBy ? submission.submittedBy._id?.toString() : submission.submittedBy) == `${user._id}`
+        ) {
+          return { submission, assignment }
+        }
+    
+        throw new ForbiddenException("You are not authorized to access this document")
+    
+      }
+
+    async gradeAssignmentSubmission(assignmentSpecifier: string, submissionSpecifier: string, isId: boolean, gradeData: GradeSubmissionDto, user: IUserDoc){
+
+        const timestamp = new Date()
+
+        const assignmentFilter = isId ? { _id: new Types.ObjectId(assignmentSpecifier)} : { code: assignmentSpecifier}
+        const submissionFilter = isId ? { _id: new Types.ObjectId(submissionSpecifier)} : { code: submissionSpecifier}
+
+        const submission = await AssignmentSubmissionModel.findOne(submissionFilter).populate<{ class?: IClassDoc}>('class')
+
+        if(!submission){
+        throw new NotFoundException("Specified assignment submission could not be found")
+        }
+
+        const assignment = await AssignmentModel.findOne(assignmentFilter);
+    
+        if(!assignment){
+        throw new NotFoundException("Related assignment could not be found");
+        }
+
+        if(submission.assignment.toString() != assignment._id.toString()) {
+            throw new BadRequestException("Specified assignment or submission is mismatched")
+        }
+
+        console.log(submission.class)
+
+        if(
+            user.role !== Roles.SUDO ||
+            submission.class?.administrators?.map(a => `${a}`).includes(`${user._id}`)
+        ) {
+            throw new ForbiddenException("You are not authorized to perform this action")
+        }
+
+        submission.status = "Graded";
+        
+        submission.score = gradeData.score,
+        submission.feedback = gradeData.feedback ?? "",
+
+        submission.gradedBy = new Types.ObjectId(`${user._id}`)
+        submission.gradedAt = timestamp
+        submission.updatedAt = timestamp
+
+        // TODO: Emit event
+
+        await submission.save()
+
+        return  submission;
+
+
+    }
+
 }
-
-

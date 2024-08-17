@@ -8,9 +8,13 @@ import { forEach } from 'lodash';
 @Injectable()
 export class AnnouncementsService {
 
-    async listAnnouncements(limit?: number, offset?: number, filter: Record<string, any> = {}, ): Promise<
+    async listAnnouncements(
+        limit?: number, 
+        offset?: number, 
+        filter: Record<string, any> = {}
+    ): Promise<
     (Omit<IAnnouncement, "createdBy" | "updatedBy" > & { createdBy: IUserDoc, updatedBy: IUserDoc }) []>{
-        const results = await AnnouncementModel.find({ 
+        const results = await AnnouncementModel.find({
             ...filter,
             "meta.isDeleted": false,
         })

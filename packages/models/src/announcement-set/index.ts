@@ -22,16 +22,7 @@ export const AnnouncementSetSchema = new Schema<IAnnouncementSet>({
         required: true,
         ref: "Users"
     },
-
-    createdAt: {
-        type: SchemaTypes.Date,
-        default: new Date()
-    },
-    updatedAt: {
-        type: SchemaTypes.Date,
-        default: new Date()
-    },
-})
+}, { timestamps: true })
 
 
 export const AnnouncementSetModel = model("AnnouncementSets", AnnouncementSetSchema);

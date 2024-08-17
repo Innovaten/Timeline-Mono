@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import process from 'node:process'
+
 import { UserModel, UserSchema } from "./user";
 import { RegistrationModel, RegistrationSchema } from "./registration";
 import { ClassModel, ClassSchema } from "./class";
@@ -15,9 +18,9 @@ import { AssignmentSubmissionModel, AssignmentSubmissionSchema } from "./assignm
 
 import { IUserDoc } from "./user/index.types";
 import { IRegistrationDoc } from "./registration/index.types";
-import { IClassDoc } from "./class/index.types";
-import { IAnnouncementDoc } from "./announcement/index.types";
-import { IAnnouncementSetDoc } from "./announcement-set/index.types";
+import { IClassDoc, IClass, modeOfClassType, ClassStatusType } from "./class/index.types";
+import { IAnnouncementDoc, IAnnouncement } from "./announcement/index.types";
+import { IAnnouncementSetDoc, IAnnouncementSet } from "./announcement-set/index.types";
 import { IResourceDoc } from "./resource/index.types";
 import { IModuleDoc } from "./module/index.types";
 import { ILessonDoc } from "./lessons/index.types";
@@ -28,9 +31,25 @@ import { IAssignment, IAssignmentDoc } from "./assignment/index.types";
 import { IAssignmentSubmission, IAssignmentSubmissionDoc, AssignmentSubmissionStatusType } from "./assignment-submission/index.types";
 
 ( async function index(){
-    await mongoose.connect(process.env.MONGODB_URI!, {
-        dbName: process.env.MONGODB_DATABASE
-    });
+    console.log("NODE ENV:", process.env.NODE_ENV)
+    if(process.env.NODE_ENV == 'test') {
+        const mongod = await MongoMemoryServer.create();
+        const uri = mongod.getUri();
+        await mongoose.connect(uri, {
+            dbName: 'test'
+        });
+
+        process.on('exit', (code) => {
+            console.log(`About to exit with code: ${code}`);
+            mongod.stop()
+            console.log("Stopped mongo test server")
+          });
+
+    } else {
+        await mongoose.connect(process.env.MONGODB_URI!, {
+            dbName: process.env.MONGODB_DATABASE
+        });
+    }
     console.log('--- MongoDB Connected ---');
 })()
 
@@ -39,8 +58,13 @@ export {
     //Interfaces
     type IUserDoc,
     type IRegistrationDoc,
+    type IClass,
+    type modeOfClassType,
+    type ClassStatusType,
     type IClassDoc,
+    type IAnnouncement,
     type IAnnouncementDoc,
+    type IAnnouncementSet,
     type IAnnouncementSetDoc,
     type IResourceDoc,
     type IModuleDoc,

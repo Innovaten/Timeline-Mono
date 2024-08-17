@@ -4,7 +4,7 @@ export const ClassStatus = ["Active", "Suspended"] as const;
 export type ClassStatusType = typeof ClassStatus[number];
 
 export const modeOfClass = ["Online", "In-Person"] as const;
-export type modeOfClassType = typeof ClassStatus[number];
+export type modeOfClassType = typeof modeOfClass[number];
 
 export interface IClass {
   code: string;
@@ -16,7 +16,6 @@ export interface IClass {
   students: Types.ObjectId[];
   modules: Types.ObjectId[];
   resources: Types.ObjectId[];
-  quizzes: Types.ObjectId[];
   timetable: Types.ObjectId;
   announcementSet: Types.ObjectId;
   assignmentSet: Types.ObjectId;
@@ -29,9 +28,6 @@ export interface IClass {
 
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
-
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface IClassDoc extends Document, IClass {}

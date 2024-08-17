@@ -47,10 +47,6 @@ export const ClassSchema = new Schema<IClassDoc>({
         type: SchemaTypes.ObjectId,
         ref: "AssignmentSets"
     },
-    quizzes: {
-        type: [ SchemaTypes.ObjectId],
-        default: []
-    },
     timetable: {
         type: SchemaTypes.ObjectId,
         default: null,
@@ -81,21 +77,12 @@ export const ClassSchema = new Schema<IClassDoc>({
         ref: "Users",
         required: true,
     },
-
-    createdAt: {
-        type: SchemaTypes.Date,
-        default: new Date()
-    },
-    updatedAt: {
-        type: SchemaTypes.Date,
-        default: new Date()
-    },
     updatedBy: {
         type: SchemaTypes.ObjectId,
         default: new Date(),
         ref: "Users"
     },
-})
+}, { timestamps: true})
 
 
 export const ClassModel = model("Classes", ClassSchema);

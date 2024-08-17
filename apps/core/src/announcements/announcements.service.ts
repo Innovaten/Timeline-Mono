@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IUserDoc, UserModel } from '@repo/models';
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncement, IAnnouncementDoc, IUserDoc, UserModel } from '@repo/models';
 import { CreateAnnouncementDto, UpdateAnnouncementDto } from './announcements.dto';
 import { generateCode } from '../utils';
 import { Types, startSession } from 'mongoose';
@@ -8,7 +8,12 @@ import { forEach } from 'lodash';
 @Injectable()
 export class AnnouncementsService {
 
-    async listAnnouncements(limit?: number, offset?: number, filter: Record<string, any> = {}, ): Promise<any>{
+    async listAnnouncements(
+        limit?: number, 
+        offset?: number, 
+        filter: Record<string, any> = {}
+    ): Promise<
+    (Omit<IAnnouncement, "createdBy" | "updatedBy" > & { createdBy: IUserDoc, updatedBy: IUserDoc }) []>{
         const results = await AnnouncementModel.find(filter)
         .limit(limit ?? 10)
         .skip(offset ?? 0)
@@ -35,7 +40,6 @@ export class AnnouncementsService {
     ): Promise<IAnnouncementDoc> {
         const timestamp = new Date();
         const prefix = "ANMT"
-        console.log(announcementData)
         
         const { authToken, classCode: relatedClassCode, ...actualData } = announcementData;
 
@@ -60,10 +64,10 @@ export class AnnouncementsService {
                 updatedAt: timestamp,
             })
     
-            newAnnouncement.save();
+            await newAnnouncement.save();
     
             relatedAnnouncementSet.announcements.push(newAnnouncement._id);
-            relatedAnnouncementSet.save();
+            await relatedAnnouncementSet.save();
             return newAnnouncement;
         }
 

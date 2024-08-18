@@ -122,7 +122,7 @@ function Login({ componentRef, pages }: LoginProps){
           }
       })
       .catch( err => {
-          toast.error(err)
+          toast.error(`${err}`)
           toggleLoading()
       })
   }
@@ -215,8 +215,7 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
           toggleLoading()
 
       }).catch(err => {
-          toast.error(`{err}`)
-          //console.log(err)
+          toast.error(`${err}`)
           toggleLoading()
       })
   }
@@ -312,8 +311,8 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
           toggleLoading()
 
       }).catch(err => {
-          toast.error(err)
-          setOTPHasError(false)
+          toast.error(`${err}`)
+          setOTPHasError(true)
           toggleLoading()
       })
   }
@@ -375,7 +374,7 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
 
       makeUnauthenticatedRequest(
           'post', 
-          '/api/v1/auth/update-password',
+          '/api/v1/users/update-password',
           {
               email: `${sessionStorage.getItem('e')}`,
               newPassword: values.newPassword,
@@ -399,7 +398,7 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
           }
       })
       .catch( err => {
-          toast.error(err)
+          toast.error(`${err}`)
           toggleLoading()
       })
   }

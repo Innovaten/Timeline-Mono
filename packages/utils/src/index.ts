@@ -1,7 +1,7 @@
 import { _getToken, _setToken, _clearToken, _getUser, _setUser } from "./auth-token";
 import { cn } from "./cn";
 
-import { useLoading, useDialog, useMovileNavigation, useCountdown, useFileUploader, useToggleManager } from "./hooks";
+import { useLoading, useDialog, useMobileNavigation, useCountdown, useFileUploader, useToggleManager } from "./hooks";
 
 import { fadeParent, fadeParentAndReplacePage, MultiPage } from "./frontend-shenanigans";
 import { makeUnauthenticatedRequest, makeAuthenticatedRequest, abstractAuthenticatedRequest, abstractUnauthenticatedRequest } from "./axios";
@@ -34,7 +34,7 @@ export {
   // Common
   useLoading,
   useCountdown,
-  useMovileNavigation,
+  useMobileNavigation,
   useFileUploader,
   useToggleManager,
 

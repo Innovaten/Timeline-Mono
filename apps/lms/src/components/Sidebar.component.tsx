@@ -1,9 +1,10 @@
 import { PaperClipIcon } from "@heroicons/react/24/solid";
 import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, HomeIcon, XMarkIcon, Bars2Icon, NewspaperIcon, PowerIcon } from '@heroicons/react/24/outline'
-
+import { useMemo } from "react";
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { _clearTokens, useMovileNavigation } from "@repo/utils";
+import { _clearTokens, useMobileNavigation } from "@repo/utils";
+import { useClasses } from "../hooks/classes.hooks";
 const menuTabs = [
     {
         label: "Home",
@@ -73,11 +74,14 @@ const classesTabs = [
 export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
     const routerState = useRouterState();
-    const { navIsOpen, toggleNav } = useMovileNavigation(routerState.location.pathname);
+    const { navIsOpen, toggleNav } = useMobileNavigation(routerState.location.pathname);
+    // const userId = useMemo(() => user?.id, [user?.id]);
+    //const { classes: userClasses, isLoading } = useClasses(user?.id);
+
 
     return (
         <>
-        {/* Movile Nav Header */}
+        {/* Mobile Nav Header */}
             <div className="z-50 flex sm:hidden w-[100vw] items-center px-4 justify-between bg-white shadow h-[60px] top-0 fixed">
                 <img className="h-[35px]" src="/img/timeline-logo.png" />
                 {
@@ -104,6 +108,37 @@ export default function SidebarComponent(){
                                             <MenuIcon className="w-5" />
                                             <p>{label}</p>
                                         </Link>
+                                    )
+                                })
+                            }
+                        </div>
+                    </div>
+
+                    <div className="mt-4">
+                        <small className="text-blue-600">CLASSES</small>
+                        <div className="mt-2 flex flex-col gap-2">
+                            {
+                                classes.map(({title, code }, index) => {
+                                    
+                                    return (
+                                        <div className="group duration-150" key={index}>
+                                            <Link to={`/classes/${code}`} className={`flex gap-4 items-center ${ routePathIsEqual(`/classes/${code}`) ? 'bg-blue-700 text-white hover:bg-blue-600' : 'bg-white hover:bg-blue-400/10 text-blue-600' } duration-150 pl-4 py-4 rounded shadow-sm`}>
+                                                <BookOpenIcon className="w-5" />
+                                                <p>{title}</p>
+                                            </Link>
+                                            <div className="h-0 rounded-b shadow-sm overflow-hidden group-hover:h-fit bg-white/50 flex flex-col duration-150">
+                                                { classesTabs.map(({ title: tabTitle, path, icon }, idx) => {
+                                                    const TabIcon = icon;
+
+                                                    return (
+                                                        <Link to={`/classes/${code}/${path}`} key={idx} className={`flex pl-4 py-2 ${ routePathIsEqual(`/classes/${code}/${path}`) ? 'bg-blue-700 text-white border-b-[1px] border-bg-blue-600 hover:bg-blue-600' : 'bg-white border-b-[1px] border-b-blue-400/10 hover:bg-blue-400/10 text-blue-600' } duration-150 items-center gap-4 truncate`}>
+                                                            <TabIcon className="w-4" />
+                                                            {tabTitle}
+                                                        </Link>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
                                     )
                                 })
                             }

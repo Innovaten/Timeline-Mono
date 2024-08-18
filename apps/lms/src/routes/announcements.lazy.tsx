@@ -20,7 +20,7 @@ function Announcements({}){
     <>
       <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
           <div className='mt-2 flex h-fit justify-between items-center'>
-              <h3 className='text-blue-800'>All Announcements</h3>
+              <h3 className='text-blue-800'>Announcements</h3>
           </div>
           <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>
                     <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>

@@ -416,87 +416,89 @@ function Classes(){
             <DeleteDialog />
 
             <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
-                <div className='mt-2 flex h-fit justify-between items-center'>
+                <div className='mt-2 flex flex-col sm:flex-row h-fit sm:justify-between gap-2 sm:items-center'>
                     <h3 className='text-blue-800'>Classes</h3>
-                    {  user!.role == "SUDO" && 
-                        <Button className='flex px-2 !h-[35px]' onClick={()=>{toggleManager.toggle('create-dialog')}}> <PlusIcon className='inline w-4 mr-1' /> Add a class</Button>
-                    }
-                </div>
-                <div className='w-full flex flex-wrap gap-3 mt-3'>
-                    <div  className=''>
-                        <Button
-                            onClick={() => { toggleManager.toggle('filter-is-shown') }}
-                            variant='outline'
-                            className='!h-[35px] px-2 flex items-center gap-2'
-                        >
-                            <FunnelIcon className='w-4' />
-                            { toggleManager.get('filter-is-shown') ? "Close" : "Show"} Filters    
-                        </Button>
-                    </div>
-                    { 
-                        toggleManager.get('filter-is-shown') && 
-                        <>
-                            <div className='flex flex-row items-center gap-2 '>
-                                <small className='text-blue-700'>Status</small>
-                                <select
-                                    className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
-                                    onChange={(e) => { 
-                                        // @ts-ignore
-                                        StatusChangeFilter(e.target.value)
-                                    }}
+                    <div className='flex flex-col sm:flex-row gap-2 sm:gap-4'>
+                        <div className='flex flex-wrap gap-2 sm:gap-4'>
+                            <div>
+                                <Button
+                                    onClick={() => { toggleManager.toggle('filter-is-shown') }}
+                                    variant='outline'
+                                    className='!h-[35px] px-2 flex items-center gap-2'
                                 >
-                                    { 
-                                        StatusFilterOptions.map((f, idx) =>{ 
-                                            return (
-                                                <option key={idx} value={f}>{f}</option>
-                                            )
-                                        })
-                                    }
-                                </select> 
-                            </div>
-                            <div className='flex flex-row items-center gap-2 '>
-                                <small className='text-blue-700'>Mode of Class</small>
-                                <select
-                                    className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
-                                    onChange={(e) => { 
-                                        // @ts-ignore
-                                        ModeOfClassChangeFilter(e.target.value)
-                                    }}
-                                >
-                                    { 
-                                        ModeOfClassFilterOptions.map((f, idx) =>{ 
-                                            return (
-                                                <option key={idx} value={f}>{f}</option>
-                                            )
-                                        })
-                                    }
-                                </select>
+                                    <FunnelIcon className='w-4' />
+                                    { toggleManager.get('filter-is-shown') ? "Close" : "Show"} Filters    
+                                </Button>
                             </div>
                             { 
-                            user!.role == "SUDO" && 
-                            <div className='flex flex-row items-center gap-2 '>
-                                <small className='text-blue-700'>Assigned Status</small> 
-                                <select
-                                    className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
-                                    onChange={(e) => { 
-                                        // @ts-ignore
-                                        AssignedStatusChangeFilter(e.target.value)
-                                    }}
-                                >
+                                toggleManager.get('filter-is-shown') && 
+                                <>
+                                    <div className='flex flex-row items-center gap-2 '>
+                                        <small className='text-blue-700'>Status</small>
+                                        <select
+                                            className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
+                                            onChange={(e) => { 
+                                                // @ts-ignore
+                                                StatusChangeFilter(e.target.value)
+                                            }}
+                                        >
+                                            { 
+                                                StatusFilterOptions.map((f, idx) =>{ 
+                                                    return (
+                                                        <option key={idx} value={f}>{f}</option>
+                                                    )
+                                                })
+                                            }
+                                        </select> 
+                                    </div>
+                                    <div className='flex flex-row items-center gap-2 '>
+                                        <small className='text-blue-700'>Mode of Class</small>
+                                        <select
+                                            className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
+                                            onChange={(e) => { 
+                                                // @ts-ignore
+                                                ModeOfClassChangeFilter(e.target.value)
+                                            }}
+                                        >
+                                            { 
+                                                ModeOfClassFilterOptions.map((f, idx) =>{ 
+                                                    return (
+                                                        <option key={idx} value={f}>{f}</option>
+                                                    )
+                                                })
+                                            }
+                                        </select>
+                                    </div>
                                     { 
-                                        AssignedStatusFilterOptions.map((f, idx) =>{ 
-                                            return (
-                                                <option key={idx} value={f}>{f}</option>
-                                            )
-                                        })
+                                    user!.role == "SUDO" && 
+                                    <div className='flex flex-row items-center gap-2 '>
+                                        <small className='text-blue-700'>Assigned Status</small> 
+                                        <select
+                                            className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
+                                            onChange={(e) => { 
+                                                // @ts-ignore
+                                                AssignedStatusChangeFilter(e.target.value)
+                                            }}
+                                        >
+                                            { 
+                                                AssignedStatusFilterOptions.map((f, idx) =>{ 
+                                                    return (
+                                                        <option key={idx} value={f}>{f}</option>
+                                                    )
+                                                })
+                                            }
+                                        </select>
+                                    </div>
                                     }
-                                </select>
-                            </div>
+                                </>
                             }
-                        </>
-                    }
-                    <div>
-                        <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
+                            <div>
+                                <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
+                            </div>
+                        </div>
+                        {  user!.role == "SUDO" && 
+                            <Button className='flex w-fit' onClick={()=>{toggleManager.toggle('create-dialog')}}> <PlusIcon className='inline w-4 mr-1' />Add a class</Button>
+                        }
                     </div>
                 </div>
                 <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>
@@ -508,9 +510,9 @@ function Classes(){
                                 <div className='flex gap-4 items-center font-light'>
                                   <span className='w-[100px]  hidden sm:flex justify-end'>MODE</span>
                                   { user!.role == "SUDO" && <span className='w-[120px] hidden sm:flex justify-end'>NO. OF ADMINS</span> }
-                                  <span className='w-[100px] hidden sm:flex justify-end'>LAST UPDATED</span>
+                                  <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
                                   
-                                  <span className='w-[120px] flex justify-end'>ACTIONS</span>
+                                  { user!.role == "SUDO"  && <span className='w-[120px] flex justify-end'>ACTIONS</span> }
                                 </div>
                             </div>
                         {
@@ -525,40 +527,34 @@ function Classes(){
                         !classesIsLoading && classes && classes.length != 0 && classes.map((tClass, idx) => {
                             return (
                             // Onclick trigger a dialog
-                            <div 
-                                key={idx} 
-                                className = 'w-full text-blue-700 cursor-pointer py-2 px-1 sm:px-3 bg-white border-blue-700/40 border-b-[0.5px] flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
-                                >
+                            <Link 
+                              to={`/classes/${tClass.code}`}
+                              key={idx} 
+                              className = 'w-full text-blue-700 cursor-pointer py-2 px-1 sm:px-3 bg-white border-blue-700/40 border-b-[0.5px] flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
+                            >
                                 <div className='flex items-center gap-4 truncate'>
-                                    <h5 className='flex-1 font-normal truncate'>{tClass.name}</h5>
+                                    <span className='flex-1 font-normal truncate'>{tClass.name}</span>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
                                   <span className='hidden w-[100px] sm:flex justify-end'>{tClass.modeOfClass}</span>
                                   { user!.role == "SUDO" && <span className='w-[120px] hidden sm:flex justify-end'>{tClass.administrators.length} Admin(s)</span> }
-                                  <span className='w-[100px] hidden sm:flex justify-end'>{dayjs(tClass.updatedAt).format("DD/MM/YY")}</span>
-                                  <div className='w-[120px] flex justify-end gap-2'>
-                                        <Link to={`/classes/${tClass.code}`}  className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' >
-                                            <EyeIcon className='w-4 h-4' />
-                                        </Link>
-                                        { 
-                                            user!.role == "SUDO" && 
-                                            <> 
-                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={()=>{ setSelectedClass(tClass), toggleManager.toggle('assign-dialog')}}>              
+                                  <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(tClass.createdAt).format("HH:mm - DD/MM/YYYY")}</span>
+                                  { 
+                                        user!.role == "SUDO" && 
+                                            <div className='w-[120px] flex justify-end gap-2'>
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e)=>{ e.preventDefault(); setSelectedClass(tClass), toggleManager.toggle('assign-dialog')}}>              
                                                     <UserPlusIcon className='w-4 h-4' />
                                                 </span>
-                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={()=>{ setSelectedClass(tClass), toggleManager.toggle('update-dialog')}}>              
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e)=>{ e.preventDefault(); setSelectedClass(tClass), toggleManager.toggle('update-dialog')}}>              
                                                     <PencilIcon className='w-4 h-4' />
                                                 </span>
-                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedClass(tClass); toggleManager.toggle('delete-dialog') }}>
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); setSelectedClass(tClass); toggleManager.toggle('delete-dialog') }}>
                                                     <TrashIcon className='w-4 h-4' />
                                                 </span>
-                                            </> 
-                                        }
+                                            </div> 
+                                    }
                                   </div>
-                            
-                                </div>
-
-                            </div>
+                            </Link>
                             )
                         })
                         }

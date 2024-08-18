@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { toast } from 'sonner'
 import { Formik, Form } from 'formik'
 import * as yup from 'yup'
+import dayjs from 'dayjs';
 
 export const Route = createLazyFileRoute('/students')({
   component: Students
@@ -167,39 +168,25 @@ function Students(){
     <>
       
       <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
-        <h3 className='text-blue-800 mt-2'>Students</h3>     
-          <div className='w-full flex gap-3 mt-2'>
+        <div className='flex justify-between mt-2 gap-2 items-center'>
+          <h3 className='text-blue-800'>Students</h3>     
+          <div className='flex gap-3'>
               <div  className='w-full flex flex-wrap gap-3'>
-                  {/* <Button
-                      onClick={toggleFiltersAreShown}
-                      variant='outline'
-                      className='!h-[35px] px-2 flex items-center gap-2'
-                  >
-                      <FunnelIcon className='w-4' />
-                      { filterIsShown ? "Close" : "Show"} Filters    
-                  </Button>
-                  { 
-                    filterIsShown && 
-                    <>
-                    </>
-
-                  } */}
-                  
-                    <div className='flex flex-col gap-2 justify-end'>
+                  <div className='flex flex-col gap-2 justify-end'>
                     <Button className='!h-[35px] px-2' variant='outline' onClick={() => {toggleManager.toggle('filter-is-shown') }}> <ArrowPathIcon className='w-4' /> </Button>
-                    </div>
+                  </div>
               </div> 
           </div>
+        </div>
           <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>
             <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
               <div className = 'w-full text-blue-700 py-2 px-1 sm:px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
                 <div className='flex items-center gap-4'>
-                    <span  className='w-[70px] sm:w-[100px]'>CODE</span>
+                    <span  className='w-[70px]'>CODE</span>
                     <span className='flex-1 font-normal truncate'>NAME</span>
                   </div>
                   <div className='hidden sm:flex gap-4 items-center font-light'>
-                      <span className='w-[100px] flex justify-end'>DATE CREATED</span>
-                      <span className='w-[150px] flex justify-end'></span>
+                      <span className='w-[150px] flex justify-end'>DATE CREATED</span>
                   </div>
                 </div>
                 {
@@ -216,12 +203,11 @@ function Students(){
                       // Onclick trigger a dialog
                       <div key={idx} onClick={() => { setSelected(student); toggleManager.toggle('update-dialog') }} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                         <div className='flex items-center gap-4'>
-                            <small className='font-light w-[70px] sm:w-[100px]'>{student.code}</small>
-                            <h5 className='flex-1 font-normal truncate'>{student.firstName + " " + student.lastName }</h5>
+                            <small className='font-light w-[70px]'>{student.code}</small>
+                            <span className='flex-1 font-normal truncate'>{student.firstName + " " + student.lastName }</span>
                         </div>
                         <div className='hidden sm:flex gap-4 items-center font-light'>
-                            <span className='w-[100px] flex justify-end'>{new Date(student.updatedAt).toLocaleTimeString()}</span>
-                            <span className='w-[150px] flex justify-end'>{new Date(student.updatedAt).toDateString()}</span>
+                            <span className='w-[150px] flex justify-end'>{dayjs(student.updatedAt).format("HH:mm - DD/MM/YYYY")}</span>
                         </div>
                     </div>
                       )

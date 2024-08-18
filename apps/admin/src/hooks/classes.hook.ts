@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
-import { IClassDoc, IUserDoc, IAnnouncementSetDoc } from "@repo/models";
+import { IClassDoc, IUserDoc, IAssignmentDoc, IAnnouncementDoc, IAnnouncementSetDoc, IAssignmentSet } from "@repo/models";
 import { toast } from "sonner";
 import { useLMSContext } from "../app";
+import { IAssignment } from "@repo/models";
 
 export function useClasses(
     flag?: boolean, 
@@ -114,7 +115,12 @@ export function useClassesAssignedStatusFilter(){
 export function useClass(flag: boolean, specifier: string, isId:boolean) {
 
 
-    const [ thisClass, setClass ] = useState<Omit<IClassDoc, "createdBy" | "administrators" | "announcementSet"> & { createdBy: IUserDoc, administrators: IUserDoc[], announcementSet: IAnnouncementSetDoc} | null>(null)
+    const [ thisClass, setClass ] = useState<
+        Omit<IClassDoc, "createdBy" | "administrators" | "announcementSet"> & { 
+            createdBy: IUserDoc, 
+            administrators: IUserDoc[], 
+            announcementSet: IAnnouncementSetDoc & { announcements: IAnnouncementDoc[] },
+            assignmentSet: IAssignmentSet & { assignments: IAssignmentDoc[] }} | null>(null)
     const { isLoading, toggleLoading, resetLoading} = useLoading();
 
     const route =  `?isId=${( isId ?? true )}`

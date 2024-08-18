@@ -1,14 +1,15 @@
 import { createRootRouteWithContext, Link, Outlet, useRouterState, redirect } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { _getToken, _getUser, _setUser } from '@repo/utils';
+import { _clearTokens, _getToken, _getTokenExpiration, _getUser, _setUser } from '@repo/utils';
 import SidebarComponent from '../components/Sidebar.component';
 import { Toaster } from 'sonner';
 import { IUserDoc } from "@repo/models";
 import { useLMSContext } from '../app';
 import { makeAuthenticatedRequest } from '@repo/utils';
+import { MinifiedUser } from '../context';
 
 export interface ConsoleRouterContext {
-  user: IUserDoc | null,
+  user: MinifiedUser | null,
 }
 
 
@@ -17,14 +18,23 @@ export const Route = createRootRouteWithContext<ConsoleRouterContext>()({
   beforeLoad: ( {  location }) => {
     const authToken = _getToken()
     const userToken = _getUser()
+    const expirationDate = _getTokenExpiration()
 
-    if(!location.href.startsWith('/login') && (!authToken || !userToken) ){ // If we don't know you
+    const userTokensAreNotSet = !authToken || !userToken || ( new Date(expirationDate ?? "").getTime() < new Date().getTime() ) 
+    const isNotLoginPage = !location.href.startsWith('/login')
+
+    if(isNotLoginPage && userTokensAreNotSet ){ // If we don't know you
+      if(new Date(expirationDate ?? "").getTime() < new Date().getTime()){
+        _clearTokens()
+      }
       throw redirect ({to: "/login"})
+
     } else if(authToken && !userToken){ //  You have a token but user context is not set
         makeAuthenticatedRequest(
           "get",
           '/api/v1/auth/verify-token'
         ).then(res => {
+          console.log(res.data)
           if(res.data.success){
             _setUser(res.data.data);
           } else {

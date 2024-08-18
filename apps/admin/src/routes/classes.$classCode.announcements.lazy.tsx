@@ -1,5 +1,5 @@
 import { Button, DialogContainer, FileUploader } from '@repo/ui';
-import { _getToken, abstractAuthenticatedRequest, useDialog, useFileUploader, useLoading, useToggleManager } from '@repo/utils'
+import { _getToken, abstractAuthenticatedRequest, cn, useDialog, useFileUploader, useLoading, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useCompositeFilterFlag, useAnnouncements, useSpecificEntity } from '../hooks';
@@ -33,18 +33,15 @@ function Announcements({ }){
     'delete-is-loading': false
     }
 
-    type TogglesType = typeof initialToggles
-    type ToggleKeys = keyof TogglesType
-    const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
+  type TogglesType = typeof initialToggles
+  type ToggleKeys = keyof TogglesType
+  const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
 
   const { changeFilter, filter, filterChangedFlag, filterOptions} = useAnnouncementStateFilter()
   
   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ toggleManager.get('refresh'), filterChangedFlag ])
 
-  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0, {
-      ...filter,
-      user,
-    })
+  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0, filter)
     
   const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
 
@@ -143,6 +140,7 @@ function Announcements({ }){
                                 <span className='flex-1 font-normal truncate'>TITLE</span>
                             </div>
                             <div className='flex gap-4 items-center font-light'>
+                                <span className='w-[150px] hidden sm:flex justify-end'>STATUS</span>
                                 <span className='w-[150px] hidden sm:flex justify-end'>AUTHOR</span>
                                 <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
                                 <span className='w-[100px] flex justify-end'>ACTIONS</span>
@@ -165,9 +163,16 @@ function Announcements({ }){
                                         <span className='flex-1 font-normal truncate'>{announcement.title}</span>
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
+                                    <span className='w-[100px] flex items-center gap-2 justify-end'>
+                                            {announcement.isDraft ? "Draft" : "Public"}
+                                            <span className={cn(
+                                                "w-2 h-2 rounded-full border-[1px] ",
+                                                announcement.isDraft ? "bg-yellow-600 border-yellow-600" : "bg-green-600 border-green-600",
+                                            )}></span>
+                                        </span>
                                         <span className='w-[150px] hidden sm:flex justify-end'>{announcement.createdBy.firstName + " " + announcement.createdBy.lastName}</span>
                                         <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(announcement.createdAt).format("HH:mm - DD/MM/YY")}</span>
-                                        <span className='w-[100px] flex gap-2 justify-end'>
+                                        <span className='w-[150px] flex gap-2 justify-end'>
                                             <Link to={`/classes/${classCode}/announcements/${announcement.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
                                                 <PencilIcon className='w-4 h-4' />
                                             </Link>

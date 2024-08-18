@@ -1,9 +1,9 @@
-import { _getToken, _setToken, _clearToken, _getUser, _setUser } from "./auth-token";
+import { _getToken, _setToken, _clearTokens, _getUser, _setUser, _setTokenExpiration, _getTokenExpiration } from "./auth-token";
 import { cn } from "./cn";
 
 import { useLoading, useDialog, useMovileNavigation, useCountdown, useFileUploader, useToggleManager } from "./hooks";
 
-import { fadeParent, fadeParentAndReplacePage, MultiPage } from "./frontend-shenanigans";
+import { fadeParent, fadeParentAndReplacePage, MultiPage, copyToClipboard } from "./frontend-shenanigans";
 import { makeUnauthenticatedRequest, makeAuthenticatedRequest, abstractAuthenticatedRequest, abstractUnauthenticatedRequest } from "./axios";
 import { validPhoneNumber } from "./phone";
 
@@ -11,7 +11,11 @@ export {
   // Auth Tokens
   _getToken,
   _setToken,
-  _clearToken,
+  _clearTokens,
+
+  // Token expiration
+  _setTokenExpiration,
+  _getTokenExpiration,
 
   // Session user object
   _getUser,
@@ -27,6 +31,7 @@ export {
   fadeParent,
   fadeParentAndReplacePage,
   MultiPage,
+  copyToClipboard,
 
   // Custom Hooks
 

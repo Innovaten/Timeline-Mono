@@ -39,3 +39,30 @@ export function useStudents(
     return { isLoading, students, count }
 
 }
+
+export function useStudentsInClass(flag: boolean, specifier: string, isId: boolean = true){
+
+    const [ isLoading, setIsLoading ] = useState<boolean>(true);
+    const [ students, setStudents ] = useState<IUserDoc[]>([]);
+
+    useEffect(
+        () =>{
+            setIsLoading(true);
+            makeAuthenticatedRequest(
+                "get",
+                `/api/v1/classes/${specifier}/students?isId=${isId}`
+            )
+            .then( res => {
+                if(res.status == 200 && res.data.success){
+                    setStudents(res.data.data);
+                } else {
+                    console.log(res.data.error.msg);
+                }
+                setIsLoading(false);
+            })
+        },
+    [flag])
+
+    return { isLoading, students }
+
+}

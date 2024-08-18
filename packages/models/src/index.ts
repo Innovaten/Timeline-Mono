@@ -9,6 +9,9 @@ import { ModuleModel, ModuleSchema } from "./module";
 import { LessonModel, LessonSchema } from "./lessons";
 import { LessonSetModel, LessonSetSchema } from "./lessonSet";
 import { CompletedLessonSchema, CompletedLessonsModel } from "./completedLessons";
+import { AssignmentSetModel, AssignmentSetSchema } from "./assignment-set";
+import { AssignmentModel, AssignmentSchema } from "./assignment";
+import { AssignmentSubmissionModel, AssignmentSubmissionSchema } from "./assignment-submission";
 
 import { IUserDoc } from "./user/index.types";
 import { IRegistrationDoc } from "./registration/index.types";
@@ -20,13 +23,15 @@ import { IModuleDoc } from "./module/index.types";
 import { ILessonDoc } from "./lessons/index.types";
 import { ILessonSetDoc } from "./lessonSet/index.types";
 import { ICompletedLessonDoc } from "./completedLessons/index.types";
+import { IAssignmentSet, IAssignmentSetDoc } from "./assignment-set/index.types";
+import { IAssignment, IAssignmentDoc } from "./assignment/index.types";
+import { IAssignmentSubmission, IAssignmentSubmissionDoc, AssignmentSubmissionStatusType } from "./assignment-submission/index.types";
 
 ( async function index(){
     await mongoose.connect(process.env.MONGODB_URI!, {
         dbName: process.env.MONGODB_DATABASE
     });
     console.log('--- MongoDB Connected ---');
-    // console.log('URI: ', process.env.MONGODB_URI, "  DB: ", process.env.MONGODB_DATABASE)
 })()
 
 export {
@@ -42,6 +47,13 @@ export {
     type ILessonDoc,
     type ILessonSetDoc,
     type ICompletedLessonDoc,
+    type IAssignmentSet,
+    type IAssignmentSetDoc,
+    type IAssignment,
+    type IAssignmentDoc,
+    type IAssignmentSubmission,
+    type IAssignmentSubmissionDoc,
+    type AssignmentSubmissionStatusType,
 
     //Models
     UserModel,
@@ -54,6 +66,9 @@ export {
     LessonModel,
     LessonSetModel,
     CompletedLessonsModel,
+    AssignmentSetModel,
+    AssignmentModel,
+    AssignmentSubmissionModel,
 
     // Schema
     UserSchema,
@@ -62,9 +77,12 @@ export {
     AnnouncementSchema,
     AnnouncementSetSchema,
     ResourceSchema,
-
     ModuleSchema,
     LessonSchema,
     LessonSetSchema,
     CompletedLessonSchema,
+    AssignmentSetSchema,
+    AssignmentSchema,
+    AssignmentSubmissionSchema,
+
 }

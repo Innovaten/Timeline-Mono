@@ -43,9 +43,9 @@ export const ClassSchema = new Schema<IClassDoc>({
         type: [ SchemaTypes.ObjectId],
         default: []
     },
-    assignments: {
-        type: [ SchemaTypes.ObjectId],
-        default: []
+    assignmentSet: {
+        type: SchemaTypes.ObjectId,
+        ref: "AssignmentSets"
     },
     quizzes: {
         type: [ SchemaTypes.ObjectId],

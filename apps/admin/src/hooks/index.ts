@@ -8,6 +8,8 @@ import { useAnnouncements, useAnnouncement, useAnnouncementStateFilter } from ".
 import { useLessons, useLesson, useLessonStateFilter } from "./lessons.hook"
 import { useModules, useModule, useModuleStateFilter } from "./modules.hook"
 import { useSpecificEntity } from "./common.hook"
+import { useAssignment, useAssignmentStateFilter, useAssignments, useAssignmentsByClass, useAssignmentSubmission, useAssignmentSubmissions, useAssignmentSubmissionStatusFilter, } from "./assignment.hook"
+import { useStudents, useStudentsInClass } from "./students.hook"
 export {
 
     useRegistrations,
@@ -31,5 +33,14 @@ export {
     useLessonStateFilter,
     useModules,
     useModule,    
-    useModuleStateFilter
+    useModuleStateFilter,
+    useAssignment,
+    useAssignmentStateFilter,
+    useAssignments,
+    useAssignmentsByClass,
+    useAssignmentSubmission,
+    useAssignmentSubmissions,
+    useAssignmentSubmissionStatusFilter,
+    useStudents,
+    useStudentsInClass,
 }

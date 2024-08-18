@@ -110,8 +110,7 @@ function IndexPage() {
                       </div>
                       <div className='flex gap-4 items-center font-light'>
                           <span className='w-[100px] flex justify-end'>STATUS</span>
-                          <span className='w-[120px] sm:flex justify-end'>DATE CREATED</span>
-                          <span className='w-[150px] sm:flex justify-end'></span>
+                          <span className='w-[150px] sm:flex justify-end'>DATE CREATED</span>
                       </div>
                   </div>
                     {
@@ -132,9 +131,9 @@ function IndexPage() {
                             className="w-full text-blue-700 py-2 px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10"
                           >
                             <small className='font-light w-[70px] sm:w-[80px]'>{registrant.code}</small>
-                            <h5 className="flex-1 font-normal truncate">
+                            <span className="flex-1 font-normal truncate">
                               {registrant.firstName + " " + registrant.lastName}
-                            </h5>
+                            </span>
                             <div className="flex gap-4 items-center font-light">
                               <span className='w-[100px] flex gap-2 items-center justify-end'>
                                 {registrant.status}
@@ -147,11 +146,8 @@ function IndexPage() {
                                   registrant.status == 'Denied' ? "bg-red-600 border-red-600" : "",
                                 )}></span>
                               </span>
-                              <span className='w-[120px] hidden sm:flex justify-end'>
-                                {new Date(registrant.updatedAt).toLocaleTimeString()}
-                              </span>
                               <span className='w-[150px] hidden sm:flex justify-end'>
-                                {new Date(registrant.updatedAt).toDateString()}
+                                {dayjs(registrant.updatedAt).format("HH:mm - DD/MM/YYYY")}
                               </span>
                             </div>
                           </div>

@@ -1,4 +1,5 @@
 import { RefObject, SetStateAction, Dispatch, useState } from "react";
+import { toast } from "sonner";
 
 export function fadeParent(
   parentRef: RefObject<HTMLDivElement | HTMLSpanElement>,
@@ -83,5 +84,15 @@ export function MultiPage(
     goToStart,
     goToEnd
   }
+
+}
+
+export function copyToClipboard(text: string){
+
+  navigator.clipboard.writeText(text).then(() => {
+    toast.success("Copied successfully")
+  }).catch((err) => {
+    toast.error('An error occurred while copying to clipboard')
+  })
 
 }

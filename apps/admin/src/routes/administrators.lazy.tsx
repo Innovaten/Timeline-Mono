@@ -332,46 +332,47 @@ function Administrators(){
             <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
                 <div className='mt-2 flex h-fit justify-between items-center'>
                     <h3 className='text-blue-800'>Administrators</h3>
-                    <Button className='flex px-2 !h-[35px]' onClick={()=>{toggleManager.toggle('create-dialog')}}> <PlusIcon className='inline w-4 mr-1' /> Add <span className='hidden sm:inline' >&nbsp;an administrator</span></Button>
-                </div>
-                <div className='w-full mt-3 flex flex-wrap gap-4'>
-                    <Button
-                        onClick={()=>{ toggleManager.toggle('filters-is-shown')}}
-                        variant='outline'
-                        className='!h-[35px] px-2 flex items-center gap-2'
-                    >
-                        <FunnelIcon className='w-4' />
-                        { toggleManager.get('filters-is-shown') ? "Close" : "Show"} Filters    
-                    </Button>
+                    <div className='flex gap-2 sm:gap-4'>
+                        <div className='w-full flex flex-wrap gap-2 sm:gap-4'>
+                            <Button
+                                onClick={()=>{ toggleManager.toggle('filters-is-shown')}}
+                                variant='outline'
+                                className='!h-[35px] px-2 flex items-center gap-2'
+                            >
+                                <FunnelIcon className='w-4' />
+                                <span className='hidden sm:inline'>{ toggleManager.get('filters-is-shown') ? "Close" : "Show"} Filters</span>
+                            </Button>
 
-                    { toggleManager.get('filters-is-shown') &&
-                        <select
-                            className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
-                            onChange={(e) => { 
-                                // @ts-ignore
-                                changeFilter(e.target.value)
-                            }}
-                        >
-                            { 
-                                filterOptions.map((f, idx) =>{ 
-                                    return (
-                                        <option key={idx} value={f}>{f}</option>
-                                    )
-                                })
+                            { toggleManager.get('filters-is-shown') &&
+                                <select
+                                    className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
+                                    onChange={(e) => { 
+                                        // @ts-ignore
+                                        changeFilter(e.target.value)
+                                    }}
+                                >
+                                    { 
+                                        filterOptions.map((f, idx) =>{ 
+                                            return (
+                                                <option key={idx} value={f}>{f}</option>
+                                            )
+                                        })
+                                    }
+                                </select> 
+
                             }
-                        </select> 
-
-                    }
-                    <div className='flex flex-col gap-2 justify-end'>
-                        <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
+                            <div className='flex flex-col justify-end'>
+                                <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
+                            </div>
+                        </div>
+                        <Button className='flex shrink-0' onClick={()=>{toggleManager.toggle('create-dialog')}}> <PlusIcon className='inline w-4 mr-1' /><span className='hidden sm:inline' > Add an administrator</span></Button>
                     </div>
                 </div>
                 <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>
                     <div className='bg-white w-full overflow-auto h-full flex flex-col rounded'>
                         <div className = 'w-full text-blue-700 py-2 px-1 sm:px-3 bg-blue-50 border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm'>
                             <div className='flex items-center gap-4'>
-                                <span  className='hidden sm:inline w-[70px]'>CODE</span>
-                                <span  className='w-[50px]'>ROLE</span>
+                                <span  className='w-[40px]'>ROLE</span>
                                 <span className='flex-1 font-normal truncate'>NAME</span>
                             </div>
                             <div className='flex gap-4 items-center font-light'>
@@ -391,11 +392,10 @@ function Administrators(){
                         { 
                         !administratorsIsLoading && administrators.map((admin, idx) => {
                             return (
-                            <div key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                            <div key={idx} className = 'w-full text-blue-700 py-2 px-1 sm:px-2 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                 <div className='flex items-center gap-4'>
-                                    <small className='hidden sm:inline font-light w-[70px]'>{admin.code}</small>
-                                    <small className='font-light w-[50px]'>{admin.role}</small>
-                                    <h5 className='flex-1 font-normal truncate'>{admin.firstName + " " + admin.lastName }</h5>
+                                    <small className='font-light w-[40px]'>{admin.role}</small>
+                                    <span className='flex-1 font-normal truncate'>{admin.firstName + " " + admin.lastName }</span>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
                                     <span className='w-[150px] hidden sm:flex justify-end'>{new Date(admin.createdAt).toDateString()}</span>

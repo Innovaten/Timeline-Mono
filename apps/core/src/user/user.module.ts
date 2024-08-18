@@ -6,9 +6,18 @@ import { JwtService } from '../common/services/jwt.service';
 import { KafkaService } from '../common/services/kafka.service';
 import { ClassesService } from '../classes/classes.service';
 import { AnnouncementsService } from '../announcements/announcements.service';
+import { AssignmentsService } from '../assignments/assignments.service';
 
 @Module({
-  providers: [UserService, AuthGuard, JwtService, KafkaService, ClassesService, AnnouncementsService],
+  providers: [
+    UserService, 
+    AuthGuard, 
+    JwtService, 
+    KafkaService, 
+    ClassesService, 
+    AnnouncementsService,
+    AssignmentsService,
+  ],
   controllers: [UsersController]
 })
 export class UserModule {}

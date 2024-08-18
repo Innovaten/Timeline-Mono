@@ -113,12 +113,13 @@ export function usePendingCount(
     return { isLoading, pendingCount }
 }
 export function useAnnouncementsCount(
+    id: string,
     refreshFlag: boolean = true,  
-    filter: Record<string,any> = {}
 ){
     const [ isLoadingAnnouncement, setIsLoadingAnnouncement ] = useState<boolean>(true);
     const [ announcementsCount, setAnnouncementsCount ] = useState<number>(0);
-
+    const filter = { createdBy: id }
+    
     useEffect(
         () =>{
             setIsLoadingAnnouncement(true);

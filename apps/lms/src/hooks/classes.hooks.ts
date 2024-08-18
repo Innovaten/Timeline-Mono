@@ -1,75 +1,43 @@
-import { useEffect, useState } from "react";
-import { useLMSContext } from "../app";
-import { IAnnouncementDoc, IAnnouncementSetDoc, IAssignmentDoc, IAssignmentSet, IClassDoc, IUserDoc } from "@repo/models";
-import { abstractAuthenticatedRequest, useLoading } from "@repo/utils";
+import {  useEffect,useState } from "react";
+import { IClassDoc } from "@repo/models";
+import { makeAuthenticatedRequest } from "@repo/utils";
 import { toast } from "sonner";
 
-export function useClasses(
-    flag: boolean, 
-    filter: Record<string, any> = {},
-    limit: number = 10, 
-    offset: number = 0, 
-){
-    const  { user } = useLMSContext()
-    const [ isLoading, setIsLoading ] = useState<boolean>(true);
-    const [ classes, setClasses ] = useState<IClassDoc[]>([]);
-    const [ count, setCount ] = useState<number>(0);
+export function useClasses( id : string){
 
-    if(!user) return { isLoading: false, classes: [], count: 0 }
-
-    const route = `/api/v1/users/${user._id}/classes`
+    const [classes, setClasses] = useState<IClassDoc[]>([]);
+    const [classCount, setClassCount] = useState<number>(0);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(
-        () => {
-            setIsLoading(true);
-            abstractAuthenticatedRequest(
+        () =>{
+            makeAuthenticatedRequest(
                 "get",
-                `${route}?limit=${limit}&offset=${offset}&filter=${JSON.stringify(filter)}`,
-                {}, {},
-                {
-                    onSuccess: (data) => {
-                        setClasses(data.classes);
-                        setCount(data.count);
-                    },
-                    onFailure: (err) => {
-                        toast.error(`${err.message ? err.message : err}`)
-                    },
-                    finally: () => { setIsLoading(false) }
+                `/api/v1/users/${id}/classes`,
+            ).then( res => {
+                if(res.status == 200 && res.data.success){
+                    console.log(res.data.data.classes);
+                    setClasses(res.data.data.classes);
+                    setClassCount(res.data.data.count);
+                } else {
+                    console.log(res.data.error.msg);
+                    toast.error(res.data.error.msg)
                 }
-            )
+            })
+            .catch(err => {
+                if(err.message){
+                    toast.error(err.message)
+                } else {
+                    toast.error(`${err}`)
+                }
+            })
+            .finally(() => {
+                setIsLoading(false);
+            })
         },
-    [flag])
+    [id])
+    
 
-    return { isLoading, classes, count }
-}
+    return { classes, classCount, isLoading }
 
-export function useClass(flag: boolean, specifier: string, isId:boolean) {
-
-
-    const [ thisClass, setClass ] = useState<
-        Omit<IClassDoc, "createdBy" | "administrators" | "announcementSet"> & { 
-            createdBy: IUserDoc, 
-            administrators: IUserDoc[], 
-            announcementSet: IAnnouncementSetDoc & { announcements: IAnnouncementDoc[] },
-            assignmentSet: IAssignmentSet & { assignments: IAssignmentDoc[] }} | null>(null)
-    const { isLoading, toggleLoading, resetLoading} = useLoading();
-
-
-    useEffect(() => {
-        abstractAuthenticatedRequest(
-            "get",
-            `/api/v1/classes/${specifier}?isId=${( isId ?? true )}`,
-            {},
-            {},
-            {
-                onStart: toggleLoading,
-                onSuccess: (data) => {setClass(data)},
-                onFailure: (err) => {toast.error(`${err.msg}`)},
-                finally: resetLoading
-            }
-        )
-
-    }, [flag])
-
-    return { thisClass, isLoading}
 }

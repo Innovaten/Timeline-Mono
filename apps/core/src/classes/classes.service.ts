@@ -139,7 +139,6 @@ export class ClassesService {
         adminDoc.classes.push(new Types.ObjectId(`${classDoc._id}`));
 
 
-        classDoc.updatedAt = new Date();
         classDoc.updatedBy = new Types.ObjectId(`${updator}`)
         adminDoc.updatedAt = new Date();
 
@@ -157,7 +156,6 @@ export class ClassesService {
         }
 
         classDoc.meta.isDeleted = true;
-        classDoc.updatedAt = new Date();
         classDoc.updatedBy = new Types.ObjectId(actor);
 
         await classDoc.save();
@@ -266,7 +264,6 @@ export class ClassesService {
         relatedAssignmentSet.updatedAt = timestamp;
         relatedAssignmentSet.updatedBy = new Types.ObjectId(`${user._id}`)
 
-        relatedClass.updatedAt = timestamp;
         relatedClass.updatedBy = new Types.ObjectId(`${user._id}`) 
         
 

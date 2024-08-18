@@ -19,13 +19,13 @@ export class CreateAnnouncementDto {
 
 export class UpdateAnnouncementDto {
     @IsString()
-    title: string;
+    title?: string;
     
     @IsString()
-    content: string;
+    content?: string;
     
     @IsBoolean()
-    isDraft: boolean
+    isDraft?: boolean
 
     @IsString()
     classCode: string;

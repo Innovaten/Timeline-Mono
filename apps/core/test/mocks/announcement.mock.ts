@@ -6,7 +6,8 @@ type CreateRandomAnnouncementProps = {
   classId?: Types.ObjectId 
   creatorId?: Types.ObjectId 
   updatorId?: Types.ObjectId 
-  announcementSet?: Types.ObjectId 
+  announcementSet?: Types.ObjectId,
+  isDraft?: boolean,
 }
 
 export function createRandomAnnouncement(
@@ -14,7 +15,8 @@ export function createRandomAnnouncement(
     classId, 
     creatorId, 
     updatorId, 
-    announcementSet
+    announcementSet,
+    isDraft,
   }: CreateRandomAnnouncementProps 
 ): IAnnouncement & {_id: Types.ObjectId} {
 
@@ -31,7 +33,7 @@ export function createRandomAnnouncement(
       isDeleted: false,
     },
 
-    isDraft: false,
+    isDraft: isDraft ?? false,
 
     createdBy: creatorId ?? new Types.ObjectId(),
     updatedBy:  updatorId ?? new Types.ObjectId(),
@@ -42,11 +44,11 @@ export function createRandomAnnouncement(
 
 }
 
-export function createRandomAnnouncements(length: number, { classId, creatorId, updatorId, announcementSet}: CreateRandomAnnouncementProps): (IAnnouncement & {_id: Types.ObjectId}) [] {
+export function createRandomAnnouncements(length: number, { classId, creatorId, updatorId, announcementSet, isDraft }: CreateRandomAnnouncementProps): (IAnnouncement & {_id: Types.ObjectId}) [] {
 
   const announcements: (IAnnouncement & {_id: Types.ObjectId}) [] = []
   for(let i = 0; i < length; i++){
-    announcements.push( createRandomAnnouncement({ classId, creatorId, updatorId, announcementSet }) )
+    announcements.push( createRandomAnnouncement({ classId, creatorId, updatorId, announcementSet, isDraft: isDraft ?? false }) )
   }
   return announcements;
 }

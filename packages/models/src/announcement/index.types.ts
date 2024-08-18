@@ -4,9 +4,9 @@ export interface IAnnouncement {
   code: string;
   title: string;
   content: string;
-  announcementSet: Types.ObjectId;
+  announcementSet?: Types.ObjectId;
 
-  class: Types.ObjectId;
+  class?: Types.ObjectId;
 
   meta: {
     isDeleted: boolean;

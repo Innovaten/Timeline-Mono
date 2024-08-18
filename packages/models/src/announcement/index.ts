@@ -20,13 +20,11 @@ export const AnnouncementSchema = new Schema<IAnnouncement>({
     },
     announcementSet: {
         type: SchemaTypes.ObjectId,
-        required: true,
         ref: "AnnouncementSets"
     },
 
     class: {
         type: SchemaTypes.ObjectId,
-        required: true,
         ref: "Classes"
     },
 

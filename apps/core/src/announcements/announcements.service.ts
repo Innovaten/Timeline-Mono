@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncement, IAnnouncementDoc, IUserDoc, UserModel } from '@repo/models';
 import { CreateAnnouncementDto, UpdateAnnouncementDto } from './announcements.dto';
 import { generateCode } from '../utils';
@@ -200,12 +200,16 @@ export class AnnouncementsService {
             throw new Error("Specified Announcement could not be found");
         }
 
+        if(!announcement.isDraft){
+            throw new BadRequestException("Specified announcement is already public");
+        }
+
         announcement.isDraft = false;
         announcement.updatedAt = timestamp;
 
         announcement.updatedBy = new Types.ObjectId(updator);
 
-        announcement.save()
+        await announcement.save()
         
         return announcement;
     }
@@ -231,6 +235,6 @@ export class AnnouncementsService {
 
         const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }, ...filter }).sort({ createdAt: -1 }).populate("createdAt createdBy");
         return announcements;
-}
+    }
 
 }

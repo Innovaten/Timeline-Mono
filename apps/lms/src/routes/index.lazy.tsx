@@ -1,13 +1,11 @@
 import { Link, createLazyFileRoute } from '@tanstack/react-router'
 import { _getToken } from '@repo/utils';
-import { useClasses } from '../hooks/classes.hooks';
+
 import { useLMSContext } from '../app'
 import { BookOpenIcon, MegaphoneIcon, PencilSquareIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData'
 import CalendarComponent from '../components/Calendar.component';
-import { useAnnouncementCount } from '../hooks/announcements.hooks';
-import { useAnnouncementsResource, useAssignmentsResource, useClassesResource } from '../hooks';
 
 dayjs.extend(localeData)
 
@@ -18,11 +16,7 @@ export const Route = createLazyFileRoute('/')({
 function IndexPage() {
 
     const user = useLMSContext((state) => state.user);
-    const { classesNum } = useClassesResource()
-    const { announcementsNum } = useAnnouncementsResource()
-    const { assignmentsNum } = useAssignmentsResource()
-
-
+    
     const currentHour = new Date().getHours()
     const greeting = currentHour < 12 ? "Morning" :
         currentHour < 17 ? "Afternoon" : "Evening"
@@ -32,12 +26,12 @@ function IndexPage() {
     const stats = [
       {
         label: 'Classes',
-        value: classesNum,
+        value: 3,
         icon: BookOpenIcon,
       },
       {
         label: 'Announcements',
-        value: announcementsNum,
+        value: 10,
         icon: MegaphoneIcon,
       },
       {
@@ -47,7 +41,7 @@ function IndexPage() {
       },
       {
         label: 'Assignments',
-        value: assignmentsNum,
+        value: 11,
         icon: NewspaperIcon,
       },
     ]

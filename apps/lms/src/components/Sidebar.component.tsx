@@ -75,9 +75,8 @@ export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
     const routerState = useRouterState();
     const { navIsOpen, toggleNav } = useMobileNavigation(routerState.location.pathname);
-    // const userId = useMemo(() => user?.id, [user?.id]);
-    //const { classes: userClasses, isLoading } = useClasses(user?.id);
 
+ 
 
     return (
         <>
@@ -113,7 +112,6 @@ export default function SidebarComponent(){
                             }
                         </div>
                     </div>
-
                     <div className="mt-4">
                         <small className="text-blue-600">CLASSES</small>
                         <div className="mt-2 flex flex-col gap-2">

@@ -34,9 +34,7 @@ function Announcements({ }){
   const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
 
   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ toggleManager.get('refresh') ])
-  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0,{
-    createdBy: user?.id,
-  })
+  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0)
   
   const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
 

@@ -113,19 +113,17 @@ export function usePendingCount(
     return { isLoading, pendingCount }
 }
 export function useAnnouncementsCount(
-    id: string,
     refreshFlag: boolean = true,  
 ){
     const [ isLoadingAnnouncement, setIsLoadingAnnouncement ] = useState<boolean>(true);
     const [ announcementsCount, setAnnouncementsCount ] = useState<number>(0);
-    const filter = { createdBy: id }
     
     useEffect(
         () =>{
             setIsLoadingAnnouncement(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/announcements/count?filter=${JSON.stringify(filter)}`
+                `/api/v1/announcements/count?filter={}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){

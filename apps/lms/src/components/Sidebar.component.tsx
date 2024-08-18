@@ -1,10 +1,8 @@
 import { AdjustmentsVerticalIcon, CalendarIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, FolderIcon, HomeIcon, XMarkIcon, Bars2Icon } from '@heroicons/react/24/outline'
-import { useMemo } from "react";
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useMobileNavigation } from "@repo/utils";
-import { useClasses } from "../hooks/classes.hooks";
 
 const menuTabs = [
     {
@@ -76,8 +74,6 @@ export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
     const routerState = useRouterState();
     const { navIsOpen, toggleNav } = useMobileNavigation(routerState.location.pathname);
-    // const userId = useMemo(() => user?.id, [user?.id]);
-    //const { classes: userClasses, isLoading } = useClasses(user?.id);
 
  
 
@@ -115,9 +111,6 @@ export default function SidebarComponent(){
                             }
                         </div>
                     </div>
-
-                    {/* {isLoading && <p>Loading...</p>}
-                    { !isLoading && */}
                     <div className="mt-4">
                         <small className="text-blue-600">CLASSES</small>
                         <div className="mt-2 flex flex-col gap-2">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 
-export function useMovileNavigation(pathName: string){
+export function useMobileNavigation(pathName: string){
     const [ navIsOpen, setNavIsOpen ] = useState(false);
 
     useEffect(

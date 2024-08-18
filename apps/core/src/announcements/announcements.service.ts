@@ -164,8 +164,8 @@ export class AnnouncementsService {
             throw new Error("Specified user is not related with any class")
         }   
 
-        const anouncementSetIds = classes.map(c => c.announcementSet)
-        const announcementSets = await AnnouncementSetModel.find({ _id: { $in: anouncementSetIds }});
+        const announcementSetIds = classes.map(c => c.announcementSet)
+        const announcementSets = await AnnouncementSetModel.find({ _id: { $in: announcementSetIds }});
 
         let announcementIds: Types.ObjectId[] = []
 
@@ -176,7 +176,7 @@ export class AnnouncementsService {
             ]
         })
 
-        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }, ...filter }).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1 }).populate("createdBy updatedBy");
+        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds },  ...filter }).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1 }).populate("createdBy updatedBy");
 
         return announcements;
 

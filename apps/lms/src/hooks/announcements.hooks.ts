@@ -64,6 +64,36 @@ export function useAnnouncement(refreshFlag: boolean = true, specifier: string, 
 
 }
 
+export function useAnnouncementCount(refreshFlag: boolean = true){
+    // don't remember why it's a boolean. 
+
+    const [announcementCount, setAnnouncementCount] = useState<number>(0);
+    useEffect(() => {
+        makeAuthenticatedRequest(
+            "get",
+            `/api/v1/users/announcements`,
+        ).then(res => {
+            if(res.status == 200 && res.data.success){
+                setAnnouncementCount(res.data.data.length);
+            } else {
+                toast.error(res.data.error?.msg);
+            }
+        })
+        .catch(err => {
+            if(err.message){
+                toast.error(err.message)
+            } else {
+                toast.error(`${err}`)
+            }
+        })
+    }, [refreshFlag])
+
+    return { announcementCount }
+
+}
+
+
+
 export function useAnnouncementsByClass(refreshFlag: boolean = true, specifier: string, isId:boolean = true){
 
     const [ announcements, setAnnouncements ] = useState<(IAnnouncementDoc & { createdBy: IUserDoc, updatedBy:IUserDoc })[] | null>(null)

@@ -1,11 +1,12 @@
 import { Link, createLazyFileRoute } from '@tanstack/react-router'
 import { _getToken } from '@repo/utils';
-
+import { useClasses } from '../hooks/classes.hooks';
 import { useLMSContext } from '../app'
 import { BookOpenIcon, MegaphoneIcon, PencilSquareIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData'
 import CalendarComponent from '../components/Calendar.component';
+import { useAnnouncementCount } from '../hooks/announcements.hooks';
 import { useAnnouncementsResource, useAssignmentsResource, useClassesResource } from '../hooks';
 
 dayjs.extend(localeData)

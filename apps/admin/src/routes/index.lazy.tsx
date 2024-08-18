@@ -25,7 +25,7 @@ function IndexPage() {
     const { adminCount } = useAdminsCount()
     const { studentCount } = useStudentsCount()
     const { classesCount } = useClassesCount()
-    const { announcementsCount } = useAnnouncementsCount()
+    const { announcementsCount } = useAnnouncementsCount( user?._id as string )
     
  
     const currentHour = new Date().getHours()

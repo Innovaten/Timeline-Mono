@@ -315,7 +315,7 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
           toggleLoading()
 
       }).catch(err => {
-          toast.error(`${err}`)
+          toast.error(err)
           setOTPHasError(false)
           toggleLoading()
       })
@@ -378,7 +378,7 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
 
       makeUnauthenticatedRequest(
           'post', 
-          '/api/v1/auth/update-password',
+          '/api/v1/users/update-password',
           {
               email: `${sessionStorage.getItem('e')}`,
               newPassword: values.newPassword,

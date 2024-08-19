@@ -443,8 +443,8 @@ export class UsersController {
         }
     }
 
-    // @UseGuards(AuthGuard)
-    @Post(':lessonId')
+    @UseGuards(AuthGuard)
+    @Post('/:userId/completed-lessons/:lessonId')
     async markLessonAsCompleted(
         @Param('lessonId') lessonId: string,
         @Body('lessonSetId') lessonSetId: string,
@@ -470,7 +470,7 @@ export class UsersController {
 
 
     @UseGuards(AuthGuard)
-    @Post('/completed-modules/:moduleId')
+    @Post('userId:/completed-modules/:moduleId')
     async markAsCompleteModule(
     @Param('moduleId') moduleId: Types.ObjectId,
     @Request() req: any
@@ -485,7 +485,7 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard)
-    @Get('/completed-lessons/:userId')
+    @Get(':userId/completed-lessons/')
     async getCompletedLessons(@Param('userId') userId: string) {
         try {
         const completedLessons = await this.user.getCompletedLessons(new Types.ObjectId(userId));
@@ -501,7 +501,7 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard)
-    @Get('/completed-modules/:userId')
+    @Get(':userId/completed-modules/')
     async getCompletedModules(@Param('userId') userId: string) {
         try {
         const completedModules = await this.user.getCompletedModules(new Types.ObjectId(userId));

@@ -114,6 +114,7 @@ export function usePendingCount(
 }
 export function useAnnouncementsCount(
     refreshFlag: boolean = true,  
+    filter: Record<string,any> = {}
 ){
     const [ isLoadingAnnouncement, setIsLoadingAnnouncement ] = useState<boolean>(true);
     const [ announcementsCount, setAnnouncementsCount ] = useState<number>(0);
@@ -123,7 +124,7 @@ export function useAnnouncementsCount(
             setIsLoadingAnnouncement(true);
             makeAuthenticatedRequest(
                 "get",
-                `/api/v1/announcements/count?filter={}`
+                `/api/v1/announcements/count?filter=${JSON.stringify(filter)}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){

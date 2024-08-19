@@ -4,13 +4,13 @@ import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, NewspaperIcon, Buil
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { _clearTokens } from "@repo/utils";
-import { useMovileNavigation } from "@repo/utils";
+import { useMobileNavigation } from "@repo/utils";
 
 export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
     const userRole = user?.role ?? "ADMIN";
     const routerState = useRouterState();
-    const { navIsOpen, toggleNav } = useMovileNavigation(routerState.location.pathname);
+    const { navIsOpen, toggleNav } = useMobileNavigation(routerState.location.pathname);
 
     const menuTabs = userRole === "ADMIN" ?  [
         {
@@ -80,7 +80,7 @@ export default function SidebarComponent(){
     
     return (
         <>
-            {/* Movile Nav Header */}
+            {/* Mobile Nav Header */}
             <div className="z-50 flex sm:hidden w-[100vw] items-center px-4 justify-between bg-white shadow h-[60px] top-0 fixed">
                 <img className="h-[35px]" src="/img/timeline-logo.png" />
                 {

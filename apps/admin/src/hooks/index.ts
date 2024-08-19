@@ -3,7 +3,7 @@ import { useRegistrations } from "./registrations.hook"
 import { useClasses, useClass } from "./classes.hook"
 import { useAdminsCount, useClassesCount, usePendingCount, useStudentsCount, useAnnouncementsCount} from "./resourcesCount.hook"
 import useCompositeFilterFlag from "./composite-filter.hook"
-import { useMovileNavigation } from "@repo/utils"
+import { useMobileNavigation } from "@repo/utils"
 import { useAnnouncements, useAnnouncement, useAnnouncementStateFilter } from "./announcements.hook,"
 import { useLessons, useLesson, useLessonStateFilter } from "./lessons.hook"
 import { useModules, useModule, useModuleStateFilter } from "./modules.hook"
@@ -18,7 +18,7 @@ export {
     useClasses,
     useClass,
     useCompositeFilterFlag,
-    useMovileNavigation,
+    useMobileNavigation,
     useAdminsCount,
     useClassesCount,
     usePendingCount,

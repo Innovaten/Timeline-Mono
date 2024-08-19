@@ -133,8 +133,8 @@ export class AnnouncementsController {
     @UseGuards(AuthGuard)
     @Get("count")
     async getAnnouncementCount(
-        @Query('filter') rawFilter: string,
         @Req() req: any,
+        @Query('filter') rawFilter: string,
     ){
         try{
             const user = req.user as IUserDoc;
@@ -144,9 +144,9 @@ export class AnnouncementsController {
                     401
                 )
             }
-        
+
+           const filter = rawFilter ? JSON.parse(rawFilter) : {}
            if (user?.role === 'ADMIN' || user?.role === 'SUDO') {
-            const filter =  rawFilter ? JSON.parse(rawFilter) : {};
             const classes_count = await this.service.getAnnouncementsCount(filter)
             return ServerSuccessResponse<number>(classes_count); 
             } else {

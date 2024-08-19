@@ -118,7 +118,7 @@ export function useAnnouncementsCount(
 ){
     const [ isLoadingAnnouncement, setIsLoadingAnnouncement ] = useState<boolean>(true);
     const [ announcementsCount, setAnnouncementsCount ] = useState<number>(0);
-
+    
     useEffect(
         () =>{
             setIsLoadingAnnouncement(true);

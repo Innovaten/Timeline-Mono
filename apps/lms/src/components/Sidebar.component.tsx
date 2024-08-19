@@ -1,9 +1,8 @@
 import { PaperClipIcon } from "@heroicons/react/24/solid";
 import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, HomeIcon, XMarkIcon, Bars2Icon, NewspaperIcon, PowerIcon } from '@heroicons/react/24/outline'
-
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { _clearTokens, useMovileNavigation } from "@repo/utils";
+import { _clearTokens, useMobileNavigation } from "@repo/utils";
 const menuTabs = [
     {
         label: "Home",
@@ -73,11 +72,13 @@ const classesTabs = [
 export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
     const routerState = useRouterState();
-    const { navIsOpen, toggleNav } = useMovileNavigation(routerState.location.pathname);
+    const { navIsOpen, toggleNav } = useMobileNavigation(routerState.location.pathname);
+
+ 
 
     return (
         <>
-        {/* Movile Nav Header */}
+        {/* Mobile Nav Header */}
             <div className="z-50 flex sm:hidden w-[100vw] items-center px-4 justify-between bg-white shadow h-[60px] top-0 fixed">
                 <img className="h-[35px]" src="/img/timeline-logo.png" />
                 {

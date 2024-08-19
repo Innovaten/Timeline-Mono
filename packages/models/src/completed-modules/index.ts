@@ -25,4 +25,4 @@ export const CompletedModulesSchema = new Schema<ICompletedModule> ({
     }
 })
 
-export const CompletedModulesModel = model("CompletedLessons", CompletedModulesSchema)
+export const CompletedModulesModel = model("CompletedModules", CompletedModulesSchema)

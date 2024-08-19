@@ -1,13 +1,13 @@
 import { SchemaTypes, Schema, model } from "mongoose";
-import { ICompletedLesson } from "./index.types";
+import { ICompletedModule } from "./index.types";
 
-export const CompletedLessonSchema = new Schema<ICompletedLesson> ({
+export const CompletedModulesSchema = new Schema<ICompletedModule> ({
     user: {
         type: SchemaTypes.ObjectId,
         ref: 'Users',
         required: true,
     },
-    lessons: {
+    modules: {
         type: [{ type: SchemaTypes.ObjectId, ref: 'Lessons' }],
         required: true,
     },
@@ -25,4 +25,4 @@ export const CompletedLessonSchema = new Schema<ICompletedLesson> ({
     }
 })
 
-export const CompletedLessonsModel = model("CompletedLessons", CompletedLessonSchema)
+export const CompletedModulesModel = model("CompletedLessons", CompletedModulesSchema)

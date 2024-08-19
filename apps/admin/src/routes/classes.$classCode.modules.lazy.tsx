@@ -36,7 +36,7 @@ function Lessons({ }){
   
   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag, filterChangedFlag ])
 
-  const { isLoading: modulesIsLoading, modules, count: modulesCount } = useModules(compositeFilterFlag, 50, 0, {
+  const { isLoading: modulesIsLoading, modules, count: modulesCount } = useModules(compositeFilterFlag, 50, 0, classCode, {
       ...filter,
       user,
     })

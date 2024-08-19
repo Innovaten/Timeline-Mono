@@ -35,6 +35,7 @@ function CreateLesson(){
                 content: values.content,
                 moduleCode: moduleCode,
                 authToken: _getToken(),
+                resources: filesHook.files.map(f => f._id)
             },
             {},
             {

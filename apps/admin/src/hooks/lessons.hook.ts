@@ -1,4 +1,4 @@
-import { ILessonDoc, IUserDoc } from "@repo/models";
+import { ILessonDoc, IResourceDoc, IUserDoc } from "@repo/models";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -46,7 +46,7 @@ export function useLessons(refreshFlag: boolean = true,limit: number = 10, offse
 
 export function useLesson(refreshFlag: boolean = true, specifier: string, isId:boolean = false){
 
-    const [ lesson, setLesson ] = useState<ILessonDoc & { createdBy: IUserDoc, updatedBy:IUserDoc } | null>(null)
+    const [ lesson, setLesson ] = useState<Omit<ILessonDoc, "createdBy" | "updatedBy" | "resources"> & { createdBy: IUserDoc, updatedBy:IUserDoc,  resources?: IResourceDoc[] } | null>(null)
     const { isLoading, toggleLoading, resetLoading } = useLoading()
 
     useEffect( () => {

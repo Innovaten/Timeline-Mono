@@ -22,7 +22,7 @@ async function bootstrap() {
     type: VersioningType.URI,
   })
   
-  await app.listen(CoreConfig.ports.core, () => {
+  await app.listen(CoreConfig.ports.core, "0.0.0.0", () => {
     console.log(`Running CORE on port {${CoreConfig.ports.core}}`)
   });
 

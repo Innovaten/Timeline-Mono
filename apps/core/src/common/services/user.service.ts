@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, ForbiddenException } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc } from "@repo/models";
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -305,5 +305,94 @@ export class UserService {
         }
         return accessibleAssignments;
     }
+
+    async markAsCompleteLessons(userId: Types.ObjectId, lessonId: Types.ObjectId, lessonSetId: Types.ObjectId): Promise<ICompletedLessonDoc> {
+        const completedLesson = await CompletedLessonsModel.findOne({ user: userId, lessonSet: lessonSetId });
+
+        const currentTimestamp = new Date();
+
+        if (completedLesson) {
+            const lessonIndex = completedLesson.lessons.findIndex(lesson => lesson.equals(lessonId));
+
+            // Ensure that the update is not too frequent (1 second check)
+            if (currentTimestamp.getTime() - completedLesson.updatedAt.getTime() < 1000) {
+                throw new BadRequestException('You cannot toggle completion status too quickly.');
+            }
+
+            if (lessonIndex === -1) {
+                completedLesson.lessons.push(lessonId);
+            } else {
+                completedLesson.lessons.splice(lessonIndex, 1);
+            }
+
+            completedLesson.updatedAt = currentTimestamp;
+            await completedLesson.save();
+            return completedLesson;
+        } else {
+            const newCompletedLesson = new CompletedLessonsModel({
+                user: userId,
+                lessons: [lessonId],
+                lessonSet: [lessonSetId],
+                createdAt: currentTimestamp,
+                updatedAt: currentTimestamp,
+            });
+
+            await newCompletedLesson.save();
+            return newCompletedLesson;
+        }
+    }    
+    
+    async markAsCompleteModule(userId: Types.ObjectId, moduleId: Types.ObjectId): Promise<ICompletedModuleDoc | null> {
+        const moduleDoc = await ModuleModel.findById(moduleId).exec();
+        
+        if (!moduleDoc) {
+          throw new Error('Module not found');
+        }
+    
+        const completedModuleDoc = await CompletedModulesModel.findOne({ user: userId }).exec();
+    
+        const now = new Date();
+        if (completedModuleDoc) {
+          // Toggle the module completion
+          const moduleIndex = completedModuleDoc.modules.findIndex(id => id.equals(moduleId));
+    
+          if (moduleIndex > -1) {
+            if (now.getTime() - completedModuleDoc.updatedAt.getTime() < 1000) {
+              throw new ForbiddenException('Cannot change status too quickly');
+            }
+            // Remove the module if it's already completed
+            completedModuleDoc.modules.splice(moduleIndex, 1);
+          } else {
+            // Add the module if it's not completed yet
+            completedModuleDoc.modules.push(moduleId);
+          }
+    
+          completedModuleDoc.updatedAt = now;
+          await completedModuleDoc.save();
+        } else {
+          // If no record exists, create a new one
+          const newCompletedModule = new CompletedModulesModel({
+            user: userId,
+            modules: [moduleId],
+            lessonSet: moduleDoc.lessonSet,
+            createdAt: now,
+            updatedAt: now,
+          });
+    
+          await newCompletedModule.save();
+        }
+    
+        return completedModuleDoc;
+      }
+
+      async getCompletedLessons(userId: Types.ObjectId): Promise<ICompletedLessonDoc | null> {
+        const completedLessons = await CompletedLessonsModel.findOne({ user: userId }).exec();
+        return completedLessons;
+      }
+
+      async getCompletedModules(userId: Types.ObjectId): Promise<ICompletedModuleDoc | null> {
+        const completedModules = await CompletedModulesModel.findOne({ user: userId }).exec();
+        return completedModules;
+      }
 }
 

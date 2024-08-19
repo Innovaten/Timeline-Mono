@@ -2,20 +2,24 @@ import { Types, Document } from "mongoose";
 
 export interface IUser {
   code: string;
-  role: Types.ObjectId;
+  role: "SUDO" | "ADMIN" | "STUDENT";
 
   firstName: string;
   lastName: string;
   otherNames: string;
+  
   gender: "Male" | "Female";
 
   email: string;
   phone: string;
+  
+  classes: Types.ObjectId[]
+  modeOfClass: "In-Person" | "Online"
 
+  completedLessons: Types.ObjectId;
+  
   meta: {
-    isVerified: boolean;
     isPasswordSet: boolean;
-    hasVerifiedEmail: boolean;
     isSuspended: boolean;
     isDeleted: boolean;
     lastLoggedIn: Date;
@@ -23,16 +27,18 @@ export interface IUser {
 
   auth: {
     password: string;
-    otp: string;
-    otp_expiry: string;
+    otp?: string;
+    otp_expiry?: Date;
+    otpLastSentAt?: Date;
   };
 
   locker: {
-    numTries: number;
-    expiry: Date;
+    numTries?: number;
+    expiry?: Date;
   };
-  createdAt: Date,
-  updatedAt: Date,
+  createdBy: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface IUserDoc extends Document, IUser {}

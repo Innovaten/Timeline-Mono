@@ -1,11 +1,22 @@
-import { IUserDoc } from '@repo/models'
+
+export type MinifiedUser = {
+  _id: string,
+  id: string,
+  classes: string[],
+  gender: string,
+  email: string,
+  firstName: string,
+  lastName: string,
+  otherNames: string,
+  role: string,
+  modeOfClass: string,
+  completedLessons: string[],
+}
 
 export type ILMSContextState = {
-  user: IUserDoc | null,
-  token: string | null,
+  user: MinifiedUser | null,
 }
 
 export type ILMSContextAction = {
-    setUser: (user: IUserDoc) => void,
-    setToken: (token: string) => void,
+    setUser: (user: MinifiedUser) => void,
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@repo/utils",
+  "name": "timeline",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -14,7 +14,7 @@
     "prettier": "^3.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "turbo": "latest"
+    "turbo": "2.0.4"
   },
   "engines": {
     "node": ">=18"
@@ -25,10 +25,15 @@
     "packages/*"
   ],
   "dependencies": {
+    "@types/lodash": "^4.17.4",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.11",
+    "dotenv": "^16.4.5",
     "dotenv-cli": "^7.4.2",
+    "lodash": "^4.17.21",
     "mongoose": "^8.4.1",
     "tailwind-merge": "^2.3.0",
+    "yarn": "^1.22.22",
     "yup": "^1.4.0"
   }
 }

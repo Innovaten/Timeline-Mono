@@ -10,11 +10,10 @@ export const UserSchema = new Schema<IUserDoc>({
     required: true,
   },
   role: {
-    type: SchemaTypes.ObjectId,
-    ref: "Role",
+    type: SchemaTypes.String,
+    enum: ["SUDO", "ADMIN", "STUDENT"],
     required: true,
   },
-
   firstName: {
     type: SchemaTypes.String,
     trim: true,
@@ -28,7 +27,6 @@ export const UserSchema = new Schema<IUserDoc>({
   otherNames: {
     type: SchemaTypes.String,
     trim: true,
-    required: true,
   },
   gender: {
     type: SchemaTypes.String,
@@ -47,16 +45,24 @@ export const UserSchema = new Schema<IUserDoc>({
     required: true,
   },
 
+  classes: {
+    type: [{ type: SchemaTypes.ObjectId, ref: "Classes" }],
+    required: false,
+  },
+
+  modeOfClass: {
+    type: SchemaTypes.String,
+    enum: ["In-Person", "Online"],
+    required: false,
+  },
+
+  completedLessons: {
+    type: SchemaTypes.ObjectId,
+    ref: "CompletedLessons",
+  },
+
   meta: {
-    isVerified: {
-      type: SchemaTypes.Boolean,
-      default: false,
-    },
     isPasswordSet: {
-      type: SchemaTypes.Boolean,
-      default: false,
-    },
-    hasVerifiedEmail: {
       type: SchemaTypes.Boolean,
       default: false,
     },
@@ -79,6 +85,10 @@ export const UserSchema = new Schema<IUserDoc>({
       trim: true,
       required: true,
     },
+    otpLastSentAt: {
+      type: SchemaTypes.Date,
+      required: false,
+    },
     otp: {
       type: SchemaTypes.String,
       required: false,
@@ -86,7 +96,8 @@ export const UserSchema = new Schema<IUserDoc>({
     otp_expiry: {
       type: SchemaTypes.Date,
       required: false,
-    }
+    },
+    
   },
 
   locker: {
@@ -99,6 +110,22 @@ export const UserSchema = new Schema<IUserDoc>({
       type: SchemaTypes.Date,
     },
   },
+
+  createdBy: {
+    type: SchemaTypes.ObjectId,
+    ref: "Users"
+  },
+
+  createdAt: {
+    type: SchemaTypes.Date,
+    default: new Date()
+  },
+  updatedAt: {
+    type: SchemaTypes.Date,
+    default: new Date()
+  }
+
+
 });
 
 UserSchema.virtual("fullName").get(function (this: IUserDoc) {

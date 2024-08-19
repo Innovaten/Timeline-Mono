@@ -1,9 +1,26 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
-  "globalEnv": ["PORT"],
-  "globalDotEnv": [".env"],
-  "pipeline": {
+  "globalDependencies": ["**/.env.*local", ".env"],
+  "globalEnv": [
+      "PORT",
+      "ADMIN_URL",
+      "LMS_URL",
+      "CORE_URL",
+      "MONGODB_URI",
+      "MONGODB_DATABASE",
+      "CORE_SECRET_KEY",
+      "CORE_PORT",
+      "KAFKA_USERNAME",
+      "KAFKA_PASSWORD",
+      "KAFKA_BROKER",
+      "S3_BUCKET",
+      "S3_REGION",
+      "S3_ACCESS_KEY",
+      "S3_SECRET_ACCESS_KEY",
+      "RESEND_API_KEY",
+      "RESEND_DOMAIN"
+    ],
+  "tasks": {
     "build": {
       "dependsOn": ["^build"]
     },

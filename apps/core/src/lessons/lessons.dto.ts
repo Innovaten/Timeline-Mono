@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray } from 'class-validator';
 
 export class CreateLessonDto {
     @IsString()
@@ -13,7 +13,10 @@ export class CreateLessonDto {
     readonly content: string;
 
     @IsString()
-    readonly authToken: string
+    readonly authToken: string;
+
+    @IsArray()
+    readonly resources: string[];
 }
 
 export class UpdateLessonDto {
@@ -23,6 +26,11 @@ export class UpdateLessonDto {
     @IsString()
     readonly content?: string;
 
+    @IsArray()
+    readonly resources?: string[];
+    
     @IsString()
-    readonly authToken: string
+    readonly authToken: string;
+
+    
 }

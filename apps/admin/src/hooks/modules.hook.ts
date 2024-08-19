@@ -1,14 +1,15 @@
-import { IModuleDoc, IUserDoc } from "@repo/models";
+import { IModuleDoc, IResourceDoc, IUserDoc } from "@repo/models";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 
-export function useModules(refreshFlag: boolean = true,limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
+export function useModules(refreshFlag: boolean = true,limit: number = 10,  offset:number = 0, classCode: string, filter: Record<string, any> = {}){
 
     const [ modules, setModules ] = useState<(IModuleDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ count, setCount ] = useState<number>(0);
+    console.log(classCode)
 
     const { user, ...actualFilter} = filter
 
@@ -16,11 +17,12 @@ export function useModules(refreshFlag: boolean = true,limit: number = 10, offse
     useEffect(() => {
         makeAuthenticatedRequest(
             "get",
-            `/api/v1${route}?filter=${JSON.stringify(actualFilter)}&limit=${limit}&offset=${offset}`,
+            `/api/v1${route}/${classCode}/modules?filter=${JSON.stringify(actualFilter)}&limit=${limit}&offset=${offset}`,
         ).then(res => {
             if(res.status == 200 && res.data.success){
-                setModules(res.data.data.modules);
-                setCount(res.data.data.count);
+                console.log(res.data.data)
+                setModules(res.data.data);
+                setCount(res.data.data.length);
             } else {
                 toast.error(res.data.error?.msg);
             }
@@ -44,7 +46,7 @@ export function useModules(refreshFlag: boolean = true,limit: number = 10, offse
 
 export function useModule(refreshFlag: boolean = true, specifier: string, isId:boolean = true){
 
-    const [ module, setModule ] = useState<IModuleDoc & { createdBy: IUserDoc, updatedBy:IUserDoc } | null>(null)
+    const [ module, setModule ] = useState< Omit <IModuleDoc, "createdBy" | "updatedBy" | "resources"> & { createdBy: IUserDoc, updatedBy:IUserDoc,  resources?: IResourceDoc[] } | null>(null)
     const { isLoading, toggleLoading, resetLoading } = useLoading()
 
     useEffect( () => {
@@ -89,4 +91,30 @@ export function useModuleStateFilter(){
 
     return { filter, changeFilter, filterOptions, filterChangedFlag };
 
+}
+
+export function classModuleCount(classCode: string){
+    const [ isLoading, setPendingIsLoading ] = useState<boolean>(true);
+    const [ count, setCount ] = useState<number>(0);
+
+    useEffect(
+        () =>{
+            setPendingIsLoading(true);
+            makeAuthenticatedRequest(
+                "get",
+                `/api/v1/modules/${classCode}/count?filter=${JSON.stringify({})}`
+            )
+            .then( res => {
+                if(res.status == 200 && res.data.success){
+                    setCount(res.data.data);
+                } else {
+                    console.log(res.data.error.msg);
+                    toast.error(res.data.error.msg);
+                }
+                setPendingIsLoading(false);
+            })
+        }, []
+)
+
+    return { isLoading, count }
 }

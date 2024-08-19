@@ -443,7 +443,7 @@ export class UsersController {
         }
     }
 
-    @UseGuards(AuthGuard)
+    // @UseGuards(AuthGuard)
     @Post(':lessonId')
     async markLessonAsCompleted(
         @Param('lessonId') lessonId: string,
@@ -482,5 +482,37 @@ export class UsersController {
     } catch (err) {
         return ServerErrorResponse(new Error(`${err}`), 500);
     }
+    }
+
+    @UseGuards(AuthGuard)
+    @Get('/completed-lessons/:userId')
+    async getCompletedLessons(@Param('userId') userId: string) {
+        try {
+        const completedLessons = await this.user.getCompletedLessons(new Types.ObjectId(userId));
+
+        if (!completedLessons) {
+            return ServerErrorResponse(new Error('No completed lessons found'), 404);
+        }
+
+        return ServerSuccessResponse(completedLessons);
+        } catch (err) {
+        return ServerErrorResponse(new Error(`${err}`), 500);
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Get('/completed-modules/:userId')
+    async getCompletedModules(@Param('userId') userId: string) {
+        try {
+        const completedModules = await this.user.getCompletedModules(new Types.ObjectId(userId));
+
+        if (!completedModules) {
+            return ServerErrorResponse(new Error('No completed modules found'), 404);
+        }
+
+        return ServerSuccessResponse(completedModules);
+        } catch (err) {
+        return ServerErrorResponse(new Error(`${err}`), 500);
+        }
     }
 }

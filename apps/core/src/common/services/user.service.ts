@@ -341,7 +341,7 @@ export class UserService {
             return newCompletedLesson;
         }
     }    
-
+    
     async markAsCompleteModule(userId: Types.ObjectId, moduleId: Types.ObjectId): Promise<ICompletedModuleDoc | null> {
         const moduleDoc = await ModuleModel.findById(moduleId).exec();
         
@@ -383,6 +383,16 @@ export class UserService {
         }
     
         return completedModuleDoc;
+      }
+
+      async getCompletedLessons(userId: Types.ObjectId): Promise<ICompletedLessonDoc | null> {
+        const completedLessons = await CompletedLessonsModel.findOne({ user: userId }).exec();
+        return completedLessons;
+      }
+
+      async getCompletedModules(userId: Types.ObjectId): Promise<ICompletedModuleDoc | null> {
+        const completedModules = await CompletedModulesModel.findOne({ user: userId }).exec();
+        return completedModules;
       }
 }
 

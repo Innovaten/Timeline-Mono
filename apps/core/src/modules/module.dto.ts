@@ -10,6 +10,9 @@ export class CreateModuleDto {
 
     @IsString()
     authToken: string;
+
+    @IsArray()
+    readonly resources: string[];
 }
 
 export class UpdateModuleDto {
@@ -18,7 +21,10 @@ export class UpdateModuleDto {
 
     @IsMongoId()
     readonly classCode?: string;
-
+    @IsArray()
+    readonly resources?: string[];
     @IsString()
     authToken: string;
+
+    
 }

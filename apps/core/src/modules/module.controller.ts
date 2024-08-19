@@ -63,7 +63,52 @@ export class ModulesController {
       return ServerErrorResponse(new Error(`${err}`), 500);
     }
   }
+  
+  @UseGuards(AuthGuard)
+  @Get(':classCode/modules')
+  async findModulesByClassCode(
+    @Param('classCode') specifier: string, 
+    @Request() req: any,
+    @Query('limit') rawLimit: string,
+    @Query('offset') rawOffset: string,
+    @Query('filter') rawFilter: string,
+  ) {
+    try {
+      const user = req.user;
+      const filter = rawFilter ? JSON.parse(rawFilter) : {};
+      const limit = rawLimit ? parseInt(rawLimit) : undefined;
+      const offset = rawOffset ? parseInt(rawOffset) : undefined;
+      console.log("specifier:", specifier)
 
+      if (!user) {
+        return ServerErrorResponse(new Error('Unauthenticated'), 401);
+      }
+
+      const module = await this.modulesService.getModulesByClass(specifier);
+      return ServerSuccessResponse(module);
+
+    } catch (err) {
+      return ServerErrorResponse(new Error(`${err}`), 500);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(':classCode/count')
+  async countModulesByClassCode(
+    @Param('classCode') classCode: string,
+    @Query('filter') rawFilter: string,
+  ) {
+    try {
+      const filter = rawFilter ? JSON.parse(rawFilter) : {};
+
+      const count = await this.modulesService.getModuleCountByClass(classCode);
+
+      return ServerSuccessResponse(count);
+    } catch (err) {
+      return ServerErrorResponse(new Error(`${err}`), 500);
+    }
+  }
+  
   @Post()
   async createModule(
     @Body() createModuleDto: CreateModuleDto,

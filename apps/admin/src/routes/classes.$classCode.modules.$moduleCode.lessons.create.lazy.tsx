@@ -32,9 +32,10 @@ function CreateLesson(){
             "/api/v1/lessons",
             {
                 title: values.title,
-                content: values.content,
+                content: filesHook.files.map(f => f._id),
                 moduleCode: moduleCode,
                 authToken: _getToken(),
+                resources: filesHook.files.map(f => f._id)
             },
             {},
             {

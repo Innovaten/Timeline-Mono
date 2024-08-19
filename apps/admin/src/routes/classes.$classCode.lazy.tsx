@@ -1,7 +1,7 @@
 import { createLazyFileRoute, Link ,useRouterState, Outlet } from '@tanstack/react-router'
-import { useClass } from '../hooks';
+import { useClass,classModuleCount } from '../hooks';
 import _ from 'lodash'
-import { AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon } from '@heroicons/react/24/outline'
+import { AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon, FolderIcon } from '@heroicons/react/24/outline'
 import { StatCard } from '@repo/ui';
 
 export const Route = createLazyFileRoute('/classes/$classCode')({
@@ -19,6 +19,7 @@ function ClassDetails(){
     } 
 
   const { thisClass, isLoading: classIsLoading } = useClass(true, classCode, false)
+  const {count: moduleCount} = classModuleCount( classCode)
 
   const stats = [
     {
@@ -26,11 +27,11 @@ function ClassDetails(){
       value: thisClass?.students.length ?? 0,
       icon: AcademicCapIcon,
     },
-    {
-      label: 'Quizzes',
-      value: thisClass?.quizzes.length ?? 0,
-      icon: PencilSquareIcon,
-    },
+    // {
+    //   label: 'Quizzes',
+    //   value: thisClass?.quizzes.length ?? 0,
+    //   icon: PencilSquareIcon,
+    // },
     {
       label: 'Announcements',
       value: thisClass?.announcementSet?.announcements?.length ?? 0,
@@ -41,6 +42,11 @@ function ClassDetails(){
       value: thisClass?.assignmentSet?.assignments?.length ?? 0,
       icon: NewspaperIcon,
     },
+    {
+      label: "Modules",
+      value: moduleCount,
+      icon: FolderIcon,
+  }
   ]
 
   return (

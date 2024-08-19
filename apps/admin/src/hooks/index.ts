@@ -6,7 +6,7 @@ import useCompositeFilterFlag from "./composite-filter.hook"
 import { useMobileNavigation } from "@repo/utils"
 import { useAnnouncements, useAnnouncement, useAnnouncementStateFilter } from "./announcements.hook,"
 import { useLessons, useLesson, useLessonStateFilter } from "./lessons.hook"
-import { useModules, useModule, useModuleStateFilter } from "./modules.hook"
+import { useModules, useModule, useModuleStateFilter, classModuleCount } from "./modules.hook"
 import { useSpecificEntity } from "./common.hook"
 import { useAssignment, useAssignmentStateFilter, useAssignments, useAssignmentsByClass, useAssignmentSubmission, useAssignmentSubmissions, useAssignmentSubmissionStatusFilter, } from "./assignment.hook"
 import { useStudents, useStudentsInClass } from "./students.hook"
@@ -43,4 +43,5 @@ export {
     useAssignmentSubmissionStatusFilter,
     useStudents,
     useStudentsInClass,
+    classModuleCount
 }

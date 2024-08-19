@@ -134,4 +134,26 @@ export class ModulesService {
 
   }
 
+  async getModulesByClass(classCode: string): Promise<IModuleDoc[]> {
+    const relatedClass = await ClassModel.findOne({ code: classCode });
+
+    if(!relatedClass){
+      throw new BadRequestException('Specified class not found')
+    }
+
+    const modules = await ModuleModel.find({ classId: relatedClass.id }).populate("createdBy lessonSet");
+
+    return modules;
+  }
+
+  async getModuleCountByClass(classCode: string): Promise<number> {
+    const relatedClass = await ClassModel.findOne({ code: classCode });
+
+    if(!relatedClass){
+      throw new BadRequestException('Specified class not found')
+    }
+
+    const count = await ModuleModel.countDocuments({ classId: relatedClass.id });
+    return count;
+}
 }

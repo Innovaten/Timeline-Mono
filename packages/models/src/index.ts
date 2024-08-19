@@ -12,6 +12,7 @@ import { ModuleModel, ModuleSchema } from "./module";
 import { LessonModel, LessonSchema } from "./lessons";
 import { LessonSetModel, LessonSetSchema } from "./lessonSet";
 import { CompletedLessonSchema, CompletedLessonsModel } from "./completedLessons";
+import { CompletedModulesSchema, CompletedModulesModel } from "./completed-modules";
 import { AssignmentSetModel, AssignmentSetSchema } from "./assignment-set";
 import { AssignmentModel, AssignmentSchema } from "./assignment";
 import { AssignmentSubmissionModel, AssignmentSubmissionSchema } from "./assignment-submission";
@@ -26,6 +27,7 @@ import { IModuleDoc } from "./module/index.types";
 import { ILessonDoc } from "./lessons/index.types";
 import { ILessonSetDoc } from "./lessonSet/index.types";
 import { ICompletedLessonDoc } from "./completedLessons/index.types";
+import { ICompletedModuleDoc } from "./completed-modules/index.types";
 import { IAssignmentSet, IAssignmentSetDoc } from "./assignment-set/index.types";
 import { IAssignment, IAssignmentDoc } from "./assignment/index.types";
 import { IAssignmentSubmission, IAssignmentSubmissionDoc, AssignmentSubmissionStatusType } from "./assignment-submission/index.types";
@@ -72,6 +74,7 @@ export {
     type ILessonDoc,
     type ILessonSetDoc,
     type ICompletedLessonDoc,
+    type ICompletedModuleDoc,
     type IAssignmentSet,
     type IAssignmentSetDoc,
     type IAssignment,
@@ -91,6 +94,7 @@ export {
     LessonModel,
     LessonSetModel,
     CompletedLessonsModel,
+    CompletedModulesModel,
     AssignmentSetModel,
     AssignmentModel,
     AssignmentSubmissionModel,
@@ -106,6 +110,7 @@ export {
     LessonSchema,
     LessonSetSchema,
     CompletedLessonSchema,
+    CompletedModulesSchema,
     AssignmentSetSchema,
     AssignmentSchema,
     AssignmentSubmissionSchema,

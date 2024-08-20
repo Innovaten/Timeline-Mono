@@ -413,22 +413,52 @@ export class UsersController {
         } 
     }
     
-    @UseGuards(AuthGuard)
-    @Get(':specifier/completed-lessons')
-    async getUsersCompletedLessons( 
-        @Param('specifier') specifier: string,
-        @Query('isId') isId: string = "true",
-    ) {
-        try {
-            const IsId = isId == "true";
-            const completedLessons = await this.user.getUsersCompletedLessons(specifier, IsId)
-            return ServerSuccessResponse(completedLessons);
+    //@UseGuards(AuthGuard)
+    // @Get(':specifier/completed-lessons')
+    // async getUsersCompletedLessons( 
+    //     @Param('specifier') specifier: string,
+    //     @Query('isId') isId: string = "true",
+    // ) {
+    //     try {
+    //         const IsId = isId == "true";
+    //         const completedLessons = await this.user.getUsersCompletedLessons(specifier, IsId)
+    //         return ServerSuccessResponse(completedLessons);
 
-        } catch(err) {
-            return ServerErrorResponse(new Error(`${err}`), 500);
-        } 
+    //     } catch(err) {
+    //         return ServerErrorResponse(new Error(`${err}`), 500);
+    //     } 
+    // }
+  //@UseGuards(AuthGuard)
+    @Get(':userId/completed-lessons')
+    async getCompletedLessons(@Param('userId') userId: string) {
+        try {
+        const completedLessons = await this.user.getCompletedLessons(new Types.ObjectId(userId));
+
+        if (!completedLessons) {
+            return ServerErrorResponse(new Error('No completed lessons found'), 404);
+        }
+
+        return ServerSuccessResponse(completedLessons);
+        } catch (err) {
+        return ServerErrorResponse(new Error(`${err}`), 500);
+        }
     }
 
+   // @UseGuards(AuthGuard)
+    @Get(':userId/completed-modules')
+    async getCompletedModules(@Param('userId') userId: string) {
+        try {
+        const completedModules = await this.user.getCompletedModules(new Types.ObjectId(userId));
+
+        if (!completedModules) {
+            return ServerErrorResponse(new Error('No completed modules found'), 404);
+        }
+
+        return ServerSuccessResponse(completedModules);
+        } catch (err) {
+        return ServerErrorResponse(new Error(`${err}`), 500);
+        }
+    }
     @Patch('update-password')
     async updatedPassword(
         @Query('id') id: string,
@@ -444,7 +474,7 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard)
-    @Post('/:userId/completed-lessons/:lessonId')
+    @Post(':userId/completed-lessons/:lessonId')
     async markLessonAsCompleted(
         @Param('lessonId') lessonId: string,
         @Body('lessonSetId') lessonSetId: string,
@@ -470,7 +500,7 @@ export class UsersController {
 
 
     @UseGuards(AuthGuard)
-    @Post('userId:/completed-modules/:moduleId')
+    @Post(':userId/completed-modules/:moduleId')
     async markAsCompleteModule(
     @Param('moduleId') moduleId: Types.ObjectId,
     @Request() req: any
@@ -484,35 +514,5 @@ export class UsersController {
     }
     }
 
-    @UseGuards(AuthGuard)
-    @Get(':userId/completed-lessons/')
-    async getCompletedLessons(@Param('userId') userId: string) {
-        try {
-        const completedLessons = await this.user.getCompletedLessons(new Types.ObjectId(userId));
-
-        if (!completedLessons) {
-            return ServerErrorResponse(new Error('No completed lessons found'), 404);
-        }
-
-        return ServerSuccessResponse(completedLessons);
-        } catch (err) {
-        return ServerErrorResponse(new Error(`${err}`), 500);
-        }
-    }
-
-    @UseGuards(AuthGuard)
-    @Get(':userId/completed-modules/')
-    async getCompletedModules(@Param('userId') userId: string) {
-        try {
-        const completedModules = await this.user.getCompletedModules(new Types.ObjectId(userId));
-
-        if (!completedModules) {
-            return ServerErrorResponse(new Error('No completed modules found'), 404);
-        }
-
-        return ServerSuccessResponse(completedModules);
-        } catch (err) {
-        return ServerErrorResponse(new Error(`${err}`), 500);
-        }
-    }
+  
 }

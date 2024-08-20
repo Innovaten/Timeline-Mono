@@ -2,7 +2,7 @@
 FROM node:18 AS base
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /
 
 # Copy only the necessary files for installing dependencies
 COPY package.json yarn.lock ./
@@ -12,7 +12,7 @@ COPY turbo.json ./
 # Install dependencies
 RUN yarn global add turbo 
 
-RUN turbo prune core
+# RUN turbo prune --scope core --docker
 
 COPY apps/ apps/
 COPY packages/ packages/
@@ -25,7 +25,7 @@ COPY . .
 RUN turbo run build --filter=core
 
 # Set the working directory to the app's build output
-WORKDIR /app/core/dist
+WORKDIR /apps/core/dist
 
 # Start the app
 CMD ["node", "main.js"]

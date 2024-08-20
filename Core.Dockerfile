@@ -8,11 +8,15 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 COPY turbo.json ./
 
-COPY apps/ apps/
-COPY packages/ packages/
 
 # Install dependencies
-RUN yarn global add turbo && yarn install --frozen-lockfile
+RUN yarn global add turbo 
+
+RUN turbo prune core
+
+COPY apps/ apps/
+COPY packages/ packages/
+RUN yarn install --frozen-lockfile
 
 # Copy the rest of the application code
 COPY . .

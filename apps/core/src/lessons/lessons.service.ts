@@ -69,6 +69,10 @@ export class LessonsService {
     return await LessonModel.findOne(filter).populate("createdBy updatedBy resources");
   }
 
+  async findLessonByCode(code: string): Promise<any> {  
+    return await LessonModel.findOne({ code: code }).populate("createdBy updatedBy resources");
+  }
+
   async updateLesson(id: string, updateLessonDto: UpdateLessonDto, user: IUserDoc): Promise<any> {
     if (!['ADMIN', 'SUDO'].includes(user.role)) {
       throw new UnauthorizedException('Unauthorized');

@@ -62,6 +62,19 @@ export class LessonsController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('lms/:specifier')
+  async findLessonByCode(
+    @Param('specifier') specifier: string,
+  ) {
+    try {
+      const lesson = await this.lessonsService.findLessonByCode(specifier);
+      return ServerSuccessResponse(lesson);
+    } catch (err) {
+      return ServerErrorResponse(new Error(`${err}`), 500);
+    }
+  }
+  
+  @UseGuards(AuthGuard)
   @Get(':specifier')
   async findLessonById(
     @Param('specifier') specifier: string,

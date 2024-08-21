@@ -34,6 +34,7 @@ export class OtpService {
         user.auth.otpLastSentAt = currentTime
         user.auth.otp_expiry = new Date(currentTime.getTime() + 5 * 60000)
         await user.save()
+        console.log("otp",otp);
 
         const messageSent = await this.kafkaService.produceMessage(
             "notifications.send-email",

@@ -6,12 +6,10 @@ import { NextFunction, Request, Response } from 'express';
 import expressListRoutes from 'express-list-routes';
 
 async function bootstrap() {
-  console.log('Here 1')
   const app = await NestFactory.create(AppModule, { logger: false });
   app.enableCors({
     origin: '*',
   }) 
-  console.log('Here 2')
   app.use((req: Request, res: Response, next: NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
@@ -23,9 +21,8 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
   })
-  console.log('Here 3')
   
-  await app.listen(CoreConfig.ports.core, () => {
+  await app.listen(CoreConfig.ports.core, "0.0.0.0", () => {
     console.log(`Running CORE on port {${CoreConfig.ports.core}}`)
   });
 

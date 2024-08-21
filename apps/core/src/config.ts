@@ -13,7 +13,7 @@ export const CoreConfig = {
         core: process.env.CORE_SECRET_KEY ?? "this+might+not+be+a+secret"
     },
     ports: {
-        core: process.env.CORE_PORT ?? 4000
+        core: process.env.PORT ?? 4000
     },
     url: {
         admin: process.env.ADMIN_URL ?? 'http://localhost:3000',

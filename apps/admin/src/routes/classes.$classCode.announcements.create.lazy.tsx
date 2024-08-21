@@ -1,11 +1,11 @@
 import { Button, Input, TextEditor } from '@repo/ui'
-import { createLazyFileRoute, Navigate } from '@tanstack/react-router'
-import { Formik, Form, ErrorMessage } from 'formik'
+import { createLazyFileRoute } from '@tanstack/react-router'
+import { Formik, Form } from 'formik'
 import {$generateHtmlFromNodes} from '@lexical/html';
 import * as Yup from 'yup'
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { LexicalEditor } from 'lexical'
-import { _getToken, abstractUnauthenticatedRequest, useLoading } from '@repo/utils';
+import { _getToken, abstractUnauthenticatedRequest, useToggleManager } from '@repo/utils';
 import { toast } from 'sonner';
 
 export const Route = createLazyFileRoute('/classes/$classCode/announcements/create')({
@@ -15,7 +15,14 @@ export const Route = createLazyFileRoute('/classes/$classCode/announcements/crea
 
 function CreateAnnouncement(){
 
-    const { isLoading, toggleLoading, resetLoading } = useLoading()
+    const initialToggles = {
+        'create-is-loading': false,
+    }
+    
+    type TogglesType = typeof initialToggles
+    type ToggleKeys = keyof TogglesType
+    const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
+
     const { classCode } = Route.useParams()
     const navigate = Route.useNavigate()
 
@@ -38,7 +45,7 @@ function CreateAnnouncement(){
             },
             {},
             {
-                onStart: toggleLoading,
+                onStart: ()=> { toggleManager.toggle('create-is-loading')},
                 onSuccess: (data)=>{ 
                     toast.success("Announcement created successfully")
                     navigate({
@@ -46,7 +53,7 @@ function CreateAnnouncement(){
                     })
                 },
                 onFailure: (err) =>{ toast.error(`${err.msg}`) },
-                finally: resetLoading,
+                finally: ()=>{ toggleManager.reset('create-is-loading')},
             }
         )
     }
@@ -69,10 +76,10 @@ function CreateAnnouncement(){
             },
             {},
             {
-                onStart: toggleLoading,
+                onStart: ()=>{ toggleManager.toggle('create-is-loading')},
                 onSuccess: (data)=>{ toast.success("Announcement saved successfully")},
                 onFailure: (err) =>{ toast.error(`${err.msg}`) },
-                finally: resetLoading,
+                finally: ()=>{ toggleManager.reset('create-is-loading')},
             }
         )
 
@@ -98,17 +105,31 @@ function CreateAnnouncement(){
                                         <Form className='flex flex-col gap-6 w-full h-full'>
                                             <Input name='title'  label='Title' hasValidation />
                                             <div className='flex flex-col mt-1 flex-1'>
-                                                <TextEditor hasValidation name="content" editorRef={editorRef} onChange={(editorState, editor) => {
-                                                    editor.update(() => {
-                                                        form.setFieldValue("content", $generateHtmlFromNodes(editor, null))
-                                                    })
-                                                }} />
+                                                <TextEditor 
+                                                    hasValidation 
+                                                    name="content" 
+                                                    editorRef={editorRef} 
+                                                    onChange={(_, editor) => {
+                                                        editor.update(() => {
+                                                            form.setFieldValue("content", $generateHtmlFromNodes(editor, null))
+                                                        })
+                                                    }} 
+                                                />
                                             </div>
                                         </Form>
                                     </div>
                                     <div className='flex h-16 flex-shrink-0 justify-end items-center w-full gap-4'>
-                                        <Button className='!w-[130px]' variant='neutral' isDisabled={!form.isValid} isLoading={isLoading} type='button' onClick={()=>{ saveAsDraft(form.values)}}>Save as Draft</Button>
-                                        <Button className='!w-[130px]' isDisabled={!form.isValid} isLoading={isLoading} onClick={form.submitForm}>Save</Button>
+                                        <Button className='!w-[130px]' 
+                                            variant='neutral' 
+                                            isDisabled={!form.isValid} 
+                                            isLoading={toggleManager.get('create-is-loading')} type='button' 
+                                            onClick={()=>{ saveAsDraft(form.values)}}
+                                        >Save as Draft</Button>
+                                        <Button className='!w-[130px]' 
+                                            isDisabled={!form.isValid} 
+                                            isLoading={toggleManager.get('create-is-loading')} 
+                                            onClick={form.submitForm}
+                                        >Save</Button>
                                     </div>
                                 </div>
                             </>

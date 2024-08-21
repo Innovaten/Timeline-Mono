@@ -1,11 +1,15 @@
 import { useAdministratorsFilter, useAdministrators } from "./administrators.hook"
 import { useRegistrations } from "./registrations.hook"
 import { useClasses, useClass } from "./classes.hook"
-import { useAdminsCount, useClassesCount, usePendingCount, useStudentsCount} from "./resourcesCount.hook"
+import { useAdminsCount, useClassesCount, usePendingCount, useStudentsCount, useAnnouncementsCount} from "./resourcesCount.hook"
 import useCompositeFilterFlag from "./composite-filter.hook"
-import { useMovileNavigation } from "@repo/utils"
+import { useMobileNavigation } from "@repo/utils"
 import { useAnnouncements, useAnnouncement, useAnnouncementStateFilter } from "./announcements.hook,"
+import { useLessons, useLesson, useLessonStateFilter } from "./lessons.hook"
+import { useModules, useModule, useModuleStateFilter, classModuleCount } from "./modules.hook"
 import { useSpecificEntity } from "./common.hook"
+import { useAssignment, useAssignmentStateFilter, useAssignments, useAssignmentsByClass, useAssignmentSubmission, useAssignmentSubmissions, useAssignmentSubmissionStatusFilter, } from "./assignment.hook"
+import { useStudents, useStudentsInClass } from "./students.hook"
 export {
 
     useRegistrations,
@@ -14,7 +18,7 @@ export {
     useClasses,
     useClass,
     useCompositeFilterFlag,
-    useMovileNavigation,
+    useMobileNavigation,
     useAdminsCount,
     useClassesCount,
     usePendingCount,
@@ -23,5 +27,21 @@ export {
     useAnnouncement,
     useAnnouncementStateFilter,
     useSpecificEntity,
-    
+    useAnnouncementsCount,
+    useLessons,
+    useLesson,
+    useLessonStateFilter,
+    useModules,
+    useModule,    
+    useModuleStateFilter,
+    useAssignment,
+    useAssignmentStateFilter,
+    useAssignments,
+    useAssignmentsByClass,
+    useAssignmentSubmission,
+    useAssignmentSubmissions,
+    useAssignmentSubmissionStatusFilter,
+    useStudents,
+    useStudentsInClass,
+    classModuleCount
 }

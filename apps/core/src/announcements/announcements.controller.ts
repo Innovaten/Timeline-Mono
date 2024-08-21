@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Post, UseGuards, Request, Query, Param, Body, Delete } from '@nestjs/common';
+import { Controller, Get, Patch, Post, UseGuards, Request, Query, Param, Body, Delete, Req } from '@nestjs/common';
 import { sendInternalServerError } from '../utils';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
@@ -9,6 +9,7 @@ import { CreateAnnouncementDto , UpdateAnnouncementDto} from './announcements.dt
 import { ClassesService } from '../classes/classes.service';
 import { Types } from 'mongoose';
 import { IAnnouncementDoc } from '@repo/models';
+import { IUserDoc } from '@repo/models';
 
 @Controller({
     path: 'announcements',
@@ -127,6 +128,37 @@ export class AnnouncementsController {
         } catch (err) {
             return sendInternalServerError(err);
         }
+    }
+
+    @UseGuards(AuthGuard)
+    @Get("count")
+    async getAnnouncementCount(
+        @Req() req: any,
+        @Query('filter') rawFilter: string,
+    ){
+        try{
+            const user = req.user as IUserDoc;
+            if(!user){
+                return ServerErrorResponse(
+                    new Error('Unauthenticated Request'),
+                    401
+                )
+            }
+
+           const filter = rawFilter ? JSON.parse(rawFilter) : {}
+           if (user?.role === 'ADMIN' || user?.role === 'SUDO') {
+            const classes_count = await this.service.getAnnouncementsCount(filter)
+            return ServerSuccessResponse<number>(classes_count); 
+            } else {
+                return ServerErrorResponse(
+                    new Error("Unauthorized Request"),
+                    401
+                )
+            }
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        }   
     }
 
     @Patch(":_id")

@@ -3,12 +3,12 @@ import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, 
 import { CreateAnnouncementDto, UpdateAnnouncementDto } from './announcements.dto';
 import { generateCode } from '../utils';
 import { Types, startSession } from 'mongoose';
+import { forEach } from 'lodash';
 
 @Injectable()
 export class AnnouncementsService {
 
     async listAnnouncements(limit?: number, offset?: number, filter: Record<string, any> = {}, ): Promise<any>{
-        console.log(filter)
         const results = await AnnouncementModel.find(filter)
         .limit(limit ?? 10)
         .skip(offset ?? 0)
@@ -35,6 +35,7 @@ export class AnnouncementsService {
     ): Promise<IAnnouncementDoc> {
         const timestamp = new Date();
         const prefix = "ANMT"
+        console.log(announcementData)
         
         const { authToken, classCode: relatedClassCode, ...actualData } = announcementData;
 
@@ -49,6 +50,7 @@ export class AnnouncementsService {
                 code: await generateCode(await AnnouncementModel.countDocuments(), prefix),
                 ...actualData,
                 announcementSet: relatedAnnouncementSet._id,
+                class: relatedAnnouncementSet.class,
                 meta: {
                     isDeleted: false
                 },
@@ -68,7 +70,6 @@ export class AnnouncementsService {
         const newAnnouncementToEveryOne = new AnnouncementModel({
             code: await generateCode(await AnnouncementModel.countDocuments(), prefix),
             ...actualData,
-            announcementSet: "*",
             meta: {
                 isDeleted: false
             },
@@ -159,8 +160,8 @@ export class AnnouncementsService {
             throw new Error("Specified user is not related with any class")
         }   
 
-        const anouncementSetIds = classes.map(c => c.announcementSet)
-        const announcementSets = await AnnouncementSetModel.find({ _id: { $in: anouncementSetIds }});
+        const announcementSetIds = classes.map(c => c.announcementSet)
+        const announcementSets = await AnnouncementSetModel.find({ _id: { $in: announcementSetIds }});
 
         let announcementIds: Types.ObjectId[] = []
 
@@ -171,7 +172,7 @@ export class AnnouncementsService {
             ]
         })
 
-        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }, ...filter }).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1 }).populate("createdBy updatedBy");
+        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds },  ...filter }).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1 }).populate("createdBy updatedBy");
 
         return announcements;
 
@@ -204,4 +205,28 @@ export class AnnouncementsService {
         
         return announcement;
     }
+
+    async getAnnouncementsForLMS(
+       userClasses: object[],
+    ): Promise<IAnnouncementDoc[]> {
+        const classes = await ClassModel.find({ _id: { $in: userClasses }});
+        const filter = { isDraft: false, "meta.isDeleted": false }
+        if(!classes){
+            throw new Error("Specified user is not related with any class")
+        }   
+        const anouncementSetIds = classes.map(c => c.announcementSet)
+        const announcementSets = await AnnouncementSetModel.find({ _id: { $in: anouncementSetIds }});
+        let announcementIds: Types.ObjectId[] = []
+
+        announcementSets.forEach(aset => {
+            announcementIds = [
+                ...announcementIds,
+                ...aset.announcements,
+            ]
+        })
+
+        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }, ...filter }).sort({ createdAt: -1 }).populate("createdAt createdBy");
+        return announcements;
+}
+
 }

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
-import { IClassDoc, IUserDoc, IAnnouncementSetDoc } from "@repo/models";
+import { IClassDoc, IUserDoc, IAssignmentDoc, IAnnouncementDoc, IAnnouncementSetDoc, IAssignmentSet } from "@repo/models";
 import { toast } from "sonner";
+import { useLMSContext } from "../app";
+import { IAssignment } from "@repo/models";
 
 export function useClasses(
     flag?: boolean, 
@@ -9,11 +11,13 @@ export function useClasses(
     limit: number = 10, 
     offset: number = 0, 
 ){
+    const  { user } = useLMSContext()
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ classes, setClasses ] = useState<IClassDoc[]>([]);
     const [ count, setCount ] = useState<number>(0);
 
-    const { user, ...actualFilter } = filter;
+    if(!user) return { isLoading: false, clases: [], count: 0 }
+
     const route = user.role == "SUDO" ? '/api/v1/classes' : `/api/v1/users/${user._id}/classes`
 
     useEffect(
@@ -21,7 +25,7 @@ export function useClasses(
             setIsLoading(true);
             makeAuthenticatedRequest(
                 "get",
-                `${route}?limit=${limit}&offset=${offset}&filter=${JSON.stringify(actualFilter)}`
+                `${route}?limit=${limit}&offset=${offset}&filter=${JSON.stringify(filter)}`
             )
             .then( res => {
                 if(res.status == 200 && res.data.success){
@@ -111,7 +115,12 @@ export function useClassesAssignedStatusFilter(){
 export function useClass(flag: boolean, specifier: string, isId:boolean) {
 
 
-    const [ thisClass, setClass ] = useState<Omit<IClassDoc, "createdBy" | "administrators" | "announcementSet"> & { createdBy: IUserDoc, administrators: IUserDoc[], announcementSet: IAnnouncementSetDoc} | null>(null)
+    const [ thisClass, setClass ] = useState<
+        Omit<IClassDoc, "createdBy" | "administrators" | "announcementSet"> & { 
+            createdBy: IUserDoc, 
+            administrators: IUserDoc[], 
+            announcementSet: IAnnouncementSetDoc & { announcements: IAnnouncementDoc[] },
+            assignmentSet: IAssignmentSet & { assignments: IAssignmentDoc[] }} | null>(null)
     const { isLoading, toggleLoading, resetLoading} = useLoading();
 
     const route =  `?isId=${( isId ?? true )}`

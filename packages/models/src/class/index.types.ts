@@ -14,12 +14,12 @@ export interface IClass {
   
   administrators: Types.ObjectId[];
   students: Types.ObjectId[];
-  lessons: Types.ObjectId[];
+  modules: Types.ObjectId[];
   resources: Types.ObjectId[];
-  assignments: Types.ObjectId[];
   quizzes: Types.ObjectId[];
   timetable: Types.ObjectId;
   announcementSet: Types.ObjectId;
+  assignmentSet: Types.ObjectId;
   
   // settings: {};
 

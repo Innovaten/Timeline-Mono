@@ -24,6 +24,12 @@ export const AnnouncementSchema = new Schema<IAnnouncement>({
         ref: "AnnouncementSets"
     },
 
+    class: {
+        type: SchemaTypes.ObjectId,
+        required: true,
+        ref: "Classes"
+    },
+
     isDraft: {
         type: SchemaTypes.Boolean,
         required: true,

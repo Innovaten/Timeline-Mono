@@ -22,10 +22,11 @@ export default function Button(props: ButtonProps){
                     variant == 'secondary' ? 'bg-transparent border-transparent text-blue-900 shadow-none hover:shadow hover:bg-slate-100' : '',
                     variant == 'danger' ? 'bg-red-600 border-red-600 text-white hover:border-red-400 hover:bg-red-400' : '',
                     variant == 'neutral' ? 'bg-slate-100 border-slate-100 text-slate-600 hover:border-slate-200 hover:bg-slate-200' : '',
+                    (isLoading === true ?  true :  isDisabled ?? false) ? ' cursor-not-allowed' : '',
                     className,
               )}
                 type={ type || 'button'}
-                disabled={typeof isLoading != 'undefined' ? isLoading : ( isDisabled ?? false ) }  
+                disabled={ isLoading === true ?  true :  isDisabled ?? false }  
                 {...defaultProps}
             >
             { !isLoading && defaultProps.children }

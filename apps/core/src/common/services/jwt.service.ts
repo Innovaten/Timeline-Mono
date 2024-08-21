@@ -18,6 +18,6 @@ export class JwtService {
 
     signToken(userDoc: IUserDoc){
         const payload = { username: userDoc.email, sub: userDoc._id }
-        return sign(payload, CoreConfig.secrets.core, { expiresIn: '4h'})
+        return sign(payload, CoreConfig.secrets.core, { expiresIn: '3h'})
     }
 }

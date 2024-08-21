@@ -1,16 +1,16 @@
 import { AdjustmentsVerticalIcon, CalendarIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
-import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, BuildingLibraryIcon, ComputerDesktopIcon, UserGroupIcon, FolderIcon, HomeIcon, UsersIcon, PowerIcon, Bars2Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, NewspaperIcon, BuildingLibraryIcon, ComputerDesktopIcon, UserGroupIcon, FolderIcon, HomeIcon, UsersIcon, PowerIcon, Bars2Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { _clearToken } from "@repo/utils";
-import { useMovileNavigation } from "@repo/utils";
+import { _clearTokens } from "@repo/utils";
+import { useMobileNavigation } from "@repo/utils";
 
 export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
     const userRole = user?.role ?? "ADMIN";
     const routerState = useRouterState();
-    const { navIsOpen, toggleNav } = useMovileNavigation(routerState.location.pathname);
+    const { navIsOpen, toggleNav } = useMobileNavigation(routerState.location.pathname);
 
     const menuTabs = userRole === "ADMIN" ?  [
         {
@@ -24,10 +24,15 @@ export default function SidebarComponent(){
             icon: MegaphoneIcon,
         },
         {
-            label: "Calendar",
-            path: "/calendar",
-            icon: CalendarIcon,
+            label: "Assignments",
+            path: "/assignments",
+            icon: NewspaperIcon,
         },
+        // {
+        //     label: "Calendar",
+        //     path: "/calendar",
+        //     icon: CalendarIcon,
+        // },
         {
             label: "Classes",
             path: "/classes",
@@ -62,15 +67,20 @@ export default function SidebarComponent(){
             icon: BookOpenIcon,
         },
         {
-            label: "System Overview",
-            path: "/overview",
-            icon: ComputerDesktopIcon,
+            label: "Assignments",
+            path: "/assignments",
+            icon: NewspaperIcon,
         },
+        // {
+        //     label: "System Overview",
+        //     path: "/overview",
+        //     icon: ComputerDesktopIcon,
+        // },
     ]
     
     return (
         <>
-            {/* Movile Nav Header */}
+            {/* Mobile Nav Header */}
             <div className="z-50 flex sm:hidden w-[100vw] items-center px-4 justify-between bg-white shadow h-[60px] top-0 fixed">
                 <img className="h-[35px]" src="/img/timeline-logo.png" />
                 {
@@ -104,7 +114,7 @@ export default function SidebarComponent(){
                 </div>
                 <div className="flex flex-col gap-2 pt-2">
                     <div className="flex flex-col sm:flex-row gap-2">
-                        <Link onClick={()=>{_clearToken()}} to="/login" className="w-full flex gap-2 items-center  bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
+                        <Link onClick={()=>{_clearTokens()}} to="/login" className="w-full flex gap-2 items-center  bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
                             <PowerIcon className="w-5 sm:w-4" />
                             <p>LOGOUT</p>
                         </Link>
@@ -131,5 +141,6 @@ export default function SidebarComponent(){
 }
 
 function routePathIsEqual(path: string){
-    return useRouterState().location.pathname == path;
+    const pathName = useRouterState().location.pathname
+    return path.substring(1) == "" ? pathName === path : pathName.substring(1).startsWith(path.substring(1));
 }

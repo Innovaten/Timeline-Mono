@@ -1,13 +1,15 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateUserDto, DeleteUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { Roles } from '../common/enums/roles.enum';
 import { ClassesService } from '../classes/classes.service';
 import { AnnouncementsService } from '../announcements/announcements.service';
+import { Types } from 'mongoose';
+import { AssignmentsService } from '../assignments/assignments.service';
 
 @Controller({
     path: 'users',
@@ -20,7 +22,8 @@ export class UsersController {
         private user: UserService,
         private jwt: JwtService,
         private classes: ClassesService,
-        private announcements: AnnouncementsService
+        private announcements: AnnouncementsService,
+        private assignments: AssignmentsService,
     ) { }
 
     @UseGuards(AuthGuard)
@@ -162,17 +165,14 @@ export class UsersController {
         }
     }
 
+    @UseGuards(AuthGuard)
     @Delete(":_id")
     async deleteUser(
-        @Body() deleteUserDto: DeleteUserDto,
-        @Param("_id") _id: string
+        @Param("_id") _id: string,
+        @Req() req: any
     ) {
         try {
-            if(!deleteUserDto.authToken){
-                return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
-            }
-
-            const actor = await this.jwt.validateToken(deleteUserDto.authToken);
+            const actor = req.user;
 
             if(!actor){
                 return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
@@ -196,6 +196,38 @@ export class UsersController {
     }
 
     @UseGuards(AuthGuard)
+    @Get("announcements")
+    async getAnnouncementsForLMS(
+        @Req() req: any,
+    ) {
+     
+        try{
+            const user = req.user;
+            if(!user){
+                return ServerErrorResponse(
+                    new Error('Unauthenticated Request'),
+                    401
+                )
+            }
+            if(user.role != Roles.STUDENT){
+                return ServerErrorResponse(
+                    new Error('Unauthorized Request'),
+                    403
+                )
+            }
+            const announcements = await this.announcements.getAnnouncementsForLMS(user.classes)
+            return ServerSuccessResponse(announcements);
+
+        }catch (err) {
+            return ServerErrorResponse(
+                new Error(`${err}`), 
+                500
+            )
+        }
+    }
+
+
+    @UseGuards(AuthGuard)
     @Get('count')
     async getUserCount( 
         @Query('filter') rawFilter: string
@@ -214,7 +246,8 @@ export class UsersController {
     @Get(":_id/classes")
     async getClassesByUser(
         @Param("_id") _id: string,
-        @Request() req: Request, @Query('limit') rawLimit: string,
+        @Request() req: Request, 
+        @Query('limit') rawLimit: string,
         @Query('offset') rawOffset: string,
         @Query('filter') rawFilter: string,
     ){  
@@ -251,6 +284,30 @@ export class UsersController {
         } 
     }
 
+    @UseGuards(AuthGuard)
+    @Get(":_id/classes/count")
+    async getClassesNumberByUser(
+        @Param("_id") _id: string,
+        @Request() req: Request,
+        @Query('filter') rawFilter: string,
+    ){  
+        try {
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+    
+            // @ts-ignore
+            const user = req["user"] as IUserDoc;
+
+            const count = await this.classes.getClassesCount({ _id: { $in: user.classes }, ...filter })
+
+            return ServerSuccessResponse(count);
+        
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+
+
 
     @UseGuards(AuthGuard)
     @Get(":_id/announcements")
@@ -283,6 +340,29 @@ export class UsersController {
                 announcements: result,
                 count,
             });
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+
+    @UseGuards(AuthGuard)
+    @Get(":_id/announcements/count")
+    async getAnnouncementNumberByUser(
+        @Param("_id") _id: string,
+        @Request() req: Request,
+        @Query('filter') rawFilter: string,
+    ){  
+        try {
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+    
+            // @ts-ignore
+            const user = req["user"] as IUserDoc;
+
+            const classes = await this.classes.getClasses(100, 0, { _id: { $in: user.classes.map( c => new Types.ObjectId(c)) } })
+
+            const count = await this.announcements.getAnnouncementsCount({ announcementSet: { $in: classes.map( c => c.announcementSet ) }, "meta.isDeleted": false, ...filter})
+
+            return ServerSuccessResponse(count);
         
 
         } catch(err) {
@@ -290,6 +370,95 @@ export class UsersController {
         } 
     }
 
+    @UseGuards(AuthGuard)
+    @Get(':specifier/assignments')
+    async getUserAssignments( 
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+        @Req() req: any
+    ) {
+        try {
+
+            const IsId = isId === "true";
+            const user = req.user as IUserDoc;
+
+            const assignments = await this.user.getUserAssignments(user)
+            return ServerSuccessResponse(assignments);
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+
+    @UseGuards(AuthGuard)
+    @Get(":_id/assignments/count")
+    async getAssignmentsNumberByUser(
+        @Param("_id") _id: string,
+        @Request() req: Request,
+        @Query('filter') rawFilter: string,
+    ){  
+        try {
+            let filter = rawFilter ? JSON.parse(rawFilter) : {}
+    
+            // @ts-ignore
+            const user = req["user"] as IUserDoc;
+
+            const count = await this.assignments.getCount({ class: { $in: user.classes }, ...filter })
+
+            return ServerSuccessResponse(count);
+        
+
+        } catch(err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        } 
+    }
+    
+    //@UseGuards(AuthGuard)
+    // @Get(':specifier/completed-lessons')
+    // async getUsersCompletedLessons( 
+    //     @Param('specifier') specifier: string,
+    //     @Query('isId') isId: string = "true",
+    // ) {
+    //     try {
+    //         const IsId = isId == "true";
+    //         const completedLessons = await this.user.getUsersCompletedLessons(specifier, IsId)
+    //         return ServerSuccessResponse(completedLessons);
+
+    //     } catch(err) {
+    //         return ServerErrorResponse(new Error(`${err}`), 500);
+    //     } 
+    // }
+  //@UseGuards(AuthGuard)
+    @Get(':userId/completed-lessons')
+    async getCompletedLessons(@Param('userId') userId: string) {
+        try {
+        const completedLessons = await this.user.getCompletedLessons(new Types.ObjectId(userId));
+
+        if (!completedLessons) {
+            return ServerErrorResponse(new Error('No completed lessons found'), 404);
+        }
+
+        return ServerSuccessResponse(completedLessons);
+        } catch (err) {
+        return ServerErrorResponse(new Error(`${err}`), 500);
+        }
+    }
+
+   // @UseGuards(AuthGuard)
+    @Get(':userId/completed-modules')
+    async getCompletedModules(@Param('userId') userId: string) {
+        try {
+        const completedModules = await this.user.getCompletedModules(new Types.ObjectId(userId));
+
+        if (!completedModules) {
+            return ServerErrorResponse(new Error('No completed modules found'), 404);
+        }
+
+        return ServerSuccessResponse(completedModules);
+        } catch (err) {
+        return ServerErrorResponse(new Error(`${err}`), 500);
+        }
+    }
     @Patch('update-password')
     async updatedPassword(
         @Query('id') id: string,
@@ -304,5 +473,46 @@ export class UsersController {
         }
     }
 
+    @UseGuards(AuthGuard)
+    @Post(':userId/completed-lessons/:lessonId')
+    async markLessonAsCompleted(
+        @Param('lessonId') lessonId: string,
+        @Body('lessonSetId') lessonSetId: string,
+        @Request() req: any
+    ) {
+        try {
+            const user = req['user'];
+            if (!user) {
+                return ServerErrorResponse(new Error('Unauthenticated'), 401);
+            }
 
+            const completedLesson = await this.user.markAsCompleteLessons(
+                user._id,
+                new Types.ObjectId(lessonId),
+                new Types.ObjectId(lessonSetId)
+            );
+
+            return ServerSuccessResponse(completedLesson);
+        } catch (err) {
+            return ServerErrorResponse(new Error(`${err}`), 500);
+        }
+    }
+
+
+    @UseGuards(AuthGuard)
+    @Post(':userId/completed-modules/:moduleId')
+    async markAsCompleteModule(
+    @Param('moduleId') moduleId: Types.ObjectId,
+    @Request() req: any
+    ) {
+    try {
+        const user = req.user; 
+        const moduleDoc = await this.user.markAsCompleteModule(user._id, moduleId);
+        return ServerSuccessResponse(moduleDoc);
+    } catch (err) {
+        return ServerErrorResponse(new Error(`${err}`), 500);
+    }
+    }
+
+  
 }

@@ -13,7 +13,7 @@ export class OtpService {
     ) {}
 
 
-    async sendOtp(email: string, via: string) {
+    async sendOtp(email: string) {
         const user = await this.user.getUserByEmail(email)
         if (!user) {
             return ServerErrorResponse(new Error('User could not be found'), 404)
@@ -36,21 +36,10 @@ export class OtpService {
         await user.save()
         console.log("otp",otp);
 
-        let topic: KafkaTopic;
-        let data: Record<string, any>;
-        
-        if(via === 'phone') {
-            topic = "notifications.send-sms",
-            data = { phone: user.phone, otp }
-        } else {
-            topic = "notifications.send-email";
-            data = { email: user.email, otp }
-        }
-
         const messageSent = await this.kafkaService.produceMessage(
-            topic,
+            "notifications.send-email",
             "otp",
-            data,
+            { email: user.email, otp },
         );
 
         if (!messageSent) {

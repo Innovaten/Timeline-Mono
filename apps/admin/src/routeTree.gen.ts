@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeImport } from './routes/classes.$classCode.assignments.$assignmentCode.submissions.$submissionCode'
 
 // Create Virtual Routes
 
@@ -22,15 +23,31 @@ const RegistrationsLazyImport = createFileRoute('/registrations')()
 const LoginLazyImport = createFileRoute('/login')()
 const ClassesLazyImport = createFileRoute('/classes')()
 const CalendarLazyImport = createFileRoute('/calendar')()
+const AssignmentsLazyImport = createFileRoute('/assignments')()
 const AnnouncementsLazyImport = createFileRoute('/announcements')()
 const AdministratorsLazyImport = createFileRoute('/administrators')()
 const IndexLazyImport = createFileRoute('/')()
 const ClassesClassCodeLazyImport = createFileRoute('/classes/$classCode')()
-const ClassesclassCodeLessonsLazyImport = createFileRoute(
-  '/classes/${classCode}/lessons',
+const ClassesClassCodeModulesLazyImport = createFileRoute(
+  '/classes/$classCode/modules',
+)()
+const ClassesClassCodeAssignmentsLazyImport = createFileRoute(
+  '/classes/$classCode/assignments',
 )()
 const ClassesClassCodeAnnouncementsLazyImport = createFileRoute(
   '/classes/$classCode/announcements',
+)()
+const ClassesClassCodeModulesCreateLazyImport = createFileRoute(
+  '/classes/$classCode/modules/create',
+)()
+const ClassesClassCodeModulesModuleCodeLazyImport = createFileRoute(
+  '/classes/$classCode/modules/$moduleCode',
+)()
+const ClassesClassCodeAssignmentsCreateLazyImport = createFileRoute(
+  '/classes/$classCode/assignments/create',
+)()
+const ClassesClassCodeAssignmentsAssignmentCodeLazyImport = createFileRoute(
+  '/classes/$classCode/assignments/$assignmentCode',
 )()
 const ClassesClassCodeAnnouncementsCreateLazyImport = createFileRoute(
   '/classes/$classCode/announcements/create',
@@ -38,9 +55,31 @@ const ClassesClassCodeAnnouncementsCreateLazyImport = createFileRoute(
 const ClassesClassCodeAnnouncementsAnnouncementCodeLazyImport = createFileRoute(
   '/classes/$classCode/announcements/$announcementCode',
 )()
+const ClassesClassCodeModulesModuleCodeUpdateLazyImport = createFileRoute(
+  '/classes/$classCode/modules/$moduleCode/update',
+)()
+const ClassesClassCodeModulesModuleCodeLessonsLazyImport = createFileRoute(
+  '/classes/$classCode/modules/$moduleCode/lessons',
+)()
+const ClassesClassCodeAssignmentsAssignmentCodeUpdateLazyImport =
+  createFileRoute('/classes/$classCode/assignments/$assignmentCode/update')()
+const ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyImport =
+  createFileRoute(
+    '/classes/$classCode/assignments/$assignmentCode/submissions',
+  )()
 const ClassesClassCodeAnnouncementsAnnouncementCodeUpdateLazyImport =
   createFileRoute(
     '/classes/$classCode/announcements/$announcementCode/update',
+  )()
+const ClassesClassCodeModulesModuleCodeLessonsCreateLazyImport =
+  createFileRoute('/classes/$classCode/modules/$moduleCode/lessons/create')()
+const ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyImport =
+  createFileRoute(
+    '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode',
+  )()
+const ClassesClassCodeModulesModuleCodeLessonsLessonCodeUpdateLazyImport =
+  createFileRoute(
+    '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode/update',
   )()
 
 // Create/Update Routes
@@ -75,6 +114,11 @@ const CalendarLazyRoute = CalendarLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/calendar.lazy').then((d) => d.Route))
 
+const AssignmentsLazyRoute = AssignmentsLazyImport.update({
+  path: '/assignments',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/assignments.lazy').then((d) => d.Route))
+
 const AnnouncementsLazyRoute = AnnouncementsLazyImport.update({
   path: '/announcements',
   getParentRoute: () => rootRoute,
@@ -99,12 +143,20 @@ const ClassesClassCodeLazyRoute = ClassesClassCodeLazyImport.update({
   import('./routes/classes.$classCode.lazy').then((d) => d.Route),
 )
 
-const ClassesclassCodeLessonsLazyRoute =
-  ClassesclassCodeLessonsLazyImport.update({
-    path: '/${classCode}/lessons',
-    getParentRoute: () => ClassesLazyRoute,
+const ClassesClassCodeModulesLazyRoute =
+  ClassesClassCodeModulesLazyImport.update({
+    path: '/modules',
+    getParentRoute: () => ClassesClassCodeLazyRoute,
   } as any).lazy(() =>
-    import('./routes/classes.${classCode}.lessons.lazy').then((d) => d.Route),
+    import('./routes/classes.$classCode.modules.lazy').then((d) => d.Route),
+  )
+
+const ClassesClassCodeAssignmentsLazyRoute =
+  ClassesClassCodeAssignmentsLazyImport.update({
+    path: '/assignments',
+    getParentRoute: () => ClassesClassCodeLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/classes.$classCode.assignments.lazy').then((d) => d.Route),
   )
 
 const ClassesClassCodeAnnouncementsLazyRoute =
@@ -113,6 +165,46 @@ const ClassesClassCodeAnnouncementsLazyRoute =
     getParentRoute: () => ClassesClassCodeLazyRoute,
   } as any).lazy(() =>
     import('./routes/classes.$classCode.announcements.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const ClassesClassCodeModulesCreateLazyRoute =
+  ClassesClassCodeModulesCreateLazyImport.update({
+    path: '/create',
+    getParentRoute: () => ClassesClassCodeModulesLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/classes.$classCode.modules.create.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const ClassesClassCodeModulesModuleCodeLazyRoute =
+  ClassesClassCodeModulesModuleCodeLazyImport.update({
+    path: '/$moduleCode',
+    getParentRoute: () => ClassesClassCodeModulesLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/classes.$classCode.modules.$moduleCode.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const ClassesClassCodeAssignmentsCreateLazyRoute =
+  ClassesClassCodeAssignmentsCreateLazyImport.update({
+    path: '/create',
+    getParentRoute: () => ClassesClassCodeAssignmentsLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/classes.$classCode.assignments.create.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const ClassesClassCodeAssignmentsAssignmentCodeLazyRoute =
+  ClassesClassCodeAssignmentsAssignmentCodeLazyImport.update({
+    path: '/$assignmentCode',
+    getParentRoute: () => ClassesClassCodeAssignmentsLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/classes.$classCode.assignments.$assignmentCode.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -137,6 +229,46 @@ const ClassesClassCodeAnnouncementsAnnouncementCodeLazyRoute =
     ).then((d) => d.Route),
   )
 
+const ClassesClassCodeModulesModuleCodeUpdateLazyRoute =
+  ClassesClassCodeModulesModuleCodeUpdateLazyImport.update({
+    path: '/update',
+    getParentRoute: () => ClassesClassCodeModulesModuleCodeLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/classes.$classCode.modules.$moduleCode.update.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const ClassesClassCodeModulesModuleCodeLessonsLazyRoute =
+  ClassesClassCodeModulesModuleCodeLessonsLazyImport.update({
+    path: '/lessons',
+    getParentRoute: () => ClassesClassCodeModulesModuleCodeLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/classes.$classCode.modules.$moduleCode.lessons.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const ClassesClassCodeAssignmentsAssignmentCodeUpdateLazyRoute =
+  ClassesClassCodeAssignmentsAssignmentCodeUpdateLazyImport.update({
+    path: '/update',
+    getParentRoute: () => ClassesClassCodeAssignmentsAssignmentCodeLazyRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/classes.$classCode.assignments.$assignmentCode.update.lazy'
+    ).then((d) => d.Route),
+  )
+
+const ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute =
+  ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyImport.update({
+    path: '/submissions',
+    getParentRoute: () => ClassesClassCodeAssignmentsAssignmentCodeLazyRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/classes.$classCode.assignments.$assignmentCode.submissions.lazy'
+    ).then((d) => d.Route),
+  )
+
 const ClassesClassCodeAnnouncementsAnnouncementCodeUpdateLazyRoute =
   ClassesClassCodeAnnouncementsAnnouncementCodeUpdateLazyImport.update({
     path: '/update',
@@ -145,6 +277,46 @@ const ClassesClassCodeAnnouncementsAnnouncementCodeUpdateLazyRoute =
   } as any).lazy(() =>
     import(
       './routes/classes.$classCode.announcements.$announcementCode.update.lazy'
+    ).then((d) => d.Route),
+  )
+
+const ClassesClassCodeModulesModuleCodeLessonsCreateLazyRoute =
+  ClassesClassCodeModulesModuleCodeLessonsCreateLazyImport.update({
+    path: '/create',
+    getParentRoute: () => ClassesClassCodeModulesModuleCodeLessonsLazyRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/classes.$classCode.modules.$moduleCode.lessons.create.lazy'
+    ).then((d) => d.Route),
+  )
+
+const ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyRoute =
+  ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyImport.update({
+    path: '/$lessonCode',
+    getParentRoute: () => ClassesClassCodeModulesModuleCodeLessonsLazyRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/classes.$classCode.modules.$moduleCode.lessons.$lessonCode.lazy'
+    ).then((d) => d.Route),
+  )
+
+const ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeRoute =
+  ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeImport.update(
+    {
+      path: '/$submissionCode',
+      getParentRoute: () =>
+        ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute,
+    } as any,
+  )
+
+const ClassesClassCodeModulesModuleCodeLessonsLessonCodeUpdateLazyRoute =
+  ClassesClassCodeModulesModuleCodeLessonsLessonCodeUpdateLazyImport.update({
+    path: '/update',
+    getParentRoute: () =>
+      ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/classes.$classCode.modules.$moduleCode.lessons.$lessonCode.update.lazy'
     ).then((d) => d.Route),
   )
 
@@ -171,6 +343,13 @@ declare module '@tanstack/react-router' {
       path: '/announcements'
       fullPath: '/announcements'
       preLoaderRoute: typeof AnnouncementsLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/assignments': {
+      id: '/assignments'
+      path: '/assignments'
+      fullPath: '/assignments'
+      preLoaderRoute: typeof AssignmentsLazyImport
       parentRoute: typeof rootRoute
     }
     '/calendar': {
@@ -229,12 +408,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassCodeAnnouncementsLazyImport
       parentRoute: typeof ClassesClassCodeLazyImport
     }
-    '/classes/${classCode}/lessons': {
-      id: '/classes/${classCode}/lessons'
-      path: '/${classCode}/lessons'
-      fullPath: '/classes/${classCode}/lessons'
-      preLoaderRoute: typeof ClassesclassCodeLessonsLazyImport
-      parentRoute: typeof ClassesLazyImport
+    '/classes/$classCode/assignments': {
+      id: '/classes/$classCode/assignments'
+      path: '/assignments'
+      fullPath: '/classes/$classCode/assignments'
+      preLoaderRoute: typeof ClassesClassCodeAssignmentsLazyImport
+      parentRoute: typeof ClassesClassCodeLazyImport
+    }
+    '/classes/$classCode/modules': {
+      id: '/classes/$classCode/modules'
+      path: '/modules'
+      fullPath: '/classes/$classCode/modules'
+      preLoaderRoute: typeof ClassesClassCodeModulesLazyImport
+      parentRoute: typeof ClassesClassCodeLazyImport
     }
     '/classes/$classCode/announcements/$announcementCode': {
       id: '/classes/$classCode/announcements/$announcementCode'
@@ -250,12 +436,96 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassCodeAnnouncementsCreateLazyImport
       parentRoute: typeof ClassesClassCodeAnnouncementsLazyImport
     }
+    '/classes/$classCode/assignments/$assignmentCode': {
+      id: '/classes/$classCode/assignments/$assignmentCode'
+      path: '/$assignmentCode'
+      fullPath: '/classes/$classCode/assignments/$assignmentCode'
+      preLoaderRoute: typeof ClassesClassCodeAssignmentsAssignmentCodeLazyImport
+      parentRoute: typeof ClassesClassCodeAssignmentsLazyImport
+    }
+    '/classes/$classCode/assignments/create': {
+      id: '/classes/$classCode/assignments/create'
+      path: '/create'
+      fullPath: '/classes/$classCode/assignments/create'
+      preLoaderRoute: typeof ClassesClassCodeAssignmentsCreateLazyImport
+      parentRoute: typeof ClassesClassCodeAssignmentsLazyImport
+    }
+    '/classes/$classCode/modules/$moduleCode': {
+      id: '/classes/$classCode/modules/$moduleCode'
+      path: '/$moduleCode'
+      fullPath: '/classes/$classCode/modules/$moduleCode'
+      preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeLazyImport
+      parentRoute: typeof ClassesClassCodeModulesLazyImport
+    }
+    '/classes/$classCode/modules/create': {
+      id: '/classes/$classCode/modules/create'
+      path: '/create'
+      fullPath: '/classes/$classCode/modules/create'
+      preLoaderRoute: typeof ClassesClassCodeModulesCreateLazyImport
+      parentRoute: typeof ClassesClassCodeModulesLazyImport
+    }
     '/classes/$classCode/announcements/$announcementCode/update': {
       id: '/classes/$classCode/announcements/$announcementCode/update'
       path: '/update'
       fullPath: '/classes/$classCode/announcements/$announcementCode/update'
       preLoaderRoute: typeof ClassesClassCodeAnnouncementsAnnouncementCodeUpdateLazyImport
       parentRoute: typeof ClassesClassCodeAnnouncementsAnnouncementCodeLazyImport
+    }
+    '/classes/$classCode/assignments/$assignmentCode/submissions': {
+      id: '/classes/$classCode/assignments/$assignmentCode/submissions'
+      path: '/submissions'
+      fullPath: '/classes/$classCode/assignments/$assignmentCode/submissions'
+      preLoaderRoute: typeof ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyImport
+      parentRoute: typeof ClassesClassCodeAssignmentsAssignmentCodeLazyImport
+    }
+    '/classes/$classCode/assignments/$assignmentCode/update': {
+      id: '/classes/$classCode/assignments/$assignmentCode/update'
+      path: '/update'
+      fullPath: '/classes/$classCode/assignments/$assignmentCode/update'
+      preLoaderRoute: typeof ClassesClassCodeAssignmentsAssignmentCodeUpdateLazyImport
+      parentRoute: typeof ClassesClassCodeAssignmentsAssignmentCodeLazyImport
+    }
+    '/classes/$classCode/modules/$moduleCode/lessons': {
+      id: '/classes/$classCode/modules/$moduleCode/lessons'
+      path: '/lessons'
+      fullPath: '/classes/$classCode/modules/$moduleCode/lessons'
+      preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeLessonsLazyImport
+      parentRoute: typeof ClassesClassCodeModulesModuleCodeLazyImport
+    }
+    '/classes/$classCode/modules/$moduleCode/update': {
+      id: '/classes/$classCode/modules/$moduleCode/update'
+      path: '/update'
+      fullPath: '/classes/$classCode/modules/$moduleCode/update'
+      preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeUpdateLazyImport
+      parentRoute: typeof ClassesClassCodeModulesModuleCodeLazyImport
+    }
+    '/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode': {
+      id: '/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode'
+      path: '/$submissionCode'
+      fullPath: '/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode'
+      preLoaderRoute: typeof ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeImport
+      parentRoute: typeof ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyImport
+    }
+    '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode': {
+      id: '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode'
+      path: '/$lessonCode'
+      fullPath: '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode'
+      preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyImport
+      parentRoute: typeof ClassesClassCodeModulesModuleCodeLessonsLazyImport
+    }
+    '/classes/$classCode/modules/$moduleCode/lessons/create': {
+      id: '/classes/$classCode/modules/$moduleCode/lessons/create'
+      path: '/create'
+      fullPath: '/classes/$classCode/modules/$moduleCode/lessons/create'
+      preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeLessonsCreateLazyImport
+      parentRoute: typeof ClassesClassCodeModulesModuleCodeLessonsLazyImport
+    }
+    '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode/update': {
+      id: '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode/update'
+      path: '/update'
+      fullPath: '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode/update'
+      preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeLessonsLessonCodeUpdateLazyImport
+      parentRoute: typeof ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyImport
     }
   }
 }
@@ -266,6 +536,7 @@ export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   AdministratorsLazyRoute,
   AnnouncementsLazyRoute,
+  AssignmentsLazyRoute,
   CalendarLazyRoute,
   ClassesLazyRoute: ClassesLazyRoute.addChildren({
     ClassesClassCodeLazyRoute: ClassesClassCodeLazyRoute.addChildren({
@@ -277,8 +548,39 @@ export const routeTree = rootRoute.addChildren({
             }),
           ClassesClassCodeAnnouncementsCreateLazyRoute,
         }),
+      ClassesClassCodeAssignmentsLazyRoute:
+        ClassesClassCodeAssignmentsLazyRoute.addChildren({
+          ClassesClassCodeAssignmentsAssignmentCodeLazyRoute:
+            ClassesClassCodeAssignmentsAssignmentCodeLazyRoute.addChildren({
+              ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute:
+                ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute.addChildren(
+                  {
+                    ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeRoute,
+                  },
+                ),
+              ClassesClassCodeAssignmentsAssignmentCodeUpdateLazyRoute,
+            }),
+          ClassesClassCodeAssignmentsCreateLazyRoute,
+        }),
+      ClassesClassCodeModulesLazyRoute:
+        ClassesClassCodeModulesLazyRoute.addChildren({
+          ClassesClassCodeModulesModuleCodeLazyRoute:
+            ClassesClassCodeModulesModuleCodeLazyRoute.addChildren({
+              ClassesClassCodeModulesModuleCodeLessonsLazyRoute:
+                ClassesClassCodeModulesModuleCodeLessonsLazyRoute.addChildren({
+                  ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyRoute:
+                    ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyRoute.addChildren(
+                      {
+                        ClassesClassCodeModulesModuleCodeLessonsLessonCodeUpdateLazyRoute,
+                      },
+                    ),
+                  ClassesClassCodeModulesModuleCodeLessonsCreateLazyRoute,
+                }),
+              ClassesClassCodeModulesModuleCodeUpdateLazyRoute,
+            }),
+          ClassesClassCodeModulesCreateLazyRoute,
+        }),
     }),
-    ClassesclassCodeLessonsLazyRoute,
   }),
   LoginLazyRoute,
   RegistrationsLazyRoute,
@@ -297,6 +599,7 @@ export const routeTree = rootRoute.addChildren({
         "/",
         "/administrators",
         "/announcements",
+        "/assignments",
         "/calendar",
         "/classes",
         "/login",
@@ -314,14 +617,16 @@ export const routeTree = rootRoute.addChildren({
     "/announcements": {
       "filePath": "announcements.lazy.tsx"
     },
+    "/assignments": {
+      "filePath": "assignments.lazy.tsx"
+    },
     "/calendar": {
       "filePath": "calendar.lazy.tsx"
     },
     "/classes": {
       "filePath": "classes.lazy.tsx",
       "children": [
-        "/classes/$classCode",
-        "/classes/${classCode}/lessons"
+        "/classes/$classCode"
       ]
     },
     "/login": {
@@ -340,7 +645,9 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "classes.$classCode.lazy.tsx",
       "parent": "/classes",
       "children": [
-        "/classes/$classCode/announcements"
+        "/classes/$classCode/announcements",
+        "/classes/$classCode/assignments",
+        "/classes/$classCode/modules"
       ]
     },
     "/classes/$classCode/announcements": {
@@ -351,9 +658,21 @@ export const routeTree = rootRoute.addChildren({
         "/classes/$classCode/announcements/create"
       ]
     },
-    "/classes/${classCode}/lessons": {
-      "filePath": "classes.${classCode}.lessons.lazy.tsx",
-      "parent": "/classes"
+    "/classes/$classCode/assignments": {
+      "filePath": "classes.$classCode.assignments.lazy.tsx",
+      "parent": "/classes/$classCode",
+      "children": [
+        "/classes/$classCode/assignments/$assignmentCode",
+        "/classes/$classCode/assignments/create"
+      ]
+    },
+    "/classes/$classCode/modules": {
+      "filePath": "classes.$classCode.modules.lazy.tsx",
+      "parent": "/classes/$classCode",
+      "children": [
+        "/classes/$classCode/modules/$moduleCode",
+        "/classes/$classCode/modules/create"
+      ]
     },
     "/classes/$classCode/announcements/$announcementCode": {
       "filePath": "classes.$classCode.announcements.$announcementCode.lazy.tsx",
@@ -366,9 +685,75 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "classes.$classCode.announcements.create.lazy.tsx",
       "parent": "/classes/$classCode/announcements"
     },
+    "/classes/$classCode/assignments/$assignmentCode": {
+      "filePath": "classes.$classCode.assignments.$assignmentCode.lazy.tsx",
+      "parent": "/classes/$classCode/assignments",
+      "children": [
+        "/classes/$classCode/assignments/$assignmentCode/submissions",
+        "/classes/$classCode/assignments/$assignmentCode/update"
+      ]
+    },
+    "/classes/$classCode/assignments/create": {
+      "filePath": "classes.$classCode.assignments.create.lazy.tsx",
+      "parent": "/classes/$classCode/assignments"
+    },
+    "/classes/$classCode/modules/$moduleCode": {
+      "filePath": "classes.$classCode.modules.$moduleCode.lazy.tsx",
+      "parent": "/classes/$classCode/modules",
+      "children": [
+        "/classes/$classCode/modules/$moduleCode/lessons",
+        "/classes/$classCode/modules/$moduleCode/update"
+      ]
+    },
+    "/classes/$classCode/modules/create": {
+      "filePath": "classes.$classCode.modules.create.lazy.tsx",
+      "parent": "/classes/$classCode/modules"
+    },
     "/classes/$classCode/announcements/$announcementCode/update": {
       "filePath": "classes.$classCode.announcements.$announcementCode.update.lazy.tsx",
       "parent": "/classes/$classCode/announcements/$announcementCode"
+    },
+    "/classes/$classCode/assignments/$assignmentCode/submissions": {
+      "filePath": "classes.$classCode.assignments.$assignmentCode.submissions.lazy.tsx",
+      "parent": "/classes/$classCode/assignments/$assignmentCode",
+      "children": [
+        "/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode"
+      ]
+    },
+    "/classes/$classCode/assignments/$assignmentCode/update": {
+      "filePath": "classes.$classCode.assignments.$assignmentCode.update.lazy.tsx",
+      "parent": "/classes/$classCode/assignments/$assignmentCode"
+    },
+    "/classes/$classCode/modules/$moduleCode/lessons": {
+      "filePath": "classes.$classCode.modules.$moduleCode.lessons.lazy.tsx",
+      "parent": "/classes/$classCode/modules/$moduleCode",
+      "children": [
+        "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode",
+        "/classes/$classCode/modules/$moduleCode/lessons/create"
+      ]
+    },
+    "/classes/$classCode/modules/$moduleCode/update": {
+      "filePath": "classes.$classCode.modules.$moduleCode.update.lazy.tsx",
+      "parent": "/classes/$classCode/modules/$moduleCode"
+    },
+    "/classes/$classCode/assignments/$assignmentCode/submissions/$submissionCode": {
+      "filePath": "classes.$classCode.assignments.$assignmentCode.submissions.$submissionCode.tsx",
+      "parent": "/classes/$classCode/assignments/$assignmentCode/submissions"
+    },
+    "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode": {
+      "filePath": "classes.$classCode.modules.$moduleCode.lessons.$lessonCode.lazy.tsx",
+      "parent": "/classes/$classCode/modules/$moduleCode/lessons",
+      "children": [
+        "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode/update"
+      ]
+    },
+    "/classes/$classCode/modules/$moduleCode/lessons/create": {
+      "filePath": "classes.$classCode.modules.$moduleCode.lessons.create.lazy.tsx",
+      "parent": "/classes/$classCode/modules/$moduleCode/lessons"
+    },
+    "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode/update": {
+      "filePath": "classes.$classCode.modules.$moduleCode.lessons.$lessonCode.update.lazy.tsx",
+      "parent": "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode"
     }
   }
 }

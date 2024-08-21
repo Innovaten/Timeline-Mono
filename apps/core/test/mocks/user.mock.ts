@@ -14,6 +14,8 @@ type CreateUserProps = {
   isSuspended?: boolean,
   creator?: Types.ObjectId,
   password?: string,
+  email?: string,
+  phone?: string,
 }
 
 export function createRandomUser({
@@ -26,6 +28,8 @@ export function createRandomUser({
   isSuspended,
   password,
   creator,
+  email,
+  phone,
   }: CreateUserProps
 ): IUser & { _id: Types.ObjectId } {
 
@@ -38,8 +42,8 @@ export function createRandomUser({
     otherNames: "",
     gender: gender ?? "Male",
 
-    email: faker.internet.email(),
-    phone: faker.phone.number(),
+    email: email ?? faker.internet.email(),
+    phone: phone ?? faker.phone.number(),
 
     classes: classes ?? [],
     modeOfClass: modeOfClass ?? "In-Person",

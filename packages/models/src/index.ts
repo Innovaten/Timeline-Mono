@@ -16,7 +16,7 @@ import { AssignmentSetModel, AssignmentSetSchema } from "./assignment-set";
 import { AssignmentModel, AssignmentSchema } from "./assignment";
 import { AssignmentSubmissionModel, AssignmentSubmissionSchema } from "./assignment-submission";
 
-import { IUserDoc } from "./user/index.types";
+import { IUserDoc, IUser } from "./user/index.types";
 import { IRegistrationDoc } from "./registration/index.types";
 import { IClassDoc, IClass, modeOfClassType, ClassStatusType } from "./class/index.types";
 import { IAnnouncementDoc, IAnnouncement } from "./announcement/index.types";
@@ -57,6 +57,7 @@ export {
 
     //Interfaces
     type IUserDoc,
+    type IUser,
     type IRegistrationDoc,
     type IClass,
     type modeOfClassType,

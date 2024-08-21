@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, ForbiddenException } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc, LessonSetModel } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc, IModuleDoc, LessonModel, LessonSetModel } from "@repo/models";
+
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -409,14 +410,16 @@ export class UserService {
         );
       }
 
-      async getCompletedLessons(userId: Types.ObjectId): Promise<ICompletedLessonDoc | null> {
+      async getCompletedLessons(userId: Types.ObjectId): Promise<ILessonDoc[] | null> {
         const completedLessons = await CompletedLessonsModel.findOne({ user: userId }).exec();
-        return completedLessons;
+        const lessons = await LessonModel.find({_id: {$in: completedLessons?.lessons}}).populate("createdBy updatedBy")
+        return lessons;
       }
 
-      async getCompletedModules(userId: Types.ObjectId): Promise<ICompletedModuleDoc | null> {
+      async getCompletedModules(userId: Types.ObjectId): Promise<IModuleDoc[] | null> {
         const completedModules = await CompletedModulesModel.findOne({ user: userId }).exec();
-        return completedModules;
+        const modules = await ModuleModel.find({_id: {$in: completedModules?.modules}}).populate("createdBy updatedBy")
+        return modules;
       }
 }
 

@@ -11,6 +11,7 @@ COPY turbo.json ./
 
 # Install dependencies
 RUN yarn global add turbo 
+RUN yarn global add vite
 
 COPY apps/ apps/
 COPY packages/ packages/
@@ -21,3 +22,9 @@ COPY . .
 
 # Build the specific app
 RUN turbo run build --filter=lms
+
+WORKDIR apps/lms
+
+EXPOSE 3000
+
+CMD ["vite", "--host", "0.0.0.0", "--port", "3000"]

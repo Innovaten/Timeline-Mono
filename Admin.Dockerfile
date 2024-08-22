@@ -22,7 +22,7 @@ COPY . .
 # Build the specific app
 RUN turbo run build --filter=admin
 
-WORKDIR apps/lms
+WORKDIR /apps/admin
 
 EXPOSE 3000
 

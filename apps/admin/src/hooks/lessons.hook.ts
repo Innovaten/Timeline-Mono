@@ -20,7 +20,6 @@ export function useLessons(refreshFlag: boolean = true,limit: number = 10, offse
             `/api/v1${route}?filter=${JSON.stringify(actualFilter)}&limit=${limit}&offset=${offset}`,
         ).then(res => {
             if(res.status == 200 && res.data.success){
-                console.log(res.data.data)
                 setLessons(res.data.data);
                 setCount(res.data.data.length);
             } else {
@@ -66,27 +65,4 @@ export function useLesson(refreshFlag: boolean = true, specifier: string, isId:b
     }, [refreshFlag])
 
     return { isLoading, lesson }
-}
-
-
-export function useLessonStateFilter(){
-    const [ filterLabel, setFilterLabel ] = useState<"Public" | "Deleted">("Public");
-    const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
-
-    const resultingFilters = {
-        "Public": {"meta.isDeleted": { $eq: false }},
-        "Deleted": { "meta.isDeleted": { $eq: true }},
-    };
-
-    const filterOptions = Object.keys(resultingFilters);
-    
-    const filter = resultingFilters[filterLabel];
-
-    function changeFilter(arg:  "Public"  | "Deleted"){
-        setFilterChangedFlag(prev => !prev);
-        setFilterLabel(arg);
-    };
-
-    return { filter, changeFilter, filterOptions, filterChangedFlag };
-
 }

@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { Button, DialogContainer, Input, SelectInput } from '@repo/ui'
 import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, useToggleManager, validPhoneNumber } from '@repo/utils';
-import { FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { FunnelIcon, ArrowPathIcon, PencilIcon } from '@heroicons/react/24/outline'
 import { useStudents } from '../hooks/students.hook';
 import { useCompositeFilterFlag, useSpecificEntity } from '../hooks';
 import { IUserDoc } from '@repo/models';
@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { Formik, Form } from 'formik'
 import * as yup from 'yup'
 import dayjs from 'dayjs';
+import { IClassDoc } from '@repo/models';
 
 export const Route = createLazyFileRoute('/students')({
   component: Students
@@ -23,6 +24,7 @@ function Students(){
   const initialToggles = {
       'update-is-loading': false,
       'update-dialog': false,
+      'view-dialog': false,
       
       'filter-is-shown': false,
       'refresh': false,
@@ -36,7 +38,7 @@ function Students(){
 
   const { students, count: studentsCount, isLoading: studentsIsLoading } = useStudents(compositeFilterFlag);
 
-  const { entity: selectedStudent, setSelected, resetSelected } = useSpecificEntity<Partial<IUserDoc>>()
+  const { entity: selectedStudent, setSelected, resetSelected } = useSpecificEntity<Omit<Partial<IUserDoc>, "classes"> & { classes: IClassDoc[] }>()
   
   
   function UpdateDialog(){
@@ -161,19 +163,93 @@ function Students(){
     )
   }
 
+  function ViewDialog(){
+    if(!selectedStudent) return
+
+    return (
+      <DialogContainer
+                isOpen={toggleManager.get('view-dialog')}
+                onClose={()=>toggleManager.reset('view-dialog')}
+                toggleOpen={() => toggleManager.toggle('view-dialog')}
+                title={`View Admin`}
+                description={`Details of ${selectedStudent.firstName} ${selectedStudent.lastName}`}
+            >
+                <div className="flex flex-col gap-4 sm:justify-between">
+                    <div className='w-full'>
+                        <div className='bg-white w-full overflow-auto grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light " >ADMIN CODE</span>
+                            <p className="text-md" >
+                            {selectedStudent.code}
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light " >FULL NAME</span>
+                            <p className="text-md" >
+                            {selectedStudent.firstName}
+                            {selectedStudent.otherNames == "" ? " " : " " + selectedStudent.otherNames + " "}
+                            {selectedStudent.lastName}
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light " >GENDER</span>
+                            <span className="text-md" >{selectedStudent.gender}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">EMAIL ADDRESS</span>
+                            <span className="text-md">{selectedStudent.email}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">PHONE NUMBER</span>
+                            <span className="text-md" >{selectedStudent.phone}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">MODE OF CLASS</span>
+                            <span className="text-md" >{selectedStudent.modeOfClass ?? "N/A"}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">CLASSES</span>
+                            <span className="flex gap-2 flex-wrap">
+                            {!!selectedStudent.classes?.length && selectedStudent.classes.map((course, idx) => {
+                                return (
+                                <span key={idx} className="text-md" >
+                                    {course.name}
+                                </span>
+                                );
+                            })}
+                            { !selectedStudent.classes?.length && <span className="text-md">No Class Indicated</span> }
+                            </span>
+
+                        </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4 sm:justify-end">
+                        <Button
+                            variant="neutral" 
+                            onClick={() => {toggleManager.reset('view-dialog')}}
+                        >
+                        Close
+                        </Button>
+                    </div>
+                </div>
+            </DialogContainer>
+    )
+
+  }
 
 
 
   return (
     <>
-      
+      {toggleManager.get("update-dialog") && <UpdateDialog />}
+      {toggleManager.get('view-dialog') && <ViewDialog />}
       <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
         <div className='flex justify-between mt-2 gap-2 items-center'>
           <h3 className='text-blue-800'>Students</h3>     
           <div className='flex gap-3'>
               <div  className='w-full flex flex-wrap gap-3'>
                   <div className='flex flex-col gap-2 justify-end'>
-                    <Button className='!h-[35px] px-2' variant='outline' onClick={() => {toggleManager.toggle('filter-is-shown') }}> <ArrowPathIcon className='w-4' /> </Button>
+                    <Button className='!h-[35px] px-2' variant='outline' onClick={() => {toggleManager.toggle('refresh') }}> <ArrowPathIcon className='w-4' /> </Button>
                   </div>
               </div> 
           </div>
@@ -187,6 +263,7 @@ function Students(){
                   </div>
                   <div className='hidden sm:flex gap-4 items-center font-light'>
                       <span className='w-[150px] flex justify-end'>DATE CREATED</span>
+                      <span className='w-[70px] flex justify-end'>ACTIONS</span>
                   </div>
                 </div>
                 {
@@ -201,13 +278,30 @@ function Students(){
                   !studentsIsLoading && students.map((student, idx) => {
                       return (
                       // Onclick trigger a dialog
-                      <div key={idx} onClick={() => { setSelected(student); toggleManager.toggle('update-dialog') }} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                      <div key={idx} 
+                        className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
+                        onClick={() => { 
+                          // @ts-ignore
+                          setSelected(student); 
+                          toggleManager.toggle('view-dialog') 
+                          }} >
                         <div className='flex items-center gap-4'>
                             <small className='font-light w-[70px]'>{student.code}</small>
                             <span className='flex-1 font-normal truncate'>{student.firstName + " " + student.lastName }</span>
                         </div>
                         <div className='hidden sm:flex gap-4 items-center font-light'>
                             <span className='w-[150px] flex justify-end'>{dayjs(student.updatedAt).format("HH:mm - DD/MM/YYYY")}</span>
+                            <span className='w-[70px] flex justify-end'>
+                              <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { 
+                                  e.preventDefault(); 
+                                  e.stopPropagation();
+                                  // @ts-ignore
+                                  setSelected(student); 
+                                  toggleManager.toggle('update-dialog') }}
+                              >              
+                                <PencilIcon className='w-4 h-4' />
+                              </span>
+                            </span>
                         </div>
                     </div>
                       )

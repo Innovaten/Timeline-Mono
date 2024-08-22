@@ -43,7 +43,7 @@ export function FileUploader({ filesHook, buttonVariant, buttonClass }: FileUplo
                         "original-file-ext": file.extension
                     }
                     return headerData;
-                },
+                },  
             })
         );
 

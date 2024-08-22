@@ -16,7 +16,6 @@ export class AssetsController {
 
     constructor (
         private service: AssetsService,
-        private jwt: JwtService,
     ) { }
 
     @UseGuards(AuthGuard)
@@ -50,7 +49,7 @@ export class AssetsController {
                 throw new BadRequestException("Invalid Headers")
             }
             return this.service.uploadFile(`${uploader._id}`, title, extension, file)
-
+            
         } catch (err: any) {
             return ServerErrorResponse(new Error(`${err.message ? err.message : err}`), 500)
         }

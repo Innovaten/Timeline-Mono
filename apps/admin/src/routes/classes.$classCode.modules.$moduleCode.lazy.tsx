@@ -36,7 +36,7 @@ function Module(){
             <>
     
                 <div className='flex flex-col gap-2 flex-1'>
-                    <div className='mt-2'>
+                    <div className='flex-1 flex flex-col mt-2'>
                         <h3 className='text-blue-800'>{module.title}</h3>
 
                         <span className='mt-3 flex gap-2 flex-wrap items-center'>
@@ -91,38 +91,26 @@ function Module(){
                                           </div>
                                          </>
                                       }
-                                       <div className='w-full sm:w-fit shrink-0 flex flex-col sm:flex-row gap-2 justify-end'>
-                                            <Link to={`/classes/${classCode}/modules/${moduleCode}/update`} className='w-full'>
-                                                <Button
-                                                    variant='outline'
-                                                    className='w-[162px]'
-                                                >Edit Module</Button>
-                                            </Link>    
-                                            <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons`} className='w-full'>
-                                                <Button
-                                                    className='w-full sm:!w-[150px]'
-                                                >View Lessons</Button>
-                                            </Link>    
-                                        </div>
                                 </div>    
                             </div>
                         </>
                     }
                     </div>
-                   
-                    <div className='flex flex-col sm:flex-row gap-4 sm:gap-2 sm:justify-between sm:items-end '>
+                    <div className='w-full shrink-0 flex flex-col sm:flex-row gap-2 justify-end'>
+                        <Link to={`/classes/${classCode}/modules/${moduleCode}/update`}>
+                            <Button
+                                variant='outline'
+                                className='w-[162px]'
+                            >Edit Module</Button>
+                        </Link>    
+                        <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons`}>
+                            <Button
+                                className='w-full sm:!w-[150px]'
+                            >View Lessons</Button>
+                        </Link>    
                     </div>
-                    </div>
-</>
-                
-            }
-
-            { !isLoading && !module &&
-
-                <div className='mt-2 flex gap-2'>
-                    <h3 className='text-blue-800'>404 - Could not find Module</h3>
                 </div>
-            }
+            </>}
          </div>
         </>
     )

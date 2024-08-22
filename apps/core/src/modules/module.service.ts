@@ -1,4 +1,4 @@
-import { ModuleModel, IModuleDoc, LessonSetModel, ILessonSetDoc, ILessonDoc } from "@repo/models";
+import { ModuleModel, IModuleDoc, LessonSetModel, ILessonSetDoc, ILessonDoc, IUserDoc } from "@repo/models";
 import { Types } from "mongoose";
 import { CreateModuleDto, UpdateModuleDto } from "./module.dto";
 import { BadRequestException, ForbiddenException } from "@nestjs/common";
@@ -18,20 +18,22 @@ export class ModulesService {
 
   async createModule(
     moduleData: CreateModuleDto,
-    creator: string,
+    creator: IUserDoc,
   ): Promise<IModuleDoc> {
 
     const timestamp = new Date()
-    const isAuthorized = await this.assignedService.isAdminOrSudo(creator, moduleData.classCode);
-
-    if (!isAuthorized) {
-      throw new ForbiddenException('You are not authorized to create a module for this class!');
-    }
 
     const relatedClass = await ClassModel.findOne({ code: moduleData.classCode })
 
     if(!relatedClass){
       throw new BadRequestException('Related class was not found')
+    }
+
+    if(
+      creator.role !== "SUDO" && 
+      !relatedClass.administrators.map(a => a.toString()).includes(`${creator._id}`)
+    ) {
+      throw new ForbiddenException("You are not permitted to perform this action")
     }
 
     const newLessonSet =  new LessonSetModel({
@@ -47,8 +49,10 @@ export class ModulesService {
       lessonSet: newLessonSet.id,
     
       classId: relatedClass.id,
-      createdBy: new Types.ObjectId(creator),
-      updatedBy: new Types.ObjectId(creator),
+      createdBy: new Types.ObjectId(`${creator._id}`),
+      updatedBy: new Types.ObjectId(`${creator._id}`),
+
+      resources: moduleData?.resources.map(r => new Types.ObjectId(r)) ?? [],
       createdAt: timestamp,
       updatedAt: timestamp,
       meta: {
@@ -76,6 +80,7 @@ export class ModulesService {
       id,
       {
         ...actualData,
+        ...(actualData.resources ? { resources: actualData.resources.map(r => new Types.ObjectId(r))}: {}),
         updatedBy: new Types.ObjectId(updater),
         updatedAt: new Date(),
       }, 
@@ -100,7 +105,7 @@ export class ModulesService {
   }
 
   async getModule(moduleId: string, isId: boolean): Promise<IModuleDoc | null> {
-    const module = await ModuleModel.findOne({code: moduleId}).populate("createdBy lessonSet");
+    const module = await ModuleModel.findOne({code: moduleId}).populate("createdBy resources lessonSet");
     if (!module) {
       throw new Error("Module not found");
     }
@@ -116,7 +121,7 @@ export class ModulesService {
     const modules = await ModuleModel.find(filter)
       .skip(offset)
       .limit(limit)
-      .populate("createdBy lessonSet")
+      .populate("createdBy resources lessonSet")
       .sort({ createdAt: -1 });
 
     return modules;

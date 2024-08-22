@@ -2,7 +2,7 @@ import { createLazyFileRoute,useRouterState, Outlet, Link } from '@tanstack/reac
 import { Button, DialogContainer, FileUploader } from '@repo/ui';
 import { _getToken, abstractAuthenticatedRequest, useDialog, useFileUploader, useLoading } from '@repo/utils'
 import { PlusIcon, ArrowPathIcon, FunnelIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { useCompositeFilterFlag, useLessons, useSpecificEntity, useLessonStateFilter } from '../hooks';
+import { useCompositeFilterFlag, useLessons, useSpecificEntity } from '../hooks';
 import dayjs from 'dayjs';
 import { ILessonDoc } from '@repo/models';
 import { toast } from 'sonner';
@@ -27,15 +27,11 @@ function Lessons({ }){
 
   const { toggleDialog: toggleDeleteDialog, dialogIsOpen: deleteDialogIsOpen } = useDialog();
   const { dialogIsOpen: refreshFlag, toggleDialog: toggleRefreshFlag } = useDialog();
-  const { dialogIsOpen: filterIsShown, toggleDialog: toggleFiltersAreShown } = useDialog();
   const { isLoading: deleteIsLoading, resetLoading: resetDeleteIsLoading, toggleLoading: toggleDeleteIsloading } = useLoading()
   
-  const { changeFilter, filter, filterChangedFlag, filterOptions} = useLessonStateFilter()
-  
-  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag, filterChangedFlag ])
+  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ refreshFlag ])
 
   const { isLoading: lessonsIsLoading, lessons, count: lessonsCount } = useLessons(compositeFilterFlag, 50, 0, {
-      ...filter,
       moduleCode,
     })
     
@@ -81,44 +77,13 @@ function Lessons({ }){
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
           <div className='mt-2 flex h-fit justify-between items-center'>
               <h3 className='text-blue-800'>Class Lessons</h3>
-              <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons/create`}>
-                <Button className='flex px-2 !h-[35px]' > <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;a Lesson</span></Button>
-              </Link>
-          </div>
-          <div className='w-full mt-3 flex flex-wrap gap-4'>
-                    <Button
-                        onClick={toggleFiltersAreShown}
-                        variant='outline'
-                        className='!h-[35px] px-2 flex items-center gap-2'
-                    >
-                        <FunnelIcon className='w-4' />
-                        { filterIsShown ? "Close" : "Show"} Filters    
-                    </Button>
-                    { 
-                        filterIsShown && 
-                        <>
-                            <div className='flex flex-row items-center gap-2 '>
-                                <small className='text-blue-700'>Status</small>
-                                <select
-                                    className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
-                                    onChange={(e) => { 
-                                        // @ts-ignore
-                                        changeFilter(e.target.value)
-                                    }}
-                                >
-                                    { 
-                                        filterOptions.map((f, idx) =>{ 
-                                            return (
-                                                <option key={idx} value={f}>{f}</option>
-                                            )
-                                        })
-                                    }
-                                </select> 
-                            </div>
-                        </>
-                    }
-              <div className='flex flex-col gap-2 justify-end'>
-                  <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
+              <div className='flex gap-2 sm:gap-4'>
+                <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons/create`}>
+                    <Button className='flex px-2 !h-[35px]' > <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;a Lesson</span></Button>
+                </Link>
+                <div className='flex flex-col gap-2 justify-end'>
+                    <Button className='!h-[35px] px-2' variant='outline' onClick={manuallyToggleCompositeFilterFlag}> <ArrowPathIcon className='w-4' /> </Button>
+                </div>
               </div>
           </div>
           <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>

@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import { IAnnouncementDoc } from '@repo/models';
 import { toast } from 'sonner';
 import { useLMSContext } from '../app';
-import { useAnnouncementStateFilter } from '../hooks/announcements.hook,';
+import { useAnnouncementsByClass, useAnnouncementStateFilter } from '../hooks/announcements.hook,';
 
 export const Route = createLazyFileRoute('/classes/$classCode/announcements')({
   component: Announcements
@@ -41,7 +41,7 @@ function Announcements({ }){
   
   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ toggleManager.get('refresh'), filterChangedFlag ])
 
-  const { isLoading: announcementsIsLoading, announcements, count: announcementsCount } = useAnnouncements(compositeFilterFlag, 50, 0, filter)
+  const { isLoading: announcementsIsLoading, announcements } = useAnnouncementsByClass(compositeFilterFlag, classCode, 50, 0, filter)
     
   const { entity: selectedAnnouncement, setSelected: setSelectedAnnouncement, resetSelected} = useSpecificEntity<IAnnouncementDoc>();
 
@@ -156,7 +156,7 @@ function Announcements({ }){
                             </div>
                         } 
                         { 
-                            !announcementsIsLoading && announcements.map((announcement, idx) => {
+                            !announcementsIsLoading && !!announcements && announcements.map((announcement, idx) => {
                                 return (
                                 <Link to={`/classes/${classCode}/announcements/${announcement.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                     <div className='flex items-center gap-4'>
@@ -188,7 +188,7 @@ function Announcements({ }){
                     </div>
                 </div>
                 <div className='flex justify-end text-blue-700 mt-2 pb-2'>
-                    <p>Showing <span className='font-semibold'>{announcements.length}</span> of <span className='font-semibold'>{announcementsCount}</span></p>
+                    <p>Showing <span className='font-semibold'>{announcements?.length}</span> of <span className='font-semibold'>{announcements?.length}</span></p>
                 </div>
             </div>
         </>

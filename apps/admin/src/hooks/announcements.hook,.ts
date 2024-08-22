@@ -73,6 +73,57 @@ export function useAnnouncement(refreshFlag: boolean = true, specifier: string, 
 }
 
 
+export function useAnnouncementsByClass(refreshFlag: boolean = true, classCode: string, limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
+
+    const [ announcements, setAnnouncements ] = useState<(IAnnouncementDoc & { createdBy: IUserDoc, updatedBy:IUserDoc })[]>([])
+    const { isLoading, toggleLoading, resetLoading } = useLoading()
+
+    useEffect( () => {
+        abstractAuthenticatedRequest(
+            "get",
+            `/api/v1/classes/${classCode}/announcements?isId=false`,
+            {},
+            {},
+            {
+                onStart: toggleLoading,
+                onSuccess: setAnnouncements,
+                onFailure: (err) => {toast.error(`${err.msg}`)},
+                finally: resetLoading
+            }
+        )
+
+    }, [refreshFlag])
+
+
+    return { isLoading, announcements }
+
+}
+
+export function useAnnouncementsCountByClass(refreshFlag: boolean = true, classCode: string, limit: number = 10, offset:number = 0, filter: Record<string, any> = {}){
+
+    const [ count, setCount ] = useState<number>(0)
+    const { isLoading, toggleLoading, resetLoading } = useLoading()
+
+    useEffect( () => {
+        abstractAuthenticatedRequest(
+            "get",
+            `/api/v1/classes/${classCode}/announcements/count?isId=false`,
+            {},
+            {},
+            {
+                onStart: toggleLoading,
+                onSuccess: setCount,
+                onFailure: (err) => {toast.error(`${err.msg}`)},
+                finally: resetLoading
+            }
+        )
+
+    }, [refreshFlag])
+
+
+    return { isLoading, count }
+
+}
 export function useAnnouncementStateFilter(){
     const [ filterLabel, setFilterLabel ] = useState<"Public" | "Drafted" | "Deleted">("Public");
     const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)

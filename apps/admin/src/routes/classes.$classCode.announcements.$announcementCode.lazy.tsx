@@ -51,15 +51,8 @@ function Announcements({ }){
                         </span>
                     </div>
                     <span className='mt-4 text-blue-700 font-light'>Content</span>
-                    <div className='mt-4 flex-1 overflow-y-auto' dangerouslySetInnerHTML={{ __html: announcement.content }}>
+                    <div className='mt-4 flex-1 text-blue-800 overflow-y-auto' dangerouslySetInnerHTML={{ __html: announcement.content }}>
                     </div>
-                </div>
-            }
-
-            { !isLoading && !announcement &&
-
-                <div className='mt-2 flex gap-2'>
-                    <h3 className='text-blue-800'>404 - Could not find Announcement</h3>
                 </div>
             }
          </div>

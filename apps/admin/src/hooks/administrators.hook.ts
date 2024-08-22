@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { IUserDoc } from "@repo/models";
 import { makeAuthenticatedRequest } from "@repo/utils";
+import { IClassDoc } from "@repo/models";
 
 export function useAdministrators(
     flag?: boolean, 
@@ -9,7 +10,7 @@ export function useAdministrators(
     offset: number = 0, 
 ){
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
-    const [ administrators, setAdministrators ] = useState<IUserDoc[]>([]);
+    const [ administrators, setAdministrators ] = useState<(Omit<IUserDoc , "classes"> & { classes?: IClassDoc})[] >([]);
     const [ count, setCount ] = useState<number>(0);
 
     useEffect(

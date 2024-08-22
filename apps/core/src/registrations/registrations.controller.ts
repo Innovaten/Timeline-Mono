@@ -39,8 +39,12 @@ export class RegistrationsController {
             } 
 
             const registrations = await this.service.getRegistrations(limit, offset, filter)
+            const count = await this.service.getCount(filter);
 
-            return ServerSuccessResponse<IRegistrationDoc[]>(registrations);
+            return ServerSuccessResponse({
+                registrations,
+                count
+            });
 
         } catch(err) {
             return ServerErrorResponse(new Error(`${err}`), 500);

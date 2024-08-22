@@ -53,6 +53,7 @@ function Lessons({ }){
         {
             title: values.title,
             classCode: classCode,
+            resources: filesHook.files.map(f => f._id),
             authToken: _getToken(),
         },
         {},

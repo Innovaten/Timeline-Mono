@@ -3,7 +3,7 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 import {
   useRegistrants,
   useRegistrantsFilter,
-} from "../hooks/registrants.hook";
+} from "../hooks/registrations.hook";
 import { _getToken, cn, makeAuthenticatedRequest, useDialog, useLoading } from "@repo/utils";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -125,7 +125,7 @@ function RegistrationsPage() {
       >
         <div className="flex flex-col gap-4 sm:justify-between">
           <div className='w-full'>
-            <div className='bg-white w-full overflow-auto flex flex-col gap-2'>
+            <div className='bg-white w-full overflow-auto grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4'>
               <div className="flex flex-col gap-1" >
                 <span className="text-xs font-light " >REGISTRATION CODE</span>
                 <p className="text-md" >
@@ -159,14 +159,14 @@ function RegistrationsPage() {
               <div className="flex flex-col gap-1" >
                 <span className="text-xs font-light ">CLASSES</span>
                 <span className="flex gap-2 flex-wrap">
-                  {classes?.length && classes.map((course, idx) => {
+                  {!!classes && classes?.length != 0 && classes.map((course, idx) => {
                     return (
                       <span key={idx} className="text-md" >
                         {course}
                       </span>
                     );
                   })}
-                  { !classes?.length && <span className="text-lg text-blue-600 inline">No Class Indicated</span> }
+                  { !!classes && classes?.length == 0 && <span  className="text-md" >No Class Indicated</span> }
                 </span>
 
               </div>

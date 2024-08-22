@@ -27,7 +27,7 @@ export class LessonsService {
       code: await generateCode( await LessonModel.countDocuments(), "LSN"),
       title: createLessonDto.title,
       content: createLessonDto.content,
-      resources: [],
+      resources: createLessonDto.resources.map( r => new Types.ObjectId(r)),
       lessonSet: new Types.ObjectId(relatedModule.lessonSet.toString()),
       meta: {
         isDeleted: false,

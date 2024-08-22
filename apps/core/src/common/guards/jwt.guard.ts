@@ -24,9 +24,15 @@ import { JwtService } from '../services/jwt.service';
     }
   
     private extractTokenFromHeader(request: Request): string | undefined {
-      if(["post", "patch", "put"].includes(request.method.toLowerCase())) {
-        const [type, token] = request.body.headers.authorization?.split(' ') ?? [];
-        return type === 'Bearer' ? token : undefined;
+      const isPostPutORPatchRequest = ["post", "patch", "put"].includes(request.method.toLowerCase())
+      if(isPostPutORPatchRequest) {
+        const [type, token] = request.body?.headers?.authorization?.split(' ') ?? [];
+        if(type === 'Bearer') return token;
+
+        // Backup
+        const [backupType, backupToken] = request.headers.authorization?.split(' ') ?? [];
+        return backupType === 'Bearer' ? backupToken : undefined;
+
       } else {
         const [type, token] = request.headers.authorization?.split(' ') ?? [];
         return type === 'Bearer' ? token : undefined;

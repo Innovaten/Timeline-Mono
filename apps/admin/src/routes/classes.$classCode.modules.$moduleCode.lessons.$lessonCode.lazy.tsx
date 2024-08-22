@@ -98,11 +98,6 @@ function Lesson(){
                                           className='w-full'
                                       >Edit Lesson</Button>
                                   </Link>    
-                                  {/* <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons`} className='w-full'>
-                                      <Button
-                                          className='w-full sm:!w-[150px]'
-                                      >View Lessons</Button>
-                                  </Link>     */}
                               </div>
                             </div>    
                         </div>
@@ -113,8 +108,8 @@ function Lesson(){
                 <div className='flex flex-col sm:flex-row gap-4 sm:gap-2 sm:justify-between sm:items-end '>
                 </div>
           </div>   
-}
-</div> 
+        }
+    </div> 
           
     )
 

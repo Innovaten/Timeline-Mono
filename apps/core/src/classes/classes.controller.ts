@@ -274,6 +274,52 @@ export class ClassesController {
         }  
     }
 
+    @UseGuards(AuthGuard)
+    @Get(':specifier/announcements/count')
+    async getAnnouncementsCountByClass(
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+        @Query('filter') rawFilter: string,
+        @Request() req: Request,
+    ) {
+        try {
+            // @ts-ignore
+            const user = req["user"];
+
+            const classFilter = isId === 'true' ?  { _id: new Types.ObjectId(specifier)} : { code: specifier };
+
+            const relatedClass = await ClassModel.findOne(classFilter).populate<{ announcementSet: IAnnouncementSetDoc }>("announcementSet");
+
+            if(!relatedClass){
+                return ServerErrorResponse(
+                    new Error("Specified class could not be found"),
+                    404,
+                )
+            }
+
+            if(
+                user.role !== Roles.SUDO && 
+                !user.classes.includes(relatedClass._id)
+            ){
+                return ServerErrorResponse(
+                    new Error("You are not permitted to perform this action"),
+                    403,
+                )
+            }
+            const filter = rawFilter ? JSON.parse(rawFilter) : {};
+
+            const count = await this.service.getClassAnnouncementsCount(filter, `${relatedClass._id}`, true, user);
+            
+            return ServerSuccessResponse(count);
+            
+        } catch(err) {
+            return ServerErrorResponse(
+                new Error(`${err}`), 
+                500
+            );
+        }  
+    }
+
     @Get(':_id/modules')
     async getModulesByClassId(
         @Param('_id') _id: string, 

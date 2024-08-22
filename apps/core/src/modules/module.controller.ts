@@ -78,7 +78,6 @@ export class ModulesController {
       const filter = rawFilter ? JSON.parse(rawFilter) : {};
       const limit = rawLimit ? parseInt(rawLimit) : undefined;
       const offset = rawOffset ? parseInt(rawOffset) : undefined;
-      console.log("specifier:", specifier)
 
       if (!user) {
         return ServerErrorResponse(new Error('Unauthenticated'), 401);
@@ -109,20 +108,19 @@ export class ModulesController {
     }
   }
   
+  @UseGuards(AuthGuard)
   @Post()
   async createModule(
     @Body() createModuleDto: CreateModuleDto,
+    @Req() req: any,
   ) {
     try {
-      const creator = await this.jwt.validateToken(createModuleDto.authToken);
 
-      if (!creator) {
-        return ServerErrorResponse(new Error('Unauthenticated'), 401);
-      }
+      const creator = req.user
 
       const newModule = await this.modulesService.createModule(
         createModuleDto,
-        `${creator._id}`,
+        creator,
       );
 
       console.log('Created module', newModule.code);

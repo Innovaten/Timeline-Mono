@@ -14,7 +14,7 @@ export async function emailHandler(KafkaArgs: EachMessagePayload){
         const emailBody = emailBodyTemplates[purpose]({ ...data})
         const emailMetadata = await sendEmailRequest({ email: data.email, subject: emailSubject, body: emailBody })
        
-        console.log(`Sent ${purpose} email to ${data.email}.\nResend Email ID: ${emailMetadata?.data?.id}`)
+        console.log(`Sent ${purpose} email to ${data.email}. Email ID: ${emailMetadata?.data?.id}`)
     
     } catch (err: any) {
         console.log('--- Kafka Email Handler Error ---\n', err.message ? err.message : err)

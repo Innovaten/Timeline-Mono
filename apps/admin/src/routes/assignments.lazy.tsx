@@ -1,8 +1,8 @@
 import { Button, DialogContainer, FileUploader } from '@repo/ui';
 import { _getToken, abstractAuthenticatedRequest, cn, useToggleManager } from '@repo/utils'
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
-import { FunnelIcon } from '@heroicons/react/24/outline';
-import { useAssignmentSubmissionStatusFilter, useAssignments } from '../hooks';
+import { FunnelIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { useAssignmentSubmissionStatusFilter, useAssignments, useCompositeFilterFlag } from '../hooks';
 import dayjs from 'dayjs';
 import lodash from 'lodash'
 
@@ -34,14 +34,16 @@ function Assignments(){
 
   const { changeFilter, filter, filterChangedFlag, filterOptions} = useAssignmentSubmissionStatusFilter()
   
-  const { isLoading: assignmentsIsLoading, assignments, count: assignmentsCount } = useAssignments(filterChangedFlag, 50, 0, filter)
+  const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ filterChangedFlag, toggleManager.get('refresh')])
+
+  const { isLoading: assignmentsIsLoading, assignments, count: assignmentsCount } = useAssignments(compositeFilterFlag, 50, 0, filter)
 
   return (
     <>
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
-          <div className='mt-2 flex h-fit justify-between items-center'>
+          <div className='mt-2 flex flex-col sm:flex-row h-fit gap-2 sm:justify-between sm:items-center'>
               <h3 className='text-blue-800'>Assignments</h3>
-            <div className='flex flex-wrap gap-4'>
+                <div className='flex flex-wrap gap-4'>
                       <Button
                           onClick={()=>{ toggleManager.toggle('filter-is-shown')}}
                           variant='outline'
@@ -73,6 +75,9 @@ function Assignments(){
                               </div>
                           </>
                       }
+                      <div className='flex flex-col justify-end'>
+                        <Button className='!h-[35px] px-2' variant='outline' onClick={()=>{toggleManager.toggle('refresh')}}> <ArrowPathIcon className='w-4' /> </Button>
+                      </div>
             </div>
           </div>
           <div className='w-full flex-1 mt-4 bg-blue-50 p-1 rounded-sm shadow'>

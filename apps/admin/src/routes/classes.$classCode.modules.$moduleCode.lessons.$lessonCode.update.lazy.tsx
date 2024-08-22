@@ -10,12 +10,10 @@ import { _getToken, abstractAuthenticatedRequest, abstractUnauthenticatedRequest
 import { toast } from 'sonner';
 import { useLesson } from '../hooks';
 import { XMarkIcon } from   '@heroicons/react/24/outline'
+import { ILesson } from '@repo/models'
 export const Route = createLazyFileRoute('/classes/$classCode/modules/$moduleCode/lessons/$lessonCode/update')({
   component: CreateLesson
 })
-
-
-
 
 function CreateLesson(){
 
@@ -23,7 +21,7 @@ function CreateLesson(){
     const { classCode, moduleCode, lessonCode } = Route.useParams()
 
     const { isLoading: lessonContentUpdated, toggleLoading: toggleModuleContentUpdated } = useLoading()
-    const { isLoading: publishIsLoading, toggleLoading: togglePublishIsLoading, resetLoading: resetPublishLoading } = useLoading()
+    // const { isLoading: publishIsLoading, toggleLoading: togglePublishIsLoading, resetLoading: resetPublishLoading } = useLoading()
     
     const editorRef = useRef<LexicalEditor>();
 
@@ -36,16 +34,23 @@ function CreateLesson(){
         title: string,
         content: string
     }) {
-
-      console.log(lesson)
         if(!lesson) return
+
+        const changedValues: Partial<ILesson> = {}
+        
+        Object.keys(values).map((field) => {
+            // @ts-ignore
+            if(values[field] !== lesson[field]){
+                //@ts-ignore
+                changedValues[field] = values[field]
+            }
+        })
 
         abstractUnauthenticatedRequest(
             "patch",
             `/api/v1/lessons/${lesson._id}`,
             {
-                title: values.title,
-                content: values.content,
+                ...changedValues,
                 resource: filesHook.files.map(f => f._id),
                 authToken: _getToken(),
             },
@@ -85,6 +90,7 @@ function CreateLesson(){
             $getRoot().select();
             $insertNodes(nodes);
         })
+        lesson.resources?.forEach((r) =>{ filesHook.addToFiles(r) })
 
         toggleModuleContentUpdated()
 

@@ -1,11 +1,12 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { Button, Input, TextEditor, FileUploader } from '@repo/ui'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Formik, Form } from 'formik'
 import {$generateHtmlFromNodes} from '@lexical/html';
 import * as Yup from 'yup'
 import { useRef } from 'react';
 import { LexicalEditor } from 'lexical'
-import { _getToken, abstractUnauthenticatedRequest, useLoading, useFileUploader} from '@repo/utils';
+import { _getToken, abstractUnauthenticatedRequest, useLoading, useFileUploader, abstractAuthenticatedRequest} from '@repo/utils';
 import { toast } from 'sonner';
 
 export const Route = createLazyFileRoute('/classes/$classCode/modules/$moduleCode/lessons/create')({
@@ -27,12 +28,12 @@ function CreateLesson(){
         title: string,
         content: string
     }) {
-        abstractUnauthenticatedRequest(
+        abstractAuthenticatedRequest(
             "post",
             "/api/v1/lessons",
             {
                 title: values.title,
-                content: values.content,
+                content: values.content ?? "",
                 moduleCode: moduleCode,
                 authToken: _getToken(),
                 resources: filesHook.files.map(f => f._id)
@@ -81,9 +82,26 @@ function CreateLesson(){
                                             </div>
                                         </Form>
                                     </div>
-                                    <div className='flex h-16 flex-shrink-0 justify-end items-center w-full gap-4'>
-                                        <Button className='!w-[130px]' isDisabled={!form.isValid} isLoading={isLoading} onClick={form.submitForm}>Save</Button>
-                                        <FileUploader filesHook={filesHook} buttonVariant='outline'/>
+                                    <div className='flex flex-col w-full gap-3 sm:flex-row sm:justify-between items-center'>
+                                        <div className='flex flex-1 gap-2 overflow-x-auto'>
+                                            { filesHook.files.map((resource, idx) => {
+                                                    return (
+                                                        <a className='flex max-w-[200px] justify-between gap-2 p-1 rounded-sm bg-blue-600/20' target='_blank' href={resource.link} key={idx}>
+                                                            <small className='truncate font-extralight'>{resource.title}</small>
+                                                            <XMarkIcon className="w-3 flex-shrink-0 text-blue-700" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); filesHook.removeSpecificFile(resource.id)}} />
+                                                        </a>
+                                                    )
+                                                })    
+                                            }
+                                            { filesHook.files.length == 0 && 
+                                                    <p className='text-blue-700'>No resources uploaded</p>
+                                            }
+                                        </div>
+                                    
+                                        <div className='flex flex-col sm:flex-row sm:h-16 flex-shrink-0 sm:justify-end sm:items-center gap-2'>
+                                            <FileUploader filesHook={filesHook} buttonVariant='outline'/>
+                                            <Button isDisabled={!form.isValid} isLoading={isLoading} onClick={form.submitForm}>Create Lesson</Button>
+                                        </div>
                                     </div>
                                 </div>
                             </>

@@ -24,6 +24,7 @@ export class AssignmentsService {
         .limit(limit)
         .skip(offset)
         .populate("createdBy updatedBy resources")
+        .sort({ createdAt: -1})
         .lean()
 
         return result;

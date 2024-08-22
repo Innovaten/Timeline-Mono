@@ -17,7 +17,12 @@ export class RegistrationsService {
     ) { }
 
     async getRegistrations(limit?: number, offset?: number, filter?: Record<string, any>){
-        const results = await RegistrationModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1})
+        const results = await RegistrationModel
+            .find(filter ?? {})
+            .limit(limit ?? 10)
+            .skip(offset ?? 0)
+            .sort({ createdAt: -1})
+            .populate("classes")
         return results;
     }
 

@@ -17,7 +17,7 @@ export class UserService {
     ) { }
 
     async verifyPassword(email: string, password: string, extraFilter: Record<string, any> = {}) {
-        const filter = { email, ...extraFilter }
+        const filter = { email, ...extraFilter, "meta.isDeleted": false}
         const user = await UserModel.findOne(filter);
         if(!user) return null;
         const isSamePassword = await compare(password, user.auth.password)
@@ -38,7 +38,10 @@ export class UserService {
 
     async getUsers(limit?: number, offset?: number, filter?: Record<string, any>){
         const results = await UserModel
-            .find(filter ?? {})
+            .find({
+                ...(filter ?? {}),
+                "meta.isDeleted": false
+            })
             .populate("classes")
             .limit(limit ?? 10)
             .skip(offset ?? 0)
@@ -47,7 +50,10 @@ export class UserService {
     }
 
     async getCount(filter?: Record<string, any>){
-        return UserModel.countDocuments(filter)
+        return UserModel.countDocuments({
+            ...filter,
+            "meta.isDeleted": false,
+        })
     }
 
     async createAdmin(userData: CreateUserDto, creator: string){
@@ -65,7 +71,7 @@ export class UserService {
         const { authToken, phone, ...actualData } = userData;
 
         const user = new UserModel({
-            code: await generateCode(await UserModel.countDocuments({ role: userData.role }), codePrefix),
+            code: await generateCode(await UserModel.countDocuments({ code: { ...(userData.role == "SUDO" ? {$regex: /SDO/} : { $regex: /ADM/})} }), codePrefix),
             ...actualData,
             phone: `+${validPhoneNumber(phone)}`,
             meta: {
@@ -107,6 +113,7 @@ export class UserService {
         }
 
         user.role = Roles.SUDO;
+        user.code = "SDO" + user.code.substring(3)
         await user.save()
 
         return user
@@ -120,6 +127,7 @@ export class UserService {
         }
 
         user.role = Roles.ADMIN
+        user.code = "ADM" + user.code.substring(3)
         await user.save()
 
         return user
@@ -160,13 +168,13 @@ export class UserService {
         const randomPassword = generateSecurePassword()
 
         const user = new UserModel({
-            code: await generateCode(await UserModel.countDocuments({ role: "STUDENT"}), "STU"),
+            code: await generateCode(await UserModel.countDocuments(), "STU"),
             role: Roles.STUDENT,
             firstName: userData.firstName,
             otherNames: userData.otherNames,
             lastName: userData.lastName,
             email: userData.email,
-            phone: `${validPhoneNumber(userData.phone)}`,
+            phone: `+${validPhoneNumber(userData.phone)}`,
             gender: userData.gender,
             
             meta: {

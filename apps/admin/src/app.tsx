@@ -18,7 +18,33 @@ const router = createRouter({
   routeTree,
   context: {
     user: null
-  }
+  },
+  defaultNotFoundComponent: () => {
+    return (
+      <>
+        <div className="grid place-items-center fixed w-screen h-screen bg-white">
+          <div className='w-fit h-fit'>
+              <div
+                  className='w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin' 
+              ></div>
+          </div>
+        </div>
+      </>
+    )
+  },
+  defaultErrorComponent: () => {
+    return (
+      <>
+        <div className="grid place-items-center fixed w-screen h-screen bg-white">
+          <div className='w-fit h-fit'>
+              <div
+                  className='w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin' 
+              ></div>
+          </div>
+        </div>
+      </>
+    )
+  },
 });
 
 // Register the router instance for type safety

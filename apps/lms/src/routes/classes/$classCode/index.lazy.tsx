@@ -42,16 +42,16 @@ function ClassDetails(){
       value: thisClass?.assignmentSet?.assignments?.length ?? 0,
       icon: NewspaperIcon,
     },
-    {
-      label: 'Completed Modules',
-      value: 4,
-      icon: AcademicCapIcon
-    },
-    {
-      label: 'Completed Lessons',
-      value: 5,
-      icon: BookOpenIcon
-    }
+    // {
+    //   label: 'Completed Modules',
+    //   value: 0,
+    //   icon: AcademicCapIcon
+    // },
+    // {
+    //   label: 'Completed Lessons',
+    //   value: 0,
+    //   icon: BookOpenIcon
+    // }
   ]
 
   return (

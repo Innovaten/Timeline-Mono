@@ -8,13 +8,12 @@ import { forEach } from 'lodash';
 @Injectable()
 export class AnnouncementsService {
 
-    async listAnnouncements(
-        limit?: number, 
-        offset?: number, 
-        filter: Record<string, any> = {}
-    ): Promise<
+    async listAnnouncements(limit?: number, offset?: number, filter: Record<string, any> = {}, ): Promise<
     (Omit<IAnnouncement, "createdBy" | "updatedBy" > & { createdBy: IUserDoc, updatedBy: IUserDoc }) []>{
-        const results = await AnnouncementModel.find(filter)
+        const results = await AnnouncementModel.find({ 
+            ...filter,
+            "meta.isDeleted": false,
+        })
         .limit(limit ?? 10)
         .skip(offset ?? 0)
         .sort({ createdAt: -1})
@@ -23,7 +22,7 @@ export class AnnouncementsService {
     }
 
     async getAnnouncementsCount(filter: Record<string, any> = {}) {
-        const count = await AnnouncementModel.countDocuments(filter);
+        const count = await AnnouncementModel.countDocuments({ ...filter, "meta.isDeleted": false });
         return count;
     }
 
@@ -176,7 +175,7 @@ export class AnnouncementsService {
             ]
         })
 
-        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds },  ...filter }).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1 }).populate("createdBy updatedBy");
+        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds },  ...filter, "meta.isDeleted": false }).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1 }).populate("createdBy updatedBy");
 
         return announcements;
 
@@ -233,7 +232,7 @@ export class AnnouncementsService {
             ]
         })
 
-        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }, ...filter }).sort({ createdAt: -1 }).populate("createdAt createdBy");
+        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds }, ...filter, "meta.isDeleted": false }).sort({ createdAt: -1 }).populate("createdAt createdBy");
         return announcements;
     }
 

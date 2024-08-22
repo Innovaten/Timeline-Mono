@@ -101,7 +101,6 @@ export default function TextEditor({
             placeholder={<div className="editor-placeholder">Enter some text...</div>}
             ErrorBoundary={LexicalErrorBoundary}
           />
-          <HistoryPlugin />
           <LinkPlugin />
           <CheckListPlugin />
           <TablePlugin />

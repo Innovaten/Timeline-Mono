@@ -8,6 +8,8 @@ import { Formik, Form } from 'formik'
 import { toast } from 'sonner'
 import { useState } from 'react';
 import { IUserDoc } from '@repo/models';
+import dayjs from 'dayjs';
+import { IClassDoc } from '@repo/models';
 
 export const Route = createLazyFileRoute('/administrators')({
     component: Administrators
@@ -17,6 +19,7 @@ export const Route = createLazyFileRoute('/administrators')({
 function Administrators(){
     
     const initialToggles = {
+        'view-dialog': false,
         'create-dialog': false,
         'update-dialog': false,
         'delete-dialog': false,
@@ -38,13 +41,14 @@ function Administrators(){
     
     const { isLoading: administratorsIsLoading, administrators, count: administratorsCount } = useAdministrators(compositeFilterFlag, filter);
 
-    const [ selectedAdmin, setSelectedAdmin ] = useState<Partial<IUserDoc>>({
+    const [ selectedAdmin, setSelectedAdmin ] = useState<(Omit<Partial<IUserDoc>, "classes" > & { classes?: IClassDoc[] } )>({
         firstName: '',
         otherNames: '',
         lastName: '',
         gender: 'Male',
         email: '',
         phone: '',
+        classes: [],
     });
 
     const updateAdminInitialValues = {
@@ -92,7 +96,7 @@ function Administrators(){
                 toggleManager.toggle('refresh')
             } else {
                 values.phone = "0" + selectedAdmin.phone?.substring(3)
-                toast.error(`${res.data.error.msg}`)
+                toast.error(`${res.data.error.msg ? res.data.error.msg : res.data.error }`)
             }
             toggleManager.toggle('update-dialog')
         })
@@ -116,13 +120,13 @@ function Administrators(){
             finalUrl,
         )
         .then( res => {
-            if(res.status == 201 && res.data.success){
+            if(res.status == 200 && res.data.success){
                 const successText = selectedAdmin.role == "SUDO" ? "User downgraded to Administrator successfully": "User upgraded to Sudo successfully";
                 toast.success(successText);
-                toggleManager.toggle('update-dialog')
                 toggleManager.toggle('refresh')
+                toggleManager.reset('update-dialog')
             } else {
-                toast.error(`${res.data.error.msg}`)
+                toast.error(`${res.data.error.msg ? res.data.error.msg : res.data.error}`)
             }
         })
         .catch(err => {
@@ -162,7 +166,7 @@ function Administrators(){
                 toast.success(<p>Admin created successfully.<br/>A confirmation will be sent via email.</p>)
                 toggleManager.toggle('refresh')
             } else {
-                toast.error(`${res.data.error.msg}`)
+                toast.error(`${res.data.error.msg ? res.data.error.msg : res.data.error}`)
             }
         })
         .catch( err => {
@@ -176,7 +180,7 @@ function Administrators(){
     }
 
     function handleDeleteAdmin(){
-        toggleManager.toggle('delete-dialog')
+        toggleManager.toggle('delete-is-loading');
         makeAuthenticatedRequest(
             "delete",
             `/api/v1/users/${selectedAdmin._id}`,
@@ -186,9 +190,10 @@ function Administrators(){
         ).then( res => {
             if(res.status == 200 && res.data.success){
                 toast.success("Administrator deleted successfully")
-                toggleManager.toggle('refresh')              
+                toggleManager.toggle('refresh')          
+                toggleManager.reset('delete-dialog')    
             } else {
-                toast.error(`${res.data.err.msg}`)
+                toast.error(`${res.data.error.msg ? res.data.error.msg : res.data.error}`)
             }
         })
         .catch(err => {
@@ -200,7 +205,6 @@ function Administrators(){
         })
         .finally(() => {
             toggleManager.toggle('delete-is-loading');
-            toggleManager.toggle('delete-dialog')
         })
     }
 
@@ -261,7 +265,7 @@ function Administrators(){
                             <Input name='email' label='Email Address' iconType='email' hasValidation />
                             <Input name='phone' label='Phone Number' iconType='phone' hasValidation />
                         </span>
-                        <span className='flex justify-end gap-4 w-full'>
+                        <span className='flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-4 w-full'>
                             <Button className='px-3 !h-[35px]' type='button' onClick={()=>{  toggleManager.toggle('create-dialog'); toggleManager.reset('create-dialog') }} variant='neutral'>Close</Button>
                             <Button className='px-3 !h-[35px]' type='submit' isLoading={toggleManager.get('create-is-loading')}>Add Administrator</Button>
                         </span>
@@ -307,7 +311,7 @@ function Administrators(){
                             <Input name='email' label='Email Address' iconType='email' hasValidation />
                             <Input name='phone' label='Phone Number' iconType='phone' hasValidation />
                         </span>
-                        <span className='flex justify-end gap-4 w-full'>
+                        <span className='flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-4 w-full'>
                             <Button className='px-3 !h-[35px]' type='button' onClick={()=>{ toggleManager.toggle('update-dialog'); toggleManager.reset('update-dialog')}} variant='neutral'>Close</Button>
                             <Button className='px-3 !h-[35px]' type='button' variant='danger' isLoading={toggleManager.get('update-is-loading')} onClick={handleToggleRole}>{ selectedAdmin.role == "SUDO" ? "Downgrade to ADMIN" : "Upgrade to SUDO" }</Button>
                             <Button className='px-3 !h-[35px]' type='submit' isLoading={toggleManager.get('update-is-loading')}>Update Administrator</Button>
@@ -323,9 +327,87 @@ function Administrators(){
                 isOpen={toggleManager.get('delete-dialog')}
                 toggleOpen={()=>{toggleManager.toggle('delete-dialog')}}
             >
-                <div className='flex justify-end gap-4 mt-8'>
-                    <Button className='!h-[35px] px-2' variant='neutral' isDisabled={toggleManager.get('delete-is-loading')} onClick={()=> { toggleManager.toggle('delete-dialog'); setSelectedAdmin({}) }}>Close</Button>
-                    <Button className='!h-[35px] px-2' variant='danger' isLoading={toggleManager.get('delete-is-loading')} onClick={handleDeleteAdmin}>Delete Administrator</Button>
+                <div className='flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-4 mt-8'>
+                    <Button variant='neutral' isDisabled={toggleManager.get('delete-is-loading')} onClick={()=> { toggleManager.toggle('delete-dialog'); setSelectedAdmin({}) }}>Close</Button>
+                    <Button variant='danger' isLoading={toggleManager.get('delete-is-loading')} onClick={handleDeleteAdmin}>Delete Administrator</Button>
+                </div>
+            </DialogContainer>
+            <DialogContainer
+                isOpen={toggleManager.get('view-dialog')}
+                onClose={()=>toggleManager.reset('view-dialog')}
+                toggleOpen={() => toggleManager.toggle('view-dialog')}
+                title={`View Admin`}
+                description={`Details of ${selectedAdmin.role == "SUDO" ? "Super User": "Administrator"} ${selectedAdmin.firstName} ${selectedAdmin.lastName}`}
+            >
+                <div className="flex flex-col gap-4 sm:justify-between">
+                    <div className='w-full'>
+                        <div className='bg-white w-full overflow-auto grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light " >ADMIN CODE</span>
+                            <p className="text-md" >
+                            {selectedAdmin.code}
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light " >FULL NAME</span>
+                            <p className="text-md" >
+                            {selectedAdmin.firstName}
+                            {selectedAdmin.otherNames == "" ? " " : " " + selectedAdmin.otherNames + " "}
+                            {selectedAdmin.lastName}
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light " >GENDER</span>
+                            <span className="text-md" >{selectedAdmin.gender}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">EMAIL ADDRESS</span>
+                            <span className="text-md">{selectedAdmin.email}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">PHONE NUMBER</span>
+                            <span className="text-md" >{selectedAdmin.phone}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">MODE OF CLASS</span>
+                            <span className="text-md" >{selectedAdmin.modeOfClass ?? "N/A"}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">CLASSES</span>
+                            <span className="flex gap-2 flex-wrap">
+                            {!!selectedAdmin.classes?.length && selectedAdmin.classes.map((course, idx) => {
+                                return (
+                                <span key={idx} className="text-md" >
+                                    {course.name}
+                                </span>
+                                );
+                            })}
+                            { !selectedAdmin.classes?.length && <span className="text-md">No Class Indicated</span> }
+                            </span>
+
+                        </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4 sm:justify-end">
+                        <Button
+                            variant="neutral" 
+                            onClick={() => {toggleManager.reset('view-dialog')}}
+                        >
+                        Close
+                        </Button>
+                        <Button
+                            variant="danger" 
+                            onClick={() => {toggleManager.reset('view-dialog'); toggleManager.toggle('delete-dialog')}}
+                        >
+                        Delete Admin
+                        </Button>
+                        <Button 
+                            variant="primary" 
+                            onClick={() => {toggleManager.reset('view-dialog'); toggleManager.toggle('update-dialog') }}
+                        >
+                        Update Admin
+                        </Button>
+                    </div>
                 </div>
             </DialogContainer>
 
@@ -392,18 +474,36 @@ function Administrators(){
                         { 
                         !administratorsIsLoading && administrators.map((admin, idx) => {
                             return (
-                            <div key={idx} className = 'w-full text-blue-700 py-2 px-1 sm:px-2 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
+                            <div 
+                                key={idx} 
+                                className = 'w-full cursor-pointer text-blue-700 py-2 px-1 sm:px-2 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'
+                                onClick={() => {
+                                    // @ts-ignore
+                                    setSelectedAdmin(admin); 
+                                    toggleManager.toggle('view-dialog')}}
+                            >
                                 <div className='flex items-center gap-4'>
                                     <small className='font-light w-[40px]'>{admin.role}</small>
                                     <span className='flex-1 font-normal truncate'>{admin.firstName + " " + admin.lastName }</span>
                                 </div>
                                 <div className='flex gap-4 items-center font-light'>
-                                    <span className='w-[150px] hidden sm:flex justify-end'>{new Date(admin.createdAt).toDateString()}</span>
+                                    <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(admin.createdAt).format("HH:mm - DD/MM/YYYY")}</span>
                                     <div className='w-[100px] flex justify-end gap-4'>
-                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleManager.toggle('update-dialog') }}>              
+                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { 
+                                            e.preventDefault(); 
+                                            e.stopPropagation();
+                                            // @ts-ignore
+                                            setSelectedAdmin(admin); 
+                                            toggleManager.toggle('update-dialog') }}>              
                                             <PencilIcon className='w-4 h-4' />
                                         </span>
-                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={() => { setSelectedAdmin(admin); toggleManager.toggle('delete-dialog') }}>
+                                        <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { 
+                                                e.preventDefault(); 
+                                                e.stopPropagation();
+                                                // @ts-ignore
+                                                setSelectedAdmin(admin); 
+                                                toggleManager.toggle('delete-dialog') 
+                                            }}>
                                             <TrashIcon className='w-4 h-4' />
                                         </span>
                                     </div>

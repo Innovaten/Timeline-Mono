@@ -18,3 +18,14 @@ export {
     useClassAssignments, 
     useAssignment,
 } from './assignments.hook'
+export {
+    useModules,
+    useModule,
+    useCompletedModules,
+    classModuleCount
+} from './modules.hooks'
+export {
+    useLesson,
+    useLessons,
+    useCompletedLessons
+} from './lessons.hooks'

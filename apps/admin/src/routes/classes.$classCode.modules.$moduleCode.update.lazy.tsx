@@ -7,6 +7,7 @@ import { _getToken, abstractUnauthenticatedRequest, useLoading, useFileUploader}
 import { toast } from 'sonner';
 import { useModule } from '../hooks';
 import { XMarkIcon } from   '@heroicons/react/24/outline'
+import { IModuleDoc } from '@repo/models';
 
 export const Route = createLazyFileRoute('/classes/$classCode/modules/$moduleCode/update')({
   component: UpdateModule
@@ -26,17 +27,32 @@ function UpdateModule(){
     const filesHook = useFileUploader()
 
 
+    useEffect( () => {
+        module?.resources?.map(r => filesHook.addToFiles(r))
+    }, [module])
+
+
     function handleUpdateModule(values: { 
         title: string,
     }) {
 
         if(!module) return
 
+        const changedValues: Partial<IModuleDoc> = {}
+        
+        Object.keys(values).map((field) => {
+            // @ts-ignore
+            if(values[field] !== module[field]){
+                //@ts-ignore
+                changedValues[field] = values[field]
+            }
+        })
+
         abstractUnauthenticatedRequest(
             "patch",
             `/api/v1/modules/${module._id}`,
             {
-                title: values.title,
+                ...changedValues,
                 classCode: classCode,
                 authToken: _getToken(),
                 resource: filesHook.files.map(f => f._id)

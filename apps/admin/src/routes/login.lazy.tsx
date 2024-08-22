@@ -376,29 +376,27 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
 
 }
 
-function ForgotPassword({ componentRef, multiPage }: PageProps){
+  function ForgotPassword({ componentRef, multiPage }: PageProps){
 
-  const { isLoading, toggleLoading, resetLoading } = useLoading()
-
-  function handleSubmit(values: { email: string }){
-      multiPage.goToNext()
-      return
-      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send?email=${values.email}`)
-      .then( res => {
-          if(res.data.success){
-              sessionStorage.setItem('e', values.email);
-              multiPage.goToNext()
-          } else {
-              toast.error(res.data.error.msg)
-          }
-          toggleLoading()
-
-      }).catch(err => {
-          toast.error(err)
-          toggleLoading()
-      })
-  }
-
+    const { isLoading, toggleLoading, resetLoading } = useLoading()
+  
+       function handleSubmit(values: { email: string }){
+          toggleLoading();
+          makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send?email=${values.email}&via=email`)
+           .then(res => {
+              if(res.data.success){
+                sessionStorage.setItem('e', values.email);
+                 multiPage.goToNext();
+              } else {
+                toast.error(res.data.error.msg);
+              }
+              toggleLoading();
+          }).catch(err => {
+            toast.error(`${err}`);
+             toggleLoading();
+       });
+      }
+  
   function handleReset(){
       resetLoading();
   }
@@ -471,9 +469,9 @@ function ForgotVerification({componentRef, multiPage}: PageProps){
 
       setOTPHasError(false)
       multiPage.goToNext()
-      return 
+      
 
-      makeUnauthenticatedRequest('get', `/api/v1/auth/verify-otp?email=${email}&otp=${OTP}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify?email=${email}&otp=${OTP}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('o', OTP);
@@ -484,8 +482,8 @@ function ForgotVerification({componentRef, multiPage}: PageProps){
           toggleLoading()
 
       }).catch(err => {
-          toast.error(err)
-          setOTPHasError(false)
+          toast.error(`${err}`)
+          setOTPHasError(true)
           toggleLoading()
       })
   }
@@ -539,14 +537,14 @@ function ForgotNewPassword({componentRef, multiPage }: PageProps){
   function handleSubmit(values: { newPassword: string, confirmPassword: string}){
       toggleLoading()
       setTimeout(() => router.navigate({ to: '/'}), 1000)
-      return
+      
       makeUnauthenticatedRequest(
-          'post', 
-          '/api/v1/auth/update-password',
+          'patch', 
+          '/api/v1/users/update-password?id=${user}',
           {
-              email: `${sessionStorage.getItem('e')}`,
-              newPassword: values.newPassword,
-              ...( sessionStorage.getItem('o') ? {'otp-code':`${sessionStorage.getItem('o')}` } : {}),
+    
+              password: values.newPassword,
+              ...( sessionStorage.getItem('o') ? {'otp':`${sessionStorage.getItem('o')}` } : {}),
           },
       )
       .then( res => {
@@ -562,7 +560,7 @@ function ForgotNewPassword({componentRef, multiPage }: PageProps){
           }
       })
       .catch( err => {
-          toast.error(err)
+          toast.error(`${err}`)
           toggleLoading()
       })
   }

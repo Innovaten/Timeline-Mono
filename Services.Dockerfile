@@ -11,6 +11,7 @@ COPY turbo.json ./
 
 # Install dependencies
 RUN yarn global add turbo 
+RUN yarn global add tsx
 
 # RUN turbo prune --scope core --docker
 
@@ -21,14 +22,10 @@ RUN yarn install --frozen-lockfile
 # Copy the rest of the application code
 COPY . .
 
-# Build the specific app
-RUN turbo run build --filter=core
+WORKDIR /apps/services
 
-# Set the working directory to the app's build output
-WORKDIR /apps/core/dist
+CMD ["tsx", "src/index.ts"]
 
-# Start the app
-CMD ["node", "main.js"]
 
 # Expose the port the app runs on
 EXPOSE 4000

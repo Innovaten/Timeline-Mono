@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, ForbiddenException } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc, IModuleDoc, LessonModel, LessonSetModel } from "@repo/models";
+
 import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
@@ -17,7 +18,7 @@ export class UserService {
     ) { }
 
     async verifyPassword(email: string, password: string, extraFilter: Record<string, any> = {}) {
-        const filter = { email, ...extraFilter }
+        const filter = { email, ...extraFilter, "meta.isDeleted": false}
         const user = await UserModel.findOne(filter);
         if(!user) return null;
         const isSamePassword = await compare(password, user.auth.password)
@@ -38,7 +39,10 @@ export class UserService {
 
     async getUsers(limit?: number, offset?: number, filter?: Record<string, any>){
         const results = await UserModel
-            .find(filter ?? {})
+            .find({
+                ...(filter ?? {}),
+                "meta.isDeleted": false
+            })
             .populate("classes")
             .limit(limit ?? 10)
             .skip(offset ?? 0)
@@ -47,7 +51,10 @@ export class UserService {
     }
 
     async getCount(filter?: Record<string, any>){
-        return UserModel.countDocuments(filter)
+        return UserModel.countDocuments({
+            ...filter,
+            "meta.isDeleted": false,
+        })
     }
 
     async createAdmin(userData: CreateUserDto, creator: string){
@@ -65,7 +72,7 @@ export class UserService {
         const { authToken, phone, ...actualData } = userData;
 
         const user = new UserModel({
-            code: await generateCode(await UserModel.countDocuments({ role: userData.role }), codePrefix),
+            code: await generateCode(await UserModel.countDocuments({ code: { ...(userData.role == "SUDO" ? {$regex: /SDO/} : { $regex: /ADM/})} }), codePrefix),
             ...actualData,
             phone: `+${validPhoneNumber(phone)}`,
             meta: {
@@ -107,6 +114,7 @@ export class UserService {
         }
 
         user.role = Roles.SUDO;
+        user.code = "SDO" + user.code.substring(3)
         await user.save()
 
         return user
@@ -120,6 +128,7 @@ export class UserService {
         }
 
         user.role = Roles.ADMIN
+        user.code = "ADM" + user.code.substring(3)
         await user.save()
 
         return user
@@ -160,13 +169,13 @@ export class UserService {
         const randomPassword = generateSecurePassword()
 
         const user = new UserModel({
-            code: await generateCode(await UserModel.countDocuments({ role: "STUDENT"}), "STU"),
+            code: await generateCode(await UserModel.countDocuments(), "STU"),
             role: Roles.STUDENT,
             firstName: userData.firstName,
             otherNames: userData.otherNames,
             lastName: userData.lastName,
             email: userData.email,
-            phone: `${validPhoneNumber(userData.phone)}`,
+            phone: `+${validPhoneNumber(userData.phone)}`,
             gender: userData.gender,
             
             meta: {
@@ -348,29 +357,41 @@ export class UserService {
         if (!moduleDoc) {
           throw new Error('Module not found');
         }
+
+        const completedLessonsDoc = await CompletedLessonsModel.findOne({ user: userId }).exec();
+        if (!completedLessonsDoc) {
+            throw new ForbiddenException('No completed lessons found for this user');
+        }
     
+        let allLessonsCompleted = await this.areAllLessonsCompleted(moduleDoc.lessonSet, completedLessonsDoc);
+
+        if (!allLessonsCompleted) {
+            throw new ForbiddenException('Not all lessons in the module are completed');
+        }
+
         const completedModuleDoc = await CompletedModulesModel.findOne({ user: userId }).exec();
+        
     
         const now = new Date();
         if (completedModuleDoc) {
-          // Toggle the module completion
+
           const moduleIndex = completedModuleDoc.modules.findIndex(id => id.equals(moduleId));
     
           if (moduleIndex > -1) {
             if (now.getTime() - completedModuleDoc.updatedAt.getTime() < 1000) {
               throw new ForbiddenException('Cannot change status too quickly');
             }
-            // Remove the module if it's already completed
+
             completedModuleDoc.modules.splice(moduleIndex, 1);
           } else {
-            // Add the module if it's not completed yet
+
             completedModuleDoc.modules.push(moduleId);
           }
     
           completedModuleDoc.updatedAt = now;
           await completedModuleDoc.save();
         } else {
-          // If no record exists, create a new one
+
           const newCompletedModule = new CompletedModulesModel({
             user: userId,
             modules: [moduleId],
@@ -385,14 +406,28 @@ export class UserService {
         return completedModuleDoc;
       }
 
-      async getCompletedLessons(userId: Types.ObjectId): Promise<ICompletedLessonDoc | null> {
-        const completedLessons = await CompletedLessonsModel.findOne({ user: userId }).exec();
-        return completedLessons;
+      private async areAllLessonsCompleted(lessonSetId: Types.ObjectId, completedLessonsDoc: any): Promise<boolean> {
+        const lessonSet = await LessonSetModel.findById(lessonSetId).populate('lessons').exec();
+    
+        if (!lessonSet) {
+          throw new Error('Lesson set not found');
+        }
+    
+        return lessonSet.lessons.every((lessonId: Types.ObjectId) =>
+          completedLessonsDoc.lessons.some((completedLessonId: Types.ObjectId) => completedLessonId.equals(lessonId))
+        );
       }
 
-      async getCompletedModules(userId: Types.ObjectId): Promise<ICompletedModuleDoc | null> {
+      async getCompletedLessons(userId: Types.ObjectId): Promise<ILessonDoc[] | null> {
+        const completedLessons = await CompletedLessonsModel.findOne({ user: userId }).exec();
+        const lessons = await LessonModel.find({_id: {$in: completedLessons?.lessons}}).populate("createdBy updatedBy")
+        return lessons;
+      }
+
+      async getCompletedModules(userId: Types.ObjectId): Promise<IModuleDoc[] | null> {
         const completedModules = await CompletedModulesModel.findOne({ user: userId }).exec();
-        return completedModules;
+        const modules = await ModuleModel.find({_id: {$in: completedModules?.modules}}).populate("createdBy updatedBy")
+        return modules;
       }
 }
 

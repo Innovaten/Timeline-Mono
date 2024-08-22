@@ -11,8 +11,7 @@ COPY turbo.json ./
 
 # Install dependencies
 RUN yarn global add turbo 
-
-# RUN turbo prune --scope core --docker
+RUN yarn global add vite
 
 COPY apps/ apps/
 COPY packages/ packages/
@@ -22,13 +21,10 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # Build the specific app
-RUN turbo run build --filter=core
+RUN turbo run build --filter=lms
 
-# Set the working directory to the app's build output
-WORKDIR /apps/core/dist
+WORKDIR apps/lms
 
-# Start the app
-CMD ["node", "main.js"]
+EXPOSE 3000
 
-# Expose the port the app runs on
-EXPOSE 4000
+CMD ["vite", "--host", "0.0.0.0", "--port", "3000"]

@@ -1,10 +1,15 @@
 import { createLazyFileRoute, useRouterState, Outlet, Link } from '@tanstack/react-router'
 import { Button } from '@repo/ui';
-import { _getToken } from '@repo/utils'
+import { _getToken, makeAuthenticatedRequest } from '@repo/utils'
 import dayjs from 'dayjs';
 import { useLesson } from '../hooks';
 import { PhotoIcon, DocumentIcon, PaperClipIcon, ShareIcon } from   '@heroicons/react/24/outline'
-export const Route = createLazyFileRoute('/classes/$classCode/modules/$moduleCode/lessons/$lessonCode')({
+import { useLMSContext } from '../app';
+import { toast } from 'sonner';
+
+
+
+export const Route = createLazyFileRoute('/classes/$classCode/modules/$moduleCode/$lessonCode')({
   component: Lesson
 })
 
@@ -13,13 +18,61 @@ function Lesson(){
 
   const routerState = useRouterState();
   const { classCode, moduleCode, lessonCode } = Route.useParams()
+  const {user} = useLMSContext()
 
-  if(routerState.location.pathname !== `/classes/${classCode}/modules/${moduleCode}/lessons/${lessonCode}`){
+  if(routerState.location.pathname !== `/classes/${classCode}/modules/${moduleCode}/${lessonCode}`){
     return <Outlet />
   } 
 
+  function markAsComplete(){
 
-  const { isLoading, lesson } = useLesson(true, lessonCode, false)
+    makeAuthenticatedRequest(
+        "post",
+        `/api/v1/users/${user?._id}/completed-lessons/${lesson?._id}`,
+        {
+            lessonSetId: lesson?.lessonSet._id    
+        },
+    )
+    .then(res => {
+
+        if(res.status == 201 && res.data.success){
+            toast.success(<p>Lesson has been marked as completed successfully.</p>)
+        } else {
+            toast.error(`${res.data.error.msg}`)
+        }
+    })
+    .catch( err => {
+        console.log(err)
+        toast.error(`${err}`)
+    })
+
+  }
+
+  function markAsUncompleted(){
+    
+    makeAuthenticatedRequest(
+        "post",
+        `/api/v1/users/${user?._id}/completed-lessons/${lesson?._id}`,
+        {
+            lessonSetId: lesson?.lessonSet._id    
+        },
+    )
+    .then(res => {
+
+        if(res.status == 201 && res.data.success){
+            toast.success(<p>Lesson has been unmarked successfully.</p>)
+        } else {
+            toast.error(`${res.data.error.msg}`)
+        }
+    })
+    .catch( err => {
+        console.log(err)
+        toast.error(`${err}`)
+    })
+
+  }
+
+  const { isLoading, lesson } = useLesson(true, lessonCode)
   return (
 
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
@@ -62,7 +115,7 @@ function Lesson(){
                     <>
                         <div className='flex-1 mt-14'>
                             <span className='mt-4 text-blue-700 font-light'>Resources</span>
-                            <div className='mt-2 grid grid-cols-1 text-blue-700 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-8'>
+                            <div className='mt-2 grid grid-cols-1 text-blue-700 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-8 justify-between'>
                                 { lesson.resources && lesson.resources.length > 0 && lesson.resources.map((resource, idx) => {
                                         return (
                                             <a className='flex max-w-[200px] gap-2 p-2 rounded-sm bg-blue-300/10 border-[1.5px] border-blue-600/10 ' target='_blank' href={resource.link} key={idx}>
@@ -86,18 +139,24 @@ function Lesson(){
                                 {
                                     (!lesson.resources || lesson.resources.length == 0 ) && 
                                      <>
-                                      <div className='flex gap-2 p-2 rounded-sm bg-blue-300/10 border-[1.5px] border-blue-600/10 '>
+                                      <div className='flex gap-2 p-2 rounded-sm bg-blue-300/10 border-[1.5px] border-blue-600/10 sm:w-36'>
                                           <PaperClipIcon className='w-4 shrink-0' />                                            
                                           <p className='font-light'>No resources</p>
                                       </div>
                                      </>
                                   } <div className='w-full sm:w-fit shrink-0 flex flex-col sm:flex-row gap-2 justify-end'>
-                                  <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons/${lessonCode}/update`} className='w-full'>
-                                      <Button
-                                          variant='outline'
-                                          className='w-full'
-                                      >Edit Lesson</Button>
-                                  </Link>    
+                            
+                                           <Button
+                                                    variant='outline'
+                                                    className='w-[162px]'
+                                                    onClick={markAsUncompleted}
+                                                >Mark as uncompleted</Button>
+                                            <Button
+                                                    className='w-[162px] sm:!w-[150px]'
+                                                    onClick={markAsComplete}
+                                                >Mark as completed</Button>
+                                              
+                                      
                               </div>
                             </div>    
                         </div>
@@ -108,8 +167,8 @@ function Lesson(){
                 <div className='flex flex-col sm:flex-row gap-4 sm:gap-2 sm:justify-between sm:items-end '>
                 </div>
           </div>   
-        }
-    </div> 
+}
+</div> 
           
     )
 

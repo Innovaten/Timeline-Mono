@@ -1,4 +1,4 @@
-import { ILessonDoc, IResourceDoc, IUserDoc } from "@repo/models";
+import { ICompletedLessonDoc, ILessonDoc, IResourceDoc, IUserDoc } from "@repo/models";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -10,16 +10,17 @@ export function useLessons(refreshFlag: boolean = true,limit: number = 10, offse
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
     const [ count, setCount ] = useState<number>(0);
 
-    const { user, ...actualFilter} = filter
+   
     
 
     const route = "/lessons"
     useEffect(() => {
         makeAuthenticatedRequest(
             "get",
-            `/api/v1${route}?filter=${JSON.stringify(actualFilter)}&limit=${limit}&offset=${offset}`,
+            `/api/v1${route}?filter=${JSON.stringify(filter)}&limit=${limit}&offset=${offset}`,
         ).then(res => {
             if(res.status == 200 && res.data.success){
+                console.log(res.data.data)
                 setLessons(res.data.data);
                 setCount(res.data.data.length);
             } else {
@@ -43,15 +44,15 @@ export function useLessons(refreshFlag: boolean = true,limit: number = 10, offse
 
 }
 
-export function useLesson(refreshFlag: boolean = true, specifier: string, isId:boolean = false){
+export function useLesson(refreshFlag: boolean = true, specifier: string){
 
     const [ lesson, setLesson ] = useState<Omit<ILessonDoc, "createdBy" | "updatedBy" | "resources"> & { createdBy: IUserDoc, updatedBy:IUserDoc,  resources?: IResourceDoc[] } | null>(null)
     const { isLoading, toggleLoading, resetLoading } = useLoading()
-
+    
     useEffect( () => {
         abstractAuthenticatedRequest(
             "get",
-            `/api/v1/lessons/${specifier}?isId=${isId}`,
+            `/api/v1/lessons/lms/${specifier}`,
             {},
             {},
             {
@@ -65,4 +66,32 @@ export function useLesson(refreshFlag: boolean = true, specifier: string, isId:b
     }, [refreshFlag])
 
     return { isLoading, lesson }
+}
+
+
+export function useCompletedLessons(refreshFlag: boolean = true, userId: string){
+    
+    const [ completedLessons, setCompletedLessons ] = useState<(ILessonDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
+    const { isLoading, toggleLoading, resetLoading } = useLoading()
+
+    
+    
+    useEffect( () => {
+        abstractAuthenticatedRequest(
+            "get",
+            `/api/v1/users/${userId}/completed-lessons`,
+            {},
+            {},
+            {
+                onStart: toggleLoading,
+                onSuccess: setCompletedLessons,
+                onFailure: (err) => {toast.error(`${err.msg}`)},
+                finally: resetLoading
+            }
+        )
+
+    }, [refreshFlag])
+    
+    return { isLoading, completedLessons }
+    
 }

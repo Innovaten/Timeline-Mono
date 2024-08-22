@@ -44,13 +44,18 @@ export class ClassesService {
         return result;
     }
 
-    async getClasses(limit?: number, offset?: number, filter?: Record<string, any>){
-        const results = await ClassModel.find(filter ?? {}).limit(limit ?? 10).skip(offset ?? 0).sort({ updatedAt: -1})
+    async getClasses(limit?: number, offset?: number, filter: Record<string, any> = {}){
+        const results = await ClassModel.find(filter)
+        .limit(limit ?? 10)
+        .skip(offset ?? 0)
+        .sort({ updatedAt: -1})
         return results;
     }
 
     async getCount(filter?: Record<string, any>){
-        return ClassModel.countDocuments(filter)
+        return ClassModel.countDocuments({
+            ...filter,
+        })
     }
 
     async createClass(classData: CreateClassDto, creator: string): Promise<IClassDoc>{
@@ -167,7 +172,7 @@ export class ClassesService {
     }
 
     async getClassesCount(filter: Record<string, any>){
-        const count = await ClassModel.countDocuments(filter);
+        const count = await ClassModel.countDocuments({ ...filter });
         return count;
     }
 
@@ -179,9 +184,38 @@ export class ClassesService {
             throw new Error("Specified class could not be found");
         }
 
-        const announcements = await AnnouncementModel.find({ class: classDoc._id}).populate("createdBy updatedBy");
+        const announcements = await AnnouncementModel.find({ 
+            class: classDoc._id,
+            "meta.isDeleted": false,
+        }).populate("createdBy updatedBy");
 
         return announcements;
+    }
+
+    async getClassAnnouncementsCount(
+        filter: Record<string, any> = {},
+        specifier: string, 
+        isId: boolean, 
+        user: IUserDoc
+    ){
+        
+        const classFilter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
+        const relatedClass = await ClassModel.findOne(classFilter).lean()
+
+        if(!relatedClass){
+            throw new NotFoundException("Specified class could not be found")
+        }
+
+        const finalFilter = { 
+            ...filter, 
+            class: relatedClass._id,
+            "meta.isDeleted": false,
+        }
+
+
+        const count = await AnnouncementModel.countDocuments(finalFilter)
+
+        return count
     }
 
     async getStudentsInClass(specifier: string, isId: boolean, user: IUserDoc){

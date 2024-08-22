@@ -27,7 +27,7 @@ export class LessonsService {
       code: await generateCode( await LessonModel.countDocuments(), "LSN"),
       title: createLessonDto.title,
       content: createLessonDto.content,
-      resources: [],
+      resources: createLessonDto.resources.map( r => new Types.ObjectId(r)),
       lessonSet: new Types.ObjectId(relatedModule.lessonSet.toString()),
       meta: {
         isDeleted: false,
@@ -67,6 +67,10 @@ export class LessonsService {
   async findLessonById(specifier: string, isId: boolean): Promise<any> {
     const filter = { code: specifier } ;
     return await LessonModel.findOne(filter).populate("createdBy updatedBy resources");
+  }
+
+  async findLessonByCode(code: string): Promise<any> {  
+    return await LessonModel.findOne({ code: code }).populate("createdBy updatedBy resources");
   }
 
   async updateLesson(id: string, updateLessonDto: UpdateLessonDto, user: IUserDoc): Promise<any> {

@@ -1,7 +1,7 @@
 import { createLazyFileRoute, Link ,useRouterState, Outlet } from '@tanstack/react-router'
-import { useClass } from '../../../hooks';
+import { classModuleCount, useClass } from '../../../hooks';
 import _ from 'lodash'
-import { AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon } from '@heroicons/react/24/outline'
+import { AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon, BookOpenIcon } from '@heroicons/react/24/outline'
 import { StatCard } from '@repo/ui';
 
 export const Route = createLazyFileRoute('/classes/$classCode/')({
@@ -19,12 +19,18 @@ function ClassDetails(){
     } 
 
   const { thisClass, isLoading: classIsLoading } = useClass(true, classCode, false)
+  const {count} = classModuleCount(classCode)
 
   const stats = [
+    // {
+    //   label: 'Quizzes',
+    //   value: thisClass?.quizzes.length ?? 0,
+    //   icon: PencilSquareIcon,
+    // },
     {
-      label: 'Quizzes',
-      value: thisClass?.quizzes.length ?? 0,
-      icon: PencilSquareIcon,
+      label: 'Modules',
+      value: count,
+      icon: AcademicCapIcon,
     },
     {
       label: 'Announcements',
@@ -36,6 +42,16 @@ function ClassDetails(){
       value: thisClass?.assignmentSet?.assignments?.length ?? 0,
       icon: NewspaperIcon,
     },
+    // {
+    //   label: 'Completed Modules',
+    //   value: 0,
+    //   icon: AcademicCapIcon
+    // },
+    // {
+    //   label: 'Completed Lessons',
+    //   value: 0,
+    //   icon: BookOpenIcon
+    // }
   ]
 
   return (
@@ -83,7 +99,7 @@ function ClassDetails(){
             <div className='mt-4 flex text-blue-700 gap-2 sm:gap-5 w-full flex-wrap sm:flex-nowrap justify-evenly'>
               {
                 stats.map(({ label, icon, value}, idx) => (
-                  <Link to={`/classes/${classCode}/${_.lowerCase(label)}`} className='w-full border-[1.5px] cursor-pointer border-transparent hover:border-blue-700/40'>
+                  <Link to={`/classes/${classCode}/${(label.replaceAll(" ","").toLowerCase())}`} className='w-full border-[1.5px] cursor-pointer border-transparent hover:border-blue-700/40'>
                     <StatCard
                       key={idx}
                       label={label}

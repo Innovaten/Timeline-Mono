@@ -5,7 +5,7 @@ import { useLMSContext } from '../app'
 import { BookOpenIcon, UsersIcon, AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData'
-import { useRegistrations, useAdminsCount, useClassesCount, usePendingCount, useStudentsCount, useAnnouncementsCount } from '../hooks';
+import { useRegistrants, useAdminsCount, useClassesCount, usePendingCount, useStudentsCount, useAnnouncementsCount } from '../hooks';
 import { Button, StatCard } from '@repo/ui';
 
 dayjs.extend(localeData)
@@ -20,14 +20,13 @@ function IndexPage() {
   
     const user = useLMSContext((state) => state.user);
     
-    const { registrations, isLoading: registrationsIsLoading } = useRegistrations()
+    const { registrants, isLoading: registrantsIsLoading } = useRegistrants()
     const { pendingCount } = usePendingCount()
     const { adminCount } = useAdminsCount()
     const { studentCount } = useStudentsCount()
     const { classesCount } = useClassesCount()
     const { announcementsCount } = useAnnouncementsCount()
     
- 
     const currentHour = new Date().getHours()
     const greeting = currentHour < 12 ? "Morning" :
         currentHour < 17 ? "Afternoon" : "Evening"
@@ -114,7 +113,7 @@ function IndexPage() {
                       </div>
                   </div>
                     {
-                       registrationsIsLoading && 
+                       registrantsIsLoading && 
                        <div className='w-full h-full m-auto mt-4'>
 
                           <div
@@ -123,7 +122,7 @@ function IndexPage() {
                        </div>
                     } 
                     { 
-                       !registrationsIsLoading && registrations.map((registrant, idx) => {
+                       !registrantsIsLoading && !!registrants.length && registrants.map((registrant, idx) => {
                         
                         return (
                           <div

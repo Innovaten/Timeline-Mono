@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Request, Query, UseGuards, UnauthorizedException, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Request, Query, UseGuards, UnauthorizedException, Patch, Req } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto, UpdateLessonDto } from './lessons.dto';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
@@ -16,15 +16,14 @@ export class LessonsController {
     private jwt: JwtService,
   ) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   async createLesson(
     @Body() createLessonDto: CreateLessonDto, 
+    @Req() req: any,
   ) {
     try {
-      const creator = await this.jwt.validateToken(createLessonDto.authToken);
-      if(!creator){
-        throw new UnauthorizedException()
-      }
+      const creator = req.user
 
       const newLesson = await this.lessonsService.createLesson(createLessonDto, creator);
       return ServerSuccessResponse(newLesson);
@@ -61,6 +60,19 @@ export class LessonsController {
     }
   }
 
+  @UseGuards(AuthGuard)
+  @Get('lms/:specifier')
+  async findLessonByCode(
+    @Param('specifier') specifier: string,
+  ) {
+    try {
+      const lesson = await this.lessonsService.findLessonByCode(specifier);
+      return ServerSuccessResponse(lesson);
+    } catch (err) {
+      return ServerErrorResponse(new Error(`${err}`), 500);
+    }
+  }
+  
   @UseGuards(AuthGuard)
   @Get(':specifier')
   async findLessonById(

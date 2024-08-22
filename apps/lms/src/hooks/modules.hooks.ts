@@ -1,4 +1,4 @@
-import { IModuleDoc, IResourceDoc, IUserDoc } from "@repo/models";
+import { ICompletedModuleDoc, IModuleDoc, IResourceDoc, IUserDoc } from "@repo/models";
 import { abstractAuthenticatedRequest, makeAuthenticatedRequest, useLoading } from "@repo/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -68,27 +68,6 @@ export function useModule(refreshFlag: boolean = true, specifier: string, isId:b
 }
 
 
-export function useModuleStateFilter(){
-    const [ filterLabel, setFilterLabel ] = useState<"Public" | "Deleted">("Public");
-    const [ filterChangedFlag, setFilterChangedFlag ] = useState<boolean>(false)
-
-    const resultingFilters = {
-        "Public": { "meta.isDeleted": { $eq: false }},
-        "Deleted": { "meta.isDeleted": { $eq: true }},
-    };
-
-    const filterOptions = Object.keys(resultingFilters);
-    
-    const filter = resultingFilters[filterLabel];
-
-    function changeFilter(arg:  "Public" | "Deleted"){
-        setFilterChangedFlag(prev => !prev);
-        setFilterLabel(arg);
-    };
-
-    return { filter, changeFilter, filterOptions, filterChangedFlag };
-
-}
 
 export function classModuleCount(classCode: string){
     const [ isLoading, setPendingIsLoading ] = useState<boolean>(true);
@@ -114,4 +93,30 @@ export function classModuleCount(classCode: string){
 )
 
     return { isLoading, count }
+}
+
+export function useCompletedModules(refreshFlag: boolean = true, userId: string){
+    
+    const [ completedModules, setCompletedModules ] = useState<(IModuleDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
+    const { isLoading, toggleLoading, resetLoading } = useLoading()
+    
+    useEffect( () => {
+        abstractAuthenticatedRequest(
+            "get",
+            `/api/v1/users/${userId}/completed-modules`,
+            {},
+            {},
+            {
+                onStart: toggleLoading,
+                onSuccess: setCompletedModules,
+                onFailure: (err) => {toast.error(`${err.msg}`)},
+                finally: resetLoading
+            }
+        )
+
+    }, [refreshFlag])
+
+    console.log(completedModules)
+    return { isLoading, completedModules }
+    
 }

@@ -6,6 +6,7 @@ export function useFileUploader(){
     const [ files, setFiles ] = useState<IResourceDoc[]>([])
 
     function addToFiles(file: any){
+        if(files.map(r => `${r._id}`).includes(`${file._id}`)) return
         setFiles(prev => [...prev, file])
     }
 

@@ -17,7 +17,7 @@ export class AnnouncementsService {
         const results = await AnnouncementModel.find(filter)
         .limit(limit ?? 10)
         .skip(offset ?? 0)
-        .sort({ updatedAt: -1})
+        .sort({ createdAt: -1})
         .populate<{ createdBy: IUserDoc, updatedBy: IUserDoc }>("createdBy updatedBy")
         return results;
     }

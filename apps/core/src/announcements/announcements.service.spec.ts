@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnnouncementsService } from './announcements.service';
 import { createRandomAnnouncement, createRandomAnnouncements, createRandomAnnouncementSet, createRandomClasses, createRandomUser } from '../../test/mocks'
-import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncement, IAnnouncementSet, IClass, UserModel } from '@repo/models';
+import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncement, IAnnouncementSet, IClass, UserModel, IUser } from '@repo/models';
 import { Types } from 'mongoose';
 import { CreateAnnouncementDto, UpdateAnnouncementDto } from './announcements.dto';
 import { faker } from '@faker-js/faker';
-import { IUser } from '../../../../packages/models/src/user/index.types';
 
 describe('AnnouncementsService', () => {
   let service: AnnouncementsService;
@@ -31,7 +30,7 @@ describe('AnnouncementsService', () => {
     await ClassModel.insertMany(classes)
     await UserModel.insertMany(sudoUser)
 
-  })
+  }, 10000)
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -117,7 +116,6 @@ describe('AnnouncementsService', () => {
         expect(allAnnouncementSets[i].announcements.map(a=> `${a}`).includes(`${result._id}`));
       }
     })
-
   })
 
   describe('updateAnnouncement',() => {
@@ -191,5 +189,5 @@ describe('AnnouncementsService', () => {
     await AnnouncementModel.deleteMany()
     await ClassModel.deleteMany()
     await UserModel.deleteMany()
-  })
+  }, 10000)
 });

@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Post, UseGuards, Request, Query, Param, Body, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Patch, Post, UseGuards, Request, Query, Param, Body, Delete, Req, ForbiddenException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { sendInternalServerError } from '../utils';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
@@ -8,7 +8,7 @@ import { JwtService } from '../common/services/jwt.service';
 import { CreateAnnouncementDto , UpdateAnnouncementDto} from './announcements.dto';
 import { ClassesService } from '../classes/classes.service';
 import { Types } from 'mongoose';
-import { IAnnouncementDoc } from '@repo/models';
+import { IAnnouncement, IAnnouncementDoc } from '@repo/models';
 import { IUserDoc } from '@repo/models';
 
 @Controller({
@@ -36,17 +36,11 @@ export class AnnouncementsController {
             const user = req["user"]
 
             if(!user){
-                return ServerErrorResponse(
-                    new Error('Unauthenticated Request'),
-                    401
-                )
+                throw new UnauthorizedException('Unauthenticated Request')
             }
 
             if(user.role != Roles.SUDO){
-                return ServerErrorResponse(
-                    new Error('Unauthorized Request'),
-                    403
-                )
+                throw new ForbiddenException("You are not permitted to perform this action")
             }
 
             let filter = rawFilter ? JSON.parse(rawFilter) : {}
@@ -64,29 +58,35 @@ export class AnnouncementsController {
             const announcements = await this.service.listAnnouncements(limit, offset, filter);
             const count = await this.service.getAnnouncementsCount(filter);
 
-            return ServerSuccessResponse({
+            return ServerSuccessResponse<{ 
+                announcements: (Omit<IAnnouncement, "createdBy" | "updatedBy" > & { createdBy: IUserDoc, updatedBy: IUserDoc })[],
+                count: number 
+            }>({
                 announcements,
                 count
             })
 
-        } catch(err){
-            return sendInternalServerError(err);
+        } catch(err: any){
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                err.status ? err.status : 500
+            );
         }
 
     }
 
     @Post()
+    @UseGuards(AuthGuard)
     async createAnnouncement(
-        @Body() announcementData: CreateAnnouncementDto 
+        @Body() announcementData: CreateAnnouncementDto,
+        @Req() req: any
     ){
         try {
-            const creator = await this.jwt.validateToken(announcementData.authToken);
+            // @ts-ignore
+            const creator = req.user
             
             if(!creator){
-                return ServerErrorResponse(
-                    new Error('Unauthenticated Request'),
-                    401
-                )
+                throw new UnauthorizedException('Unauthenticated Request')
             }
 
             let announcement: IAnnouncementDoc
@@ -94,39 +94,33 @@ export class AnnouncementsController {
             if(announcementData.classCode == "*") { // Sudo request to announce to everyone
 
                 if(creator.role != Roles.SUDO){
-                    return ServerErrorResponse(
-                        new Error('You are not permitted to perform this action'),
-                        401
-                    )
+                    throw new ForbiddenException('You are not permitted to perform this action')
                 }
 
                 announcement = await this.service.createAnnouncement(true, creator._id, announcementData);
                 
-            } else {
-                const relatedClass = await this.classes.getClass({ code: announcementData.classCode }) 
-    
-                if(!relatedClass) {
-                    return ServerErrorResponse(
-                        new Error("Specified class does not exist"),
-                        400
-                    )
-                }
-    
-                if(creator.role != Roles.SUDO && !relatedClass.administrators.map(a => `${a._id}`).includes(`${creator._id}`) ){
-                    return ServerErrorResponse(
-                        new Error('You are not permitted to perform this action'),
-                        401
-                    )
-                }
-                announcement = await this.service.createAnnouncement(false, creator._id, announcementData, relatedClass?.announcementSet._id);
-                
+                return ServerSuccessResponse(announcement);
             }
+
+            const relatedClass = await this.classes.getClass({ code: announcementData.classCode }) 
+
+            if(!relatedClass) {
+                throw new NotFoundException("Specified class does not exist")
+            }
+
+            if(creator.role != Roles.SUDO && !relatedClass.administrators.map(a => `${a._id}`).includes(`${creator._id}`) ){
+                throw new ForbiddenException('You are not permitted to perform this action')
+            }
+            announcement = await this.service.createAnnouncement(false, creator._id, announcementData, relatedClass?.announcementSet._id);
 
             return ServerSuccessResponse(announcement);
 
 
-        } catch (err) {
-            return sendInternalServerError(err);
+        } catch (err: any) {
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                err.status ? err.status : 500
+            );
         }
     }
 
@@ -139,65 +133,59 @@ export class AnnouncementsController {
         try{
             const user = req.user as IUserDoc;
             if(!user){
-                return ServerErrorResponse(
-                    new Error('Unauthenticated Request'),
-                    401
-                )
-            }
-        
-           if (user?.role === 'ADMIN' || user?.role === 'SUDO') {
-            const filter =  rawFilter ? JSON.parse(rawFilter) : {};
-            const classes_count = await this.service.getAnnouncementsCount(filter)
-            return ServerSuccessResponse<number>(classes_count); 
-            } else {
-                return ServerErrorResponse(
-                    new Error("Unauthorized Request"),
-                    401
-                )
+                throw new UnauthorizedException('Unauthenticated Request')
             }
 
-        } catch(err) {
-            return ServerErrorResponse(new Error(`${err}`), 500);
+            if(user.role == "STUDENT"){
+                throw new ForbiddenException("Unauthorized Request")
+            }
+        
+            const filter =  rawFilter ? JSON.parse(rawFilter) : {};
+            const classes_count = await this.service.getAnnouncementsCount(filter)
+            
+            return ServerSuccessResponse<number>(classes_count); 
+
+        } catch(err: any) {
+            return ServerErrorResponse (
+                new Error(`${err.message ? err.message : err}`), 
+                err.status ? err.status : 500
+            );
         }   
     }
 
     @Patch(":_id")
+    @UseGuards(AuthGuard)
     async updateAnnouncement(
         @Param("_id") _id: string,
-        @Body() announcementData: UpdateAnnouncementDto 
+        @Body() announcementData: UpdateAnnouncementDto,
+        @Req() req: any
     ) {
         try {
-            const updator = await this.jwt.validateToken(announcementData.authToken);
+            const updator = req.user
             
             if(!updator){
-                return ServerErrorResponse(
-                    new Error('Unauthenticated Request'),
-                    401
-                )
+                throw new UnauthorizedException('Unauthenticated Request')
             }
 
             const relatedClass = await this.classes.getClass({ code: announcementData.classCode }) 
 
             if(!relatedClass) {
-                return ServerErrorResponse(
-                    new Error("Specified class does not exist"),
-                    400
-                )
+                throw new NotFoundException("Specified class does not exist")
             }
 
             if(updator.role != Roles.SUDO && !relatedClass?.administrators.map(a => `${a._id}`).includes(`${updator._id}`)){
-                return ServerErrorResponse(
-                    new Error('You are not permitted to perform this action'),
-                    401
-                )
+                throw new ForbiddenException('You are not permitted to perform this action')
             }
 
             const updatedAnnouncement = await this.service.updateAnnouncement(_id, `${updator._id}`, announcementData);
 
             return ServerSuccessResponse(updatedAnnouncement);
 
-        } catch (err) {
-            return sendInternalServerError(err);
+        } catch (err: any) {
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                err.status ? err.status: 500
+            );
         }
     }
 

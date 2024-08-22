@@ -11,6 +11,7 @@ COPY turbo.json ./
 
 # Install dependencies
 RUN yarn global add turbo 
+RUN yarn global add vite
 
 COPY apps/ apps/
 COPY packages/ packages/
@@ -22,7 +23,7 @@ COPY . .
 # Build the specific app
 RUN turbo run build --filter=admin
 
-WORKDIR /apps/admin
+WORKDIR apps/admin
 
 EXPOSE 3000
 

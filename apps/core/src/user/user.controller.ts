@@ -3,7 +3,7 @@ import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { IUserDoc } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto, UpdatePasswordDto, UpdateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
 import { Roles } from '../common/enums/roles.enum';
 import { ClassesService } from '../classes/classes.service';
@@ -131,6 +131,18 @@ export class UsersController {
             console.log("Downgraded SUDO", updatedUser.code,"to admin")
             return ServerSuccessResponse(updatedUser)
 
+        } catch (error) {
+            return ServerErrorResponse(new Error(`${error}`), 500)
+        }
+    }
+
+    @Patch('update-password')
+    async updatedPassword(
+        @Body() updatePasswordData: UpdatePasswordDto,
+    ) {
+        try {
+            const response = await this.user.updatePassword(updatePasswordData)
+            return response
         } catch (error) {
             return ServerErrorResponse(new Error(`${error}`), 500)
         }
@@ -459,19 +471,7 @@ export class UsersController {
         return ServerErrorResponse(new Error(`${err}`), 500);
         }
     }
-    @Patch('update-password')
-    async updatedPassword(
-        @Query('id') id: string,
-        @Query('otp') otp: string,
-        @Query('password') newPassword: string,
-    ) {
-        try {
-            const response = await this.user.updatePassword(id, otp, newPassword)
-            return response
-        } catch (error) {
-            return ServerErrorResponse(new Error(`${error}`), 500)
-        }
-    }
+    
 
     @UseGuards(AuthGuard)
     @Post(':userId/completed-lessons/:lessonId')

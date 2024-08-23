@@ -230,7 +230,7 @@ export class AssignmentsService {
         }
 
         const newSubmission = new AssignmentSubmissionModel({
-            code: await generateCode( await AssignmentModel.countDocuments(), "ASSUB", 10),
+            code: await generateCode( await AssignmentModel.countDocuments({ code: { $regex: /ASSUB/ }}), "ASSUB", 10),
             
             class: relatedAssignment.class,
             classCode: relatedAssignment.classCode,

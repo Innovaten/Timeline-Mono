@@ -200,7 +200,7 @@ function Login({ componentRef, multiPage }: PageProps){
                       <Input id='email' name='email' type='email' iconType='email' label='Email Address'  placeholder="kwabena@kodditor.com" hasValidation />
                       <Input id='p' name='password' type='password' iconType='password' label='Password' placeholder="********" hasValidation />
                       <div className='hidden sm:flex gap-1 justify-end w-full'>
-                          <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { multiPage.goTo('forgot') }}>Forgot your password?</p>
+                          <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { multiPage.goTo('forgot') }}>Update Password</p>
                       </div>
                       <Button
                           variant='primary'
@@ -208,7 +208,7 @@ function Login({ componentRef, multiPage }: PageProps){
                           type='submit'
                       >Login</Button>
                       <div className='sm:hidden flex items-center gap-1 justify-between w-full'>
-                          <p className='text-blue-700 underline-offset-2 text-right cursor-pointer underline' onClick={() => { multiPage.goTo('forgot') }}>Forgot your password?</p>
+                          <p className='text-blue-700 underline-offset-2 text-right cursor-pointer underline' onClick={() => { multiPage.goTo('forgot') }}>Update Password</p>
                       </div>
                   </Form>
               </Formik>
@@ -324,7 +324,7 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
 											<Form className='flex flex-col gap-6'>
 												<div>
 														<h1 className='text-blue-950 mb-3'>Enter your verification OTP.</h1>
-														<p>We've sent a one-time password to your phone number!</p>
+														<p>We've sent a one-time password to your email!</p>
 												</div>
 												<div className='flex justify-center'>
 														<OtpInput
@@ -357,7 +357,7 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
                                                         onClick={handleResendSubmit}
                                                         className='w-full'
                                                     >
-                                                        { timeUp ? "Resend OTP Code" : `Can resend after: ${count} seconds` }
+                                                        { timeUp ? "Resend OTP" : `Resend after: ${count}s` }
                                                     </Button>
                                                     <Button
                                                         variant='primary'
@@ -382,13 +382,13 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
   
        function handleSubmit(values: { email: string }){
           toggleLoading();
-          makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send?email=${values.email}&via=email`)
+          makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send?email=${encodeURIComponent(`${values.email}`)}&via=email`)
            .then(res => {
               if(res.data.success){
                 sessionStorage.setItem('e', values.email);
                  multiPage.goToNext();
               } else {
-                toast.error(res.data.error.msg);
+                toast.error(`${res.data?.error?.msg}`);
               }
               toggleLoading();
           }).catch(err => {
@@ -427,7 +427,7 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
               >
                   <Form className='flex flex-col gap-6'>
                       <div>
-                          <h1 className='text-blue-950 mb-3'>Forgot Your Password?</h1>
+                          <h1 className='text-blue-950 mb-3'>Enter your email address</h1>
                           <p>We'll send you a One Time Password (OTP)</p>
                       </div>
                       <Input id='e' name='email' type='email' label='Email Address' iconType='email'  placeholder="kwabena@example.com" hasValidation />
@@ -468,16 +468,14 @@ function ForgotVerification({componentRef, multiPage}: PageProps){
       } 
 
       setOTPHasError(false)
-      multiPage.goToNext()
-      
 
-      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify?email=${email}&otp=${OTP}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify?email=${encodeURI(email ?? "")}&otp=${OTP}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('o', OTP);
               multiPage.goToNext()
           } else {
-              toast.error(res.data.error.msg)
+              toast.error(`${res.data?.error?.msg}`)
           }
           toggleLoading()
 
@@ -536,14 +534,13 @@ function ForgotNewPassword({componentRef, multiPage }: PageProps){
 
   function handleSubmit(values: { newPassword: string, confirmPassword: string}){
       toggleLoading()
-      setTimeout(() => router.navigate({ to: '/'}), 1000)
       
       makeUnauthenticatedRequest(
           'patch', 
-          '/api/v1/users/update-password?id=${user}',
+          '/api/v1/users/update-password',
           {
-    
-              password: values.newPassword,
+              email: sessionStorage.getItem('e'),
+              newPassword: values.newPassword,
               ...( sessionStorage.getItem('o') ? {'otp':`${sessionStorage.getItem('o')}` } : {}),
           },
       )
@@ -555,7 +552,7 @@ function ForgotNewPassword({componentRef, multiPage }: PageProps){
               }), 1000)
               toggleLoading()
           } else {
-              toast.error(res.data.error.msg)
+              toast.error(`${res.data?.error?.msg}`)
               toggleLoading()
           }
       })
@@ -602,8 +599,8 @@ function ForgotNewPassword({componentRef, multiPage }: PageProps){
               >
                   <Form className='flex flex-col gap-6'>
                       <h1 className='text-blue-950'>Update Your Password</h1>
-                      <Input id='p1' name='newPassword' type='password' label='New Password' iconType='password' placeholder="********" hasValidation />
-                      <Input id='p2' name='confirmPassword' type='password' label='Password' iconType='password' placeholder="********" hasValidation />
+                      <Input name='newPassword' type='password' label='New Password' iconType='password' placeholder="********" hasValidation />
+                      <Input name='confirmPassword' type='password' label='Confirm Password' iconType='password' placeholder="********" hasValidation />
                       <Button
                           variant='primary'
                           isLoading={isLoading}

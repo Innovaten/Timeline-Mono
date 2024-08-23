@@ -116,7 +116,7 @@ export class RegistrationsService {
     async createNewRegistration(regData: RegistrationDTO){
 
         try {
-            const newCode = await generateCode(await RegistrationModel.countDocuments(), "REG");
+            const newCode = await generateCode(await RegistrationModel.countDocuments({ code: { $regex: /REG/ }}), "REG");
 
             const {authToken , phone, ...actualData} = regData
             const registration = new RegistrationModel({

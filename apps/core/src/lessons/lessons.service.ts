@@ -24,7 +24,7 @@ export class LessonsService {
     }
 
     const newLesson = new LessonModel({
-      code: await generateCode( await LessonModel.countDocuments(), "LSN"),
+      code: await generateCode( await LessonModel.countDocuments({ code: { $regex: /LSN/ }}), "LSN"),
       title: createLessonDto.title,
       content: createLessonDto.content,
       resources: createLessonDto.resources.map( r => new Types.ObjectId(r)),

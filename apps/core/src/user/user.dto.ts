@@ -32,6 +32,19 @@ export class CreateUserDto {
     gender: string;
 }
 
+export class UpdatePasswordDto {
+
+    @IsString()
+    email: string;
+
+    @IsString()
+    otp: string;
+
+    @IsString()
+    newPassword: string;
+
+}
+
 export class UpdateUserDto {
     @IsString()
     @IsOptional()

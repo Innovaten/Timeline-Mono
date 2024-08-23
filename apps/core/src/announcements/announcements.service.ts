@@ -50,7 +50,7 @@ export class AnnouncementsService {
             }
             
             const newAnnouncement = new AnnouncementModel({
-                code: await generateCode(await AnnouncementModel.countDocuments(), prefix),
+                code: await generateCode(await AnnouncementModel.countDocuments({ code: { $regex: /ANMT/ }}), prefix),
                 ...actualData,
                 announcementSet: relatedAnnouncementSet._id,
                 class: relatedAnnouncementSet.class,
@@ -71,7 +71,7 @@ export class AnnouncementsService {
         }
 
         const newAnnouncementToEveryOne = new AnnouncementModel({
-            code: await generateCode(await AnnouncementModel.countDocuments(), prefix),
+            code: await generateCode(await AnnouncementModel.countDocuments({ code: { $regex: /ANMT/ }}), prefix),
             ...actualData,
             meta: {
                 isDeleted: false

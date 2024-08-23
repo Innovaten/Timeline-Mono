@@ -44,7 +44,7 @@ export class ModulesService {
   })
 
     const newModule = new ModuleModel({
-      code: await generateCode(await ModuleModel.countDocuments(), "MDL"),
+      code: await generateCode(await ModuleModel.countDocuments({ code: { $regex: /MDL/ }}), "MDL"),
       title: moduleData.title,
       lessonSet: newLessonSet.id,
     

@@ -171,14 +171,14 @@ function Students(){
                 isOpen={toggleManager.get('view-dialog')}
                 onClose={()=>toggleManager.reset('view-dialog')}
                 toggleOpen={() => toggleManager.toggle('view-dialog')}
-                title={`View Admin`}
+                title={`View Student`}
                 description={`Details of ${selectedStudent.firstName} ${selectedStudent.lastName}`}
             >
                 <div className="flex flex-col gap-4 sm:justify-between">
                     <div className='w-full'>
                         <div className='bg-white w-full overflow-auto grid grid-cols-1 sm:grid-cols-2 gap-2'>
                         <div className="flex flex-col gap-1" >
-                            <span className="text-xs font-light " >ADMIN CODE</span>
+                            <span className="text-xs font-light " >STUDENT CODE</span>
                             <p className="text-md" >
                             {selectedStudent.code}
                             </p>

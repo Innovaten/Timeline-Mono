@@ -66,7 +66,7 @@ export class ClassesService {
         const anmtSetPrefix = "ASET";
 
         const newAnnouncementSet = new AnnouncementSetModel({
-            code: await generateCode(await AnnouncementSetModel.countDocuments(), anmtSetPrefix),
+            code: await generateCode(await AnnouncementSetModel.countDocuments({ code: { $regex: /ASET/ }}), anmtSetPrefix),
             totalAnnouncements: 0,
             announcements: [],
 
@@ -77,14 +77,14 @@ export class ClassesService {
         })
         
         const newAssignmentSet = new AssignmentSetModel({
-            code: await generateCode((await AssignmentSetModel.countDocuments()), "ASSET"),
+            code: await generateCode((await AssignmentSetModel.countDocuments({ code: { $regex: /ASSET/ }})), "ASSET"),
             assignments: [],
             createdBy: new Types.ObjectId(creator),
             updatedBy: new Types.ObjectId(creator), 
         })
         
         const newClass = new ClassModel({
-            code: await generateCode(await ClassModel.countDocuments(), "CLS"),
+            code: await generateCode(await ClassModel.countDocuments({ code: { $regex: /CLS/ }}), "CLS"),
             ...actualData,
             status: "Active",
             administrators: [],
@@ -265,7 +265,7 @@ export class ClassesService {
             throw new ForbiddenException("You are not allowed to perform this action")
         }
         const newAssignment = new AssignmentModel({
-            code: await generateCode( (await AssignmentModel.countDocuments()), "ASMNT", 8),
+            code: await generateCode( (await AssignmentModel.countDocuments({ code: { $regex: /ASMNT/ }})), "ASMNT", 8),
             
             title: assignmentData.title,
             instructions: assignmentData.instructions,

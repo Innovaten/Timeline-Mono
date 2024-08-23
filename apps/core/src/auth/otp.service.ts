@@ -45,7 +45,7 @@ export class OtpService {
             return ServerErrorResponse(new Error('Failed to send OTP email'), 500)
         }
 
-        console.log("Send OTP for user", user.code);
+        console.log("Sending OTP for user", user.code);
 
         return ServerSuccessResponse({ message: 'OTP sent successfully', email: user.email });
     }

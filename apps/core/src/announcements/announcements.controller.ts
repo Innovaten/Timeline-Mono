@@ -201,34 +201,28 @@ export class AnnouncementsController {
             const deletor = req["user"]
             
             if(!deletor){
-                return ServerErrorResponse(
-                    new Error('Unauthenticated Request'),
-                    401
-                )
+               throw new UnauthorizedException('Unauthenticated Request')
             }
 
             const relatedClass = await this.classes.getClass({ code: classCode }) 
 
             if(!relatedClass) {
-                return ServerErrorResponse(
-                    new Error("Specified class does not exist"),
-                    400
-                )
+                throw new NotFoundException("Specified class does not exist")
             }
 
             if(deletor.role != Roles.SUDO && !relatedClass?.administrators.map(a => `${a._id}`).includes(`${deletor._id}`)){
-                return ServerErrorResponse(
-                    new Error('You are not permitted to perform this action'),
-                    401
-                )
+               throw new ForbiddenException('You are not permitted to perform this action')
             }
 
             const deletedAnnouncement = await this.service.deleteAnnouncement(_id, `${deletor._id}`);
 
             return ServerSuccessResponse(deletedAnnouncement);
 
-        } catch (err) {
-            return sendInternalServerError(err);
+        } catch (err: any) {
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                err.status ? err.status : 500
+            )
         }
     }
 
@@ -245,34 +239,28 @@ export class AnnouncementsController {
             const updator = req["user"];
             
             if(!updator){
-                return ServerErrorResponse(
-                    new Error('Unauthenticated Request'),
-                    401
-                )
+                throw new UnauthorizedException('Unauthenticated Request')
             }
 
             const relatedClass = await this.classes.getClass({ code: classCode }) 
 
             if(!relatedClass) {
-                return ServerErrorResponse(
-                    new Error("Specified class does not exist"),
-                    400
-                )
+               throw new NotFoundException("Specified class does not exist")
             }
 
             if(updator.role != Roles.SUDO && !relatedClass?.administrators.map(a => `${a._id}`).includes(`${updator._id}`)){
-                return ServerErrorResponse(
-                    new Error('You are not permitted to perform this action'),
-                    401
-                )
+               throw new ForbiddenException('You are not permitted to perform this action')
             }
 
             const announcement = await this.service.publishAnnouncement(specifier, isId, `${updator._id}`)
 
             return ServerSuccessResponse(announcement);
             
-        } catch (err) {
-            return sendInternalServerError(err);
+        } catch (err: any) {
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                err.status ? err.status : 500
+            );
         }
     }
 

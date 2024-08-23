@@ -155,6 +155,24 @@ describe('AnnouncementsController', () => {
       expect(result.error?.msg).toEqual("You are not permitted to perform this action");
     })
   })
+
+  describe('getAnnouncementCount', () => {
+    it('should return the number of announcements', async () => {
+
+      const filter = {}
+
+      const req = { user: sudoUser }
+
+      const result = await controller.getAnnouncementCount(JSON.stringify(filter), req);
+
+      expect(result).toBeDefined()
+      expect(result.success).toEqual(true)
+      expect(result.data).toBeDefined()
+      expect(result.error).toBeNull()
+      expect(result.data).toEqual(announcements.length + draftAnnouncements.length)
+
+    })
+  })
   
   describe('createAnnouncement', () => {
     it('should create a new announcement for a specified class', async () => {
@@ -332,6 +350,234 @@ describe('AnnouncementsController', () => {
       expect(result.error?.msg).toEqual('Unauthenticated Request');
       expect(result.error?.code).toEqual(401);
     })
+
+    it('should throw an error when related class is non-existent', async () => {
+
+      const data: UpdateAnnouncementDto = {
+        title: "newTitle",
+        isDraft: true,
+        content: "newContent",
+        classCode: "NonExistentClass",
+        authToken: "RefactorToUseAuthGuard",
+      }
+
+      const req = { user: sudoUser  }
+
+      const result = await controller.updateAnnouncement(announcements[0]._id.toString(), data, req);
+
+      expect(result).toBeDefined()
+      expect(result.success).toEqual(false)
+      expect(result.data).toBeNull()
+      expect(result.error).toBeDefined()
+      expect(result.error?.msg).toEqual('Specified class does not exist');
+      expect(result.error?.code).toEqual(404);
+    })
+
+    it('should update the announcement when the admin user is assigned to the class', async () => {
+
+      await ClassModel.updateOne({ code: classes[0].code}, {$push: { administrators: adminUser._id }})
+      classes[0].administrators.push(adminUser._id)
+      const data: UpdateAnnouncementDto = {
+        title: "newTitle",
+        isDraft: true,
+        content: "newContent",
+        classCode: classes[0].code,
+        authToken: "RefactorToUseAuthGuard",
+      }
+
+      const req = { user: adminUser  }
+
+      const result = await controller.updateAnnouncement(announcements[0]._id.toString(), data, req);
+
+      expect(result).toBeDefined()
+      expect(result.success).toEqual(true)
+      expect(result.error).toBeNull()
+      expect(result.data).toBeDefined()
+      expect(result.data?.title).toEqual("newTitle");
+      expect(result.data?.isDraft).toEqual(true);
+      expect(result.data?.content).toEqual("newContent");
+      expect(result.data?.updatedBy).toEqual(adminUser._id);
+      
+    })
+
+    it('should throw an error when admin user is not assigned to the class', async () => {
+
+      const data: UpdateAnnouncementDto = {
+        title: "newTitle",
+        isDraft: true,
+        content: "newContent",
+        classCode: classes[1].code,
+        authToken: "RefactorToUseAuthGuard",
+      }
+
+      const req = { user: adminUser  }
+
+      const result = await controller.updateAnnouncement(announcements[0]._id.toString(), data, req);
+
+      expect(result).toBeDefined()
+      expect(result.success).toEqual(false)
+      expect(result.data).toBeNull()
+      expect(result.error).toBeDefined()
+      expect(result.error?.msg).toEqual('You are not permitted to perform this action');
+      expect(result.error?.code).toEqual(403);
+    })
+  })
+
+  describe('deleteAnnouncement', () => {
+    it('should delete a specified announcement', async () => {
+
+      const lastPublicAnnouncement = announcements[announcements.length-1]
+
+      const req = { user: sudoUser}
+
+      // @ts-ignore
+      const result = await controller.deleteAnnouncement(lastPublicAnnouncement._id.toString(), classes[0].code,  req);
+
+      expect(result).toBeDefined()
+      expect(result.success).toEqual(true)
+      expect(result.error).toBeNull()
+      expect(result.data).toBeDefined()
+      expect(result.data?.meta.isDeleted).toEqual(true)
+      expect(result.data?.updatedBy).toEqual(sudoUser._id);
+
+      const deletedAnnouncement = await AnnouncementModel.findById(lastPublicAnnouncement._id);
+      // it shouldn't actually delete it
+      expect(deletedAnnouncement).toBeDefined()
+    })
+
+    it('should throw an error when user is not provided', async () => {
+
+      const lastPublicAnnouncement = announcements[announcements.length-1]
+
+      const req = { }
+
+      // @ts-ignore
+      const result = await controller.deleteAnnouncement(lastPublicAnnouncement._id.toString(), classes[0].code,  req);
+
+      expect(result).toBeDefined()
+      expect(result.success).toEqual(false)
+      expect(result.data).toBeNull()
+      expect(result.error).toBeDefined()
+      expect(result.error?.msg).toEqual('Unauthenticated Request');
+      expect(result.error?.code).toEqual(401);
+    })
+
+    it('should throw an error when the related class does not exist', async () => {
+
+      const lastPublicAnnouncement = announcements[announcements.length-1]
+
+      const req = { user: sudoUser }
+
+      // @ts-ignore
+      const result = await controller.deleteAnnouncement(lastPublicAnnouncement._id.toString(), "NonExistentClass",  req);
+
+      expect(result).toBeDefined()
+      expect(result.success).toEqual(false)
+      expect(result.data).toBeNull()
+      expect(result.error).toBeDefined()
+      expect(result.error?.msg).toEqual('Specified class does not exist');
+      expect(result.error?.code).toEqual(404);
+    })
+
+    it('should throw an error when the admin is not assigned to the class', async () => {
+
+      const lastPublicAnnouncement = announcements[announcements.length-1]
+
+      const req = { user: adminUser }
+
+      // @ts-ignore
+      const result = await controller.deleteAnnouncement(lastPublicAnnouncement._id.toString(), classes[1].code,  req);
+
+      expect(result).toBeDefined()
+      expect(result.success).toEqual(false)
+      expect(result.data).toBeNull()
+      expect(result.error).toBeDefined()
+      expect(result.error?.msg).toEqual('You are not permitted to perform this action');
+      expect(result.error?.code).toEqual(403);
+  })
+  })
+
+  describe('publish announcement', () => {
+    it('should publish a drafted assignment', async () => {
+
+      const req = { user: sudoUser}
+
+      const result = await controller.publishDraftedAnnouncement(
+        draftAnnouncements[0]._id.toString(), 
+        classes[0].code,
+        true, 
+        //@ts-ignore
+        req
+      )
+
+      expect(result).toBeDefined();
+      expect(result.success).toEqual(true);
+      expect(result.error).toBeNull();
+      expect(result.data).toBeDefined()
+      expect(result.data?.isDraft).toEqual(false);
+      expect(result.data?.updatedBy).toEqual(sudoUser._id);
+    })
+
+    it('should throw an error when user is not provided', async () => {
+
+      const req = { }
+
+      const result = await controller.publishDraftedAnnouncement(
+        draftAnnouncements[0]._id.toString(), 
+        classes[0].code,
+        true, 
+        //@ts-ignore
+        req
+      )
+
+      expect(result).toBeDefined();
+      expect(result.success).toEqual(false);
+      expect(result.data).toBeNull();
+      expect(result.error).toBeDefined()
+      expect(result.error?.code).toEqual(401);
+      expect(result.error?.msg).toEqual("Unauthenticated Request");
+    })
+
+    it('should throw an error when the class is nonexistent', async () => {
+
+      const req = { user: sudoUser }
+
+      const result = await controller.publishDraftedAnnouncement(
+        draftAnnouncements[0]._id.toString(), 
+        "ANonExistentClass",
+        true, 
+        //@ts-ignore
+        req
+      )
+
+      expect(result).toBeDefined();
+      expect(result.success).toEqual(false);
+      expect(result.data).toBeNull();
+      expect(result.error).toBeDefined()
+      expect(result.error?.code).toEqual(404);
+      expect(result.error?.msg).toEqual("Specified class does not exist");
+    })
+
+    it('should throw an error when the admin is not assigned to the class', async () => {
+
+      const req = { user: adminUser }
+
+      const result = await controller.publishDraftedAnnouncement(
+        draftAnnouncements[0]._id.toString(), 
+        classes[1].code,
+        true, 
+        //@ts-ignore
+        req
+      )
+
+      expect(result).toBeDefined();
+      expect(result.success).toEqual(false);
+      expect(result.data).toBeNull();
+      expect(result.error).toBeDefined()
+      expect(result.error?.code).toEqual(403);
+      expect(result.error?.msg).toEqual("You are not permitted to perform this action");
+    })
+
   })
 
   afterAll(async () => {

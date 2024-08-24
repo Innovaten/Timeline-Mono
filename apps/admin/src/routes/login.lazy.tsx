@@ -116,22 +116,30 @@ function Login({ componentRef, multiPage }: PageProps){
         .then(res => {
                 if(res.data.success){
                         const token = res.data.data.access_token;
-                        setToken(token);
-                    
                         const loginUser = res.data.data.user;
-                        setUser(loginUser);
+                        
 
                         // Automatically send OTP
                         makeUnauthenticatedRequest(
                             "get",
-                            `/api/v1/auth/otp/send?email=${encodeURIComponent(loginUser.email)}&via=phone`
+                            `/api/v1/auth/otp/send?email=${encodeURIComponent(loginUser.email)}`
                         )
                         .then(res => {
                             if(res.data.success){
-                                multiPage.goTo('twoFA')
+
+                                if(loginUser.meta.isPasswordSet){
+                                    multiPage.goTo('twoFA')
+                                    setToken(token);
+                                    setUser(loginUser);
+                                    return
+                                }
+                                // User has not set their password
+                                sessionStorage.setItem('e', loginUser.email)
+                                multiPage.goTo('forgot-verification')
+
                             } else {
                                 if(res.data.error.msg){
-                                    toast.error(`res.data.error.msg`);
+                                    toast.error(`${res.data.error.msg}`);
                                 } else {
                                     toast.error("We encountered an issue while sending you an OTP. Please try again later");
                                 }
@@ -141,7 +149,7 @@ function Login({ componentRef, multiPage }: PageProps){
                                 toast.error(`${err}`)
                         })
                 } else {
-                        toast.error(res.data.error.msg)
+                        toast.error(`${res.data.error.msg}`)
                     }
                 })
         .catch( err => {
@@ -239,7 +247,8 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
               if(res.status == 200 && res.data.success){
                 _setUser(user);
                 _setToken(token!);
-                _setTokenExpiration(dayjs().add(3, 'hours').toISOString())
+                _setTokenExpiration(dayjs(user?.meta.tokenGeneratedAt).add(3, 'hours').toISOString())
+
                 context.user = user;
                 
                 toast.success("Verification successful!")
@@ -247,7 +256,7 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
                   to: "/"
                 })
             } else {
-                toast.error(res.data.error.msg)
+                toast.error(`${res.data.error.msg}`)
             }
         })
         .catch( err => {
@@ -471,7 +480,7 @@ function ForgotVerification({componentRef, multiPage}: PageProps){
 
       setOTPHasError(false)
 
-      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify?email=${encodeURI(email ?? "")}&otp=${OTP}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify?email=${encodeURIComponent(email ?? "")}&otp=${OTP}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('o', OTP);

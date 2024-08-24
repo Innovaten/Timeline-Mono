@@ -105,7 +105,7 @@ function Assignments(){
                                 return (
                                 <Link to={`/classes/${assignment.classCode}/assignments/${assignment.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                     <div className='flex items-center gap-4 truncate'>
-                                        <span className='flex-1 font-normal truncate'>{assignment.title}</span>
+                                        <span className='flex-1 font-normal truncate text-ellipsis'>{assignment.title}</span>
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
                                         <span className='w-[150px] hidden sm:flex justify-end truncate'>{(assignment.createdBy?.firstName ?? "N") + " " + (assignment.createdBy?.lastName ?? "A")}</span>

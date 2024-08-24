@@ -116,7 +116,6 @@ export function useCompletedModules(refreshFlag: boolean = true, userId: string)
 
     }, [refreshFlag])
 
-    console.log(completedModules)
     return { isLoading, completedModules }
     
 }

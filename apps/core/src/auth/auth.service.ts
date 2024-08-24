@@ -28,7 +28,7 @@ export class AuthService {
                 user: {
                     _id: user._id,
                     id: user.id,
-                    classes: user.classes,
+                    classes: user.classes?.map(c => ({ code: c.code, name: c.name, })) ?? [],
                     gender: user.gender,
                     email: user.email,
                     firstName: user.firstName,
@@ -37,6 +37,10 @@ export class AuthService {
                     role: user.role,
                     modeOfClass: user.modeOfClass,
                     completedLessons: user.completedLessons,
+                    meta: {
+                        isPasswordSet: user.meta.isPasswordSet,
+                        tokenGeneratedAt: new Date(),
+                    }
                 },
                 access_token: token,
             })

@@ -1,8 +1,13 @@
+import { IClassDoc } from "@repo/models"
 
 export type MinifiedUser = {
   _id: string,
   id: string,
-  classes: string[],
+  classes: Pick<IClassDoc, "code" | "name" >[],
+  meta: {
+    isPasswordSet: boolean,
+    tokenGeneratedAt: Date,
+  }
   gender: string,
   email: string,
   firstName: string,

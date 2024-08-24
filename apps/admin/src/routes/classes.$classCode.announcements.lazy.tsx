@@ -141,9 +141,9 @@ function Announcements({ }){
                             </div>
                             <div className='flex gap-4 items-center font-light'>
                                 <span className='w-[150px] hidden sm:flex justify-end'>STATUS</span>
-                                <span className='w-[150px] hidden sm:flex justify-end'>AUTHOR</span>
-                                <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
-                                <span className='w-[100px] flex justify-end'>ACTIONS</span>
+                                <span className='w-[170px] hidden sm:flex justify-end'>AUTHOR</span>
+                                <span className='w-[120px] hidden sm:flex justify-end'>DATE CREATED</span>
+                                <span className='w-[80px] flex justify-end'>ACTIONS</span>
                             </div>
                         </div>
                         {
@@ -160,7 +160,7 @@ function Announcements({ }){
                                 return (
                                 <Link to={`/classes/${classCode}/announcements/${announcement.code}`} key={idx} className = 'cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10'>
                                     <div className='flex items-center gap-4'>
-                                        <span className='flex-1 font-normal truncate'>{announcement.title}</span>
+                                        <span className='flex-1 font-normal truncate text-ellipsis'>{announcement.title}</span>
                                     </div>
                                     <div className='flex gap-4 items-center font-light'>
                                     <span className='w-[100px] flex items-center gap-2 justify-end'>
@@ -170,9 +170,9 @@ function Announcements({ }){
                                                 announcement.isDraft ? "bg-yellow-600 border-yellow-600" : "bg-green-600 border-green-600",
                                             )}></span>
                                         </span>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{announcement.createdBy.firstName + " " + announcement.createdBy.lastName}</span>
-                                        <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(announcement.createdAt).format("HH:mm - DD/MM/YY")}</span>
-                                        <span className='w-[150px] flex gap-2 justify-end'>
+                                        <span className='w-[170px] hidden sm:flex justify-end truncate text-ellipsis'>{announcement.createdBy.firstName + " " + announcement.createdBy.lastName}</span>
+                                        <span className='w-[120px] hidden sm:flex justify-end'>{dayjs(announcement.createdAt).format("HH:mm - DD/MM/YY")}</span>
+                                        <span className='w-[80px] flex gap-2 justify-end'>
                                             <Link to={`/classes/${classCode}/announcements/${announcement.code}/update`} className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150'>              
                                                 <PencilIcon className='w-4 h-4' />
                                             </Link>

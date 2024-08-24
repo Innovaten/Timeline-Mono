@@ -106,29 +106,50 @@ function Login({ componentRef, pages }: LoginProps){
       )
       .then(res => {
             if(res.data.success){
-
-              const token = res.data.data.access_token;
-              _setToken(token);
-              
               const user = res.data.data.user;
-              _setUser(user)
-              setUser(user);
+              const token = res.data.data.access_token;
 
-              _setTokenExpiration(dayjs().add(3, 'hours').toISOString())
+              if(user.meta.isPasswordSet){
+                _setToken(token);
+                _setUser(user)
+                setUser(user);
 
-              router.navigate({ 
-                ...( searchParams.destination == '' ?  {to: '/' } : { to: searchParams.destination })
-                })
-              toggleLoading()
+                _setTokenExpiration(dayjs(user.meta.tokenGeneratedAt).add(3, 'hours').toISOString())
+
+                router.navigate({ 
+                    ...( searchParams.destination == '' ?  {to: '/' } : { to: searchParams.destination })
+                    })
+                return
+              }
+              // User has not set their password
+
+              // Automatically send OTP
+              makeUnauthenticatedRequest(
+                "get",
+                `/api/v1/auth/otp/send?email=${encodeURIComponent(user.email)}`
+            )
+            .then(res => {
+                if(res.data.success){
+                    sessionStorage.setItem('e', user.email)
+                    fadeParentAndReplacePage(pages['parent'], pages['login'], pages['forgot-verification'], 'flex')
+
+                } else {
+                    toast.error(`${res.data.error.msg ?? "We encountered an issue while sending you an OTP. Please try again later"}`);
+                }
+            })
+            .catch( err => {
+                    toast.error(`${err.message ? err.message : err}`)
+            })
           } else {
               toast.error(`${res.data.error.msg}`)
-              toggleLoading()
           }
       })
       .catch( err => {
           toast.error(`${err}`)
-          toggleLoading()
-      })
+        })
+    .finally(() => {
+        resetLoading()
+    })
   }
 
   function handleReset(){

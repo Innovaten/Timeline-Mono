@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, ForbiddenException } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc, IModuleDoc, LessonModel, LessonSetModel } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc, IModuleDoc, LessonModel, LessonSetModel, IClassDoc } from "@repo/models";
 
 import { CreateUserDto, UpdatePasswordDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
@@ -19,7 +19,7 @@ export class UserService {
 
     async verifyPassword(email: string, password: string, extraFilter: Record<string, any> = {}) {
         const filter = { email, ...extraFilter, "meta.isDeleted": false}
-        const user = await UserModel.findOne(filter);
+        const user = await UserModel.findOne(filter).populate<{ classes?: IClassDoc[]}>("classes");
         if(!user) return null;
         const isSamePassword = await compare(password, user.auth.password)
         if(isSamePassword){
@@ -245,6 +245,7 @@ export class UserService {
             return ServerErrorResponse(new Error('OTP Has expired. Please try again later'), 400)
         }
 
+        user.meta.isPasswordSet = true
         user.auth.password = data.newPassword;
 
         user.auth.otp = undefined

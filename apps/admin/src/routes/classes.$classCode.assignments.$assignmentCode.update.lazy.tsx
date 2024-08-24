@@ -77,7 +77,7 @@ function UpdateAssignment(){
         endDate: string,
     }) {
         const changedValues: Partial<IAssignment> = {}
-        
+
         Object.keys(values).map((field) => {
             // @ts-ignore
             if(values[field] !== assignment[field]){
@@ -306,7 +306,7 @@ function UpdateAssignment(){
                                                                 return (
                                                                     <a className='flex max-w-[200px] justify-between gap-2 p-1 rounded-sm bg-blue-600/20' target='_blank' href={resource.link} key={idx}>
                                                                         <small className='truncate font-extralight'>{resource.title}</small>
-                                                                        <XMarkIcon className="w-3 flex-shrink-0 text-blue-700" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); filesHook.removeSpecificFile(resource.id)}} />
+                                                                        <XMarkIcon className="w-3 flex-shrink-0 text-blue-700" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); filesHook.removeSpecificFile(`${resource._id}` )}} />
                                                                     </a>
                                                                 )
                                                             })    

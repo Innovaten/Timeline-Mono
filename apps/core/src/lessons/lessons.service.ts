@@ -82,6 +82,7 @@ export class LessonsService {
     return await LessonModel.findOneAndUpdate({_id: id}, 
       {
         ...actualData,
+        $addToSet: {"following" : {"each" :actualData.resources ? { resources: actualData.resources.map(r => new Types.ObjectId(r))}: {}}},
         updatedAt: new Date(),
         updatedBy: new Types.ObjectId(`${user._id}`)
       }, 

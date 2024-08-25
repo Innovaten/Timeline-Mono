@@ -3,6 +3,7 @@ import { classModuleCount, useClass } from '../../../hooks';
 import _ from 'lodash'
 import { AcademicCapIcon, PencilSquareIcon, MegaphoneIcon, NewspaperIcon, BookOpenIcon } from '@heroicons/react/24/outline'
 import { StatCard } from '@repo/ui';
+import { useAnnouncementsCount } from '../../../hooks/announcements.hooks';
 
 export const Route = createLazyFileRoute('/classes/$classCode/')({
   component: () => <ClassDetails />
@@ -19,7 +20,8 @@ function ClassDetails(){
     } 
 
   const { thisClass, isLoading: classIsLoading } = useClass(true, classCode, false)
-  const {count} = classModuleCount(classCode)
+  const {count: modulesCount} = classModuleCount(classCode)
+  const {count: announcementsCount} = useAnnouncementsCount(classCode)
 
   const stats = [
     // {
@@ -29,12 +31,12 @@ function ClassDetails(){
     // },
     {
       label: 'Modules',
-      value: count,
+      value: modulesCount,
       icon: AcademicCapIcon,
     },
     {
       label: 'Announcements',
-      value: thisClass?.announcementSet?.announcements?.length ?? 0,
+      value: announcementsCount,
       icon: MegaphoneIcon,
     },
     {

@@ -55,13 +55,13 @@ function UpdateModule(){
                 ...changedValues,
                 classCode: classCode,
                 authToken: _getToken(),
-                resource: filesHook.files.map(f => f._id)
+                resources: filesHook.files.map(f => f._id)
             },
             {},
             {
                 onStart: toggleLoading,
                 onSuccess: (data)=>{ 
-                    toast.success("Module created successfully")
+                    toast.success("Module updated successfully")
                     navigate({
                         to: `/classes/${classCode}/modules`
                     })
@@ -103,30 +103,30 @@ function UpdateModule(){
                                             <Input name='title'  label='Title' hasValidation />
                                         </Form> 
                                     </div>
-                                    <div className='flex-1 w-full sm:w-fit flex-shrink-0 flex gap-2 flex-row-reverse justify-between items-center'>
-                                 
-                                        <div className='flex flex-shrink-0 gap-2 overflow-x-auto'>
-                                        { filesHook.files.map((resource, idx) => {
-                                                return (
-                                                    <a className='flex max-w-[200px] justify-between gap-2 p-1 rounded-sm bg-blue-600/20' target='_blank' href={resource.link} key={idx}>
-                                                        <small className='truncate font-extralight'>{resource.title}</small>
-                                                        <XMarkIcon className="w-3 flex-shrink-0 text-blue-700" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); filesHook.removeSpecificFile(resource.id)}} />
-                                                    </a>
-                                                )
-                                            })    
-                                        }
-                                        { filesHook.files.length == 0 && 
-                                                <p className='text-blue-700'>No resources uploaded</p>
-                                        }
-                                        </div>
-
-                                    </div>
-                                    <div className='w-full sm:w-fit shrink-0 flex flex-col sm:flex-row gap-2 self-end -mt-12'>
-                                        <div className='flex-shrink-0'>
-                                            <FileUploader buttonVariant='outline' filesHook={filesHook} />
-                                        </div>
-                                        <Button className='!w-[130px]' isDisabled={!form.isValid} isLoading={isLoading} onClick={form.submitForm}>Save</Button>
-                                </div>
+                                  <div className='flex flex-col sm:flex-row h-28 sm:h-16 flex-shrink-0 justify-end items-center w-full gap-2'>
+                                                <div className='flex-1 w-full sm:w-fit flex-shrink-0 flex gap-2 flex-row-reverse justify-between items-center'>
+                                                        <div className='flex-shrink-0'>
+                                                            <FileUploader buttonVariant='outline' filesHook={filesHook} />
+                                                        </div>
+                                                        <div className='flex flex-shrink-0 gap-2 overflow-x-auto'>
+                                                        { filesHook.files.map((resource, idx) => {
+                                                                return (
+                                                                    <a className='flex max-w-[200px] justify-between gap-2 p-1 rounded-sm bg-blue-600/20' target='_blank' href={resource.link} key={idx}>
+                                                                        <small className='truncate font-extralight'>{resource.title}</small>
+                                                                        <XMarkIcon className="w-3 flex-shrink-0 text-blue-700" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); filesHook.removeSpecificFile(`${resource._id}`)}} />
+                                                                    </a>
+                                                                )
+                                                            })    
+                                                        }
+                                                        { filesHook.files.length == 0 && 
+                                                                <p className='text-blue-700'>No resources uploaded</p>
+                                                        }
+                                                        </div>
+                                                </div>
+                                                <Button className='w-full sm:!w-[130px] flex-shrink-0' 
+                                                    isDisabled={!form.isValid} isLoading={isLoading} onClick={form.submitForm}
+                                                >Save</Button>
+                                            </div>
                                 </div>
                                 
                                 <div className={` ${moduleIsLoading ? "flex" : "hidden" }`}>
@@ -136,6 +136,8 @@ function UpdateModule(){
                                         ></div>
                                     </div>
                                 </div>
+
+                                
                             </>
                         )
                     }}

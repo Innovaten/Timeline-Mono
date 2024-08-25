@@ -10,9 +10,9 @@ export function useFileUploader(){
         setFiles(prev => [...prev, file])
     }
 
-    function removeSpecificFile(id: string){
+    function removeSpecificFile(_id: string){
         setFiles(prev => {
-            return prev.filter(f => f.id != id);
+            return prev.filter(f => f._id != _id);
         })
     }
 

@@ -48,7 +48,7 @@ export class ClassesService {
         const results = await ClassModel.find(filter)
         .limit(limit ?? 10)
         .skip(offset ?? 0)
-        .sort({ updatedAt: -1})
+        .sort({ createdAt: -1})
         return results;
     }
 
@@ -66,7 +66,7 @@ export class ClassesService {
         const anmtSetPrefix = "ASET";
 
         const newAnnouncementSet = new AnnouncementSetModel({
-            code: await generateCode(await AnnouncementSetModel.countDocuments(), anmtSetPrefix),
+            code: await generateCode(await AnnouncementSetModel.countDocuments({ code: { $regex: /ASET/ }}), anmtSetPrefix),
             totalAnnouncements: 0,
             announcements: [],
 
@@ -77,14 +77,14 @@ export class ClassesService {
         })
         
         const newAssignmentSet = new AssignmentSetModel({
-            code: await generateCode((await AssignmentSetModel.countDocuments()), "ASSET"),
+            code: await generateCode((await AssignmentSetModel.countDocuments({ code: { $regex: /ASSET/ }})), "ASSET"),
             assignments: [],
             createdBy: new Types.ObjectId(creator),
             updatedBy: new Types.ObjectId(creator), 
         })
         
         const newClass = new ClassModel({
-            code: await generateCode(await ClassModel.countDocuments(), "CLS"),
+            code: await generateCode(await ClassModel.countDocuments({ code: { $regex: /CLS/ }}), "CLS"),
             ...actualData,
             status: "Active",
             administrators: [],
@@ -137,7 +137,7 @@ export class ClassesService {
             throw new Error("Specified class not found")
         }
 
-        if(classDoc.administrators.includes(adminDoc.id)){
+        if(classDoc.administrators.map(a => a.toString()).includes(`${adminDoc._id}`)){
             throw new Error("Specified admin has already been assigned to this class")
         }
         classDoc.administrators.push(new Types.ObjectId(`${adminDoc._id}`))
@@ -150,6 +150,108 @@ export class ClassesService {
 
         await classDoc.save()
         await adminDoc.save()
+
+        return classDoc
+    }
+
+    async removeAdministrator(classSpecifier: string, classIsId: boolean, adminSpecifier: string, adminIsId: boolean, updator: IUserDoc) {
+       
+        const classFilter = classIsId ? {_id: new Types.ObjectId(classSpecifier)} : { code: classSpecifier}
+        const adminFilter = adminIsId ? {_id: new Types.ObjectId(adminSpecifier)} : { code: adminSpecifier}
+
+        const classDoc = await ClassModel.findOne(classFilter);
+        const adminDoc = await UserModel.findOne(adminFilter);
+
+        if(!adminDoc){
+            throw new NotFoundException("Specified administrator could not be found")
+        }
+
+        if (!classDoc) {
+            throw new NotFoundException("Specified class not found")
+        }
+
+        if(!classDoc.administrators.map( a => a.toString()).includes(`${adminDoc.id}`)){
+            throw new BadRequestException("Specified admin is not assigned to this class")
+        }
+
+        classDoc.administrators = classDoc.administrators.filter( a => a.toString() !== `${adminDoc._id}`)
+        adminDoc.classes = adminDoc.classes.filter(c => c.toString() !== `${classDoc._id}`)
+
+
+        classDoc.updatedAt = new Date();
+        classDoc.updatedBy = new Types.ObjectId(`${updator._id}`)
+        adminDoc.updatedAt = new Date();
+
+        await classDoc.save()
+        await adminDoc.save()
+
+        return classDoc
+    }
+
+    async addStudent(classSpecifier: string, classIsId: boolean, studentSpecifier: string, studentIsId: boolean, updator: IUserDoc) {
+       
+        console.log(classIsId, studentIsId)
+
+        const classFilter = classIsId ? {_id: new Types.ObjectId(classSpecifier)} : { code: classSpecifier}
+        const studentFilter = studentIsId ? {_id: new Types.ObjectId(studentSpecifier)} : { code: studentSpecifier}
+
+        const classDoc = await ClassModel.findOne(classFilter);
+        const studentDoc = await UserModel.findOne(studentFilter);
+
+        if(!studentDoc){
+            throw new Error("Specified student could not be found")
+        }
+
+        if (!classDoc) {
+            throw new Error("Specified class not found")
+        }
+
+        if(classDoc.students.map(s => s.toString()).includes(`${studentDoc.id}`)){
+            throw new Error("Specified student has already been assigned to this class")
+        }
+        classDoc.students.push(new Types.ObjectId(`${studentDoc._id}`))
+        studentDoc.classes.push(new Types.ObjectId(`${classDoc._id}`));
+
+
+        classDoc.updatedAt = new Date();
+        classDoc.updatedBy = new Types.ObjectId(`${updator._id}`)
+        studentDoc.updatedAt = new Date();
+
+        await classDoc.save()
+        await studentDoc.save()
+
+        return classDoc
+    }
+
+    async removeStudent(classSpecifier: string, classIsId: boolean, studentSpecifier: string, studentIsId: boolean, updator: IUserDoc) {
+       
+        const classFilter = classIsId ? {_id: new Types.ObjectId(classSpecifier)} : { code: classSpecifier}
+        const studentFilter = studentIsId ? {_id: new Types.ObjectId(studentSpecifier)} : { code: studentSpecifier}
+
+        const classDoc = await ClassModel.findOne(classFilter);
+        const studentDoc = await UserModel.findOne(studentFilter);
+
+        if(!studentDoc){
+            throw new NotFoundException("Specified student could not be found")
+        }
+
+        if (!classDoc) {
+            throw new NotFoundException("Specified class not found")
+        }
+
+        if(!classDoc.students.map(s => s.toString()).includes(`${studentDoc._id}`)){
+            throw new BadRequestException("Specified student is not assigned to this class")
+        }
+
+        classDoc.students = classDoc.students.filter(s => s.toString() !== `${studentDoc._id}`)
+        studentDoc.classes = studentDoc.classes.filter(c => c.toString() !== `${classDoc._id}`)
+
+        classDoc.updatedAt = new Date();
+        classDoc.updatedBy = new Types.ObjectId(`${updator._id}`)
+        studentDoc.updatedAt = new Date();
+
+        await classDoc.save()
+        await studentDoc.save()
 
         return classDoc
     }
@@ -187,7 +289,9 @@ export class ClassesService {
         const announcements = await AnnouncementModel.find({ 
             class: classDoc._id,
             "meta.isDeleted": false,
-        }).populate("createdBy updatedBy");
+        })
+        .sort({ createdAt: -1})
+        .populate("createdBy updatedBy");
 
         return announcements;
     }
@@ -267,7 +371,7 @@ export class ClassesService {
             throw new ForbiddenException("You are not allowed to perform this action")
         }
         const newAssignment = new AssignmentModel({
-            code: await generateCode( (await AssignmentModel.countDocuments()), "ASMNT", 8),
+            code: await generateCode( (await AssignmentModel.countDocuments({ code: { $regex: /ASMNT/ }})), "ASMNT", 8),
             
             title: assignmentData.title,
             instructions: assignmentData.instructions,

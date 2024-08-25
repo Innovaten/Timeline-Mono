@@ -24,7 +24,7 @@ export class LessonsService {
     }
 
     const newLesson = new LessonModel({
-      code: await generateCode( await LessonModel.countDocuments(), "LSN"),
+      code: await generateCode( await LessonModel.countDocuments({ code: { $regex: /LSN/ }}), "LSN"),
       title: createLessonDto.title,
       content: createLessonDto.content,
       resources: createLessonDto.resources.map( r => new Types.ObjectId(r)),
@@ -82,6 +82,7 @@ export class LessonsService {
     return await LessonModel.findOneAndUpdate({_id: id}, 
       {
         ...actualData,
+        $addToSet: {"following" : {"each" :actualData.resources ? { resources: actualData.resources.map(r => new Types.ObjectId(r))}: {}}},
         updatedAt: new Date(),
         updatedBy: new Types.ObjectId(`${user._id}`)
       }, 

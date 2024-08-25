@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, ForbiddenException } from "@nestjs/common";
 import { compare } from "bcrypt";
-import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc, IModuleDoc, LessonModel, LessonSetModel } from "@repo/models";
+import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc, IModuleDoc, LessonModel, LessonSetModel, IClassDoc } from "@repo/models";
 
-import { CreateUserDto, UpdateUserDto } from "../../user/user.dto";
+import { CreateUserDto, UpdatePasswordDto, UpdateUserDto } from "../../user/user.dto";
 import { Types } from "mongoose";
 import { Roles } from "../enums/roles.enum";
 import { KafkaService } from "./kafka.service";
@@ -19,7 +19,7 @@ export class UserService {
 
     async verifyPassword(email: string, password: string, extraFilter: Record<string, any> = {}) {
         const filter = { email, ...extraFilter, "meta.isDeleted": false}
-        const user = await UserModel.findOne(filter);
+        const user = await UserModel.findOne(filter).populate<{ classes?: IClassDoc[]}>("classes");
         if(!user) return null;
         const isSamePassword = await compare(password, user.auth.password)
         if(isSamePassword){
@@ -169,13 +169,13 @@ export class UserService {
         const randomPassword = generateSecurePassword()
 
         const user = new UserModel({
-            code: await generateCode(await UserModel.countDocuments(), "STU"),
+            code: await generateCode(await UserModel.countDocuments({ code: { $regex: /STU/ }}), "STU"),
             role: Roles.STUDENT,
             firstName: userData.firstName,
             otherNames: userData.otherNames,
             lastName: userData.lastName,
             email: userData.email,
-            phone: `+${validPhoneNumber(userData.phone)}`,
+            phone: `${validPhoneNumber(userData.phone)}`,
             gender: userData.gender,
             
             meta: {
@@ -230,25 +230,30 @@ export class UserService {
     }
 
     
-    async updatePassword (id: string, password: string, otp: string) {
-        const user = await this.getUserById(id)
+    async updatePassword (data: UpdatePasswordDto) {
+        const user = await UserModel.findOne({ email: data.email })
+
         if (!user) {
             return ServerErrorResponse(new Error('User could not be found'), 404)
         }
 
-        if (otp !== user.auth?.otp) {
+        if (data.otp !== user.auth?.otp) {
             return ServerErrorResponse(new Error('Invalid OTP'), 400)
         }
 
+        if((new Date(user.auth.otpLastSentAt ?? "").getTime() - new Date().getTime()) > 5 * 1000 * 60) {
+            return ServerErrorResponse(new Error('OTP Has expired. Please try again later'), 400)
+        }
 
-
-        user.auth.password = password;
-
+        user.meta.isPasswordSet = true
+        user.auth.password = data.newPassword;
 
         user.auth.otp = undefined
         user.auth.otpLastSentAt = undefined
         user.auth.otp_expiry = undefined
         await user.save()
+
+        console.log("Updated password for user", user.code)
 
         return ServerSuccessResponse({ message: 'Password updated successfully' })
 

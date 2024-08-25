@@ -44,7 +44,7 @@ export class ModulesService {
   })
 
     const newModule = new ModuleModel({
-      code: await generateCode(await ModuleModel.countDocuments(), "MDL"),
+      code: await generateCode(await ModuleModel.countDocuments({ code: { $regex: /MDL/ }}), "MDL"),
       title: moduleData.title,
       lessonSet: newLessonSet.id,
     
@@ -80,7 +80,7 @@ export class ModulesService {
       id,
       {
         ...actualData,
-        ...(actualData.resources ? { resources: actualData.resources.map(r => new Types.ObjectId(r))}: {}),
+        $addToSet: {"following" : {"each" :actualData.resources ? { resources: actualData.resources.map(r => new Types.ObjectId(r))}: {}}},
         updatedBy: new Types.ObjectId(updater),
         updatedAt: new Date(),
       }, 

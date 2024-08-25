@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { IUserDoc, UserModel } from "@repo/models";
+import { IClassDoc, IUserDoc, UserModel } from "@repo/models";
 import { sign, verify } from 'jsonwebtoken'
 import { CoreConfig } from "../../config";
+import { Types } from "mongoose";
 
 
 @Injectable()
@@ -16,7 +17,7 @@ export class JwtService {
         }
     }
 
-    signToken(userDoc: IUserDoc){
+    signToken(userDoc: Omit<IUserDoc, "classes" > & { classes?: IClassDoc[] } ){
         const payload = { username: userDoc.email, sub: userDoc._id }
         return sign(payload, CoreConfig.secrets.core, { expiresIn: '3h'})
     }

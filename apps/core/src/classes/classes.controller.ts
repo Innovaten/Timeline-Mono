@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
 import { ClassModel, IAnnouncementSetDoc, IClassDoc, IUserDoc, } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
@@ -84,10 +84,10 @@ export class ClassesController {
             console.log("Created class", newClass.code);
             return ServerSuccessResponse(newClass);
 
-        } catch(err) {
+        } catch(err: any) {
             return ServerErrorResponse(
-                new Error(`${err}`),
-                500
+                new Error(`${err.message ? err.message : err}`),
+                err.status ?? 500
             )
         }
 
@@ -126,6 +126,105 @@ export class ClassesController {
             return ServerErrorResponse(
                 new Error(`${err}`),
                 500
+            );
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Patch(':classSpecifier/remove-administrator/:adminSpecifier')
+    async removeAdministrator(
+        @Param('classSpecifier') classSpecifier: string,
+        @Param('adminSpecifier') adminSpecifier: string,
+        @Query('classIsId') classIsId: string = "true",
+        @Query('adminIsId') adminIsId: string = "true",
+        @Request() req: any
+    ) {
+        
+        try {
+            const user = req["user"];
+            
+            if (!user) {
+                throw new UnauthorizedException("Unauthenticated Request")
+            }
+    
+            if (user.role !== 'SUDO') {
+                throw new ForbiddenException("You are not authorized to perform this action")
+            }
+
+            const updatedClass = await this.service.removeAdministrator(classSpecifier, classIsId === "true", adminSpecifier, adminIsId === "true", user);
+            console.log("Removed administrator", adminSpecifier, "from class", classSpecifier);
+            return ServerSuccessResponse(updatedClass);
+
+        } catch (err: any) {
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                err.status ?? 500
+            );
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Patch(':classSpecifier/add-student/:studentSpecifier')
+    async addStudent(
+        @Param('classSpecifier') classSpecifier: string,
+        @Param('studentSpecifier') studentSpecifier: string,
+        @Query('classIsId') classIsId: string = "true",
+        @Query('studentIsId') studentIsId: string = "true",
+        @Request() req: any
+    ) {
+        
+        try {
+            const user = req["user"];
+            
+            if (!user) {
+                throw new UnauthorizedException("Unauthenticated Request")
+            }
+    
+            if (user.role !== 'SUDO') {
+                throw new ForbiddenException("You are not authorized to perform this action")
+            }
+
+            const updatedClass = await this.service.addStudent(classSpecifier, classIsId === "true", studentSpecifier, studentIsId === "true", user);
+            console.log("Added student", studentSpecifier, "to class", classSpecifier);
+            return ServerSuccessResponse(updatedClass);
+
+        } catch (err: any) {
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                err.status ?? 500
+            );
+        }
+    }
+
+    @UseGuards(AuthGuard)
+    @Patch(':classSpecifier/remove-student/:studentSpecifier')
+    async removeStudent(
+        @Param('classSpecifier') classSpecifier: string,
+        @Param('studentSpecifier') studentSpecifier: string,
+        @Query('classIsId') classIsId: string = "true",
+        @Query('studentIsId') studentIsId: string = "true",
+        @Request() req: any
+    ) {
+        
+        try {
+            const user = req["user"];
+            
+            if (!user) {
+                throw new UnauthorizedException("Unauthenticated Request")
+            }
+    
+            if (user.role !== 'SUDO') {
+                throw new ForbiddenException("You are not authorized to perform this action")
+            }
+
+            const updatedClass = await this.service.removeStudent(classSpecifier, classIsId === "true", studentSpecifier, studentIsId === "true", user);
+            console.log("Removed student", studentSpecifier, "from class", classSpecifier);
+            return ServerSuccessResponse(updatedClass);
+
+        } catch (err: any) {
+            return ServerErrorResponse(
+                new Error(`${err.message ? err.message : err}`),
+                err.status ?? 500
             );
         }
     }

@@ -1,10 +1,11 @@
 import { AdjustmentsVerticalIcon, CalendarIcon, PaperClipIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
-import { BookOpenIcon, MegaphoneIcon, InformationCircleIcon, NewspaperIcon, BuildingLibraryIcon, ComputerDesktopIcon, UserGroupIcon, FolderIcon, HomeIcon, UsersIcon, PowerIcon, Bars2Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { BookOpenIcon, MegaphoneIcon, ChevronDownIcon, InformationCircleIcon, NewspaperIcon, BuildingLibraryIcon, ComputerDesktopIcon, UserGroupIcon, FolderIcon, HomeIcon, UsersIcon, PowerIcon, Bars2Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 import { useLMSContext } from "../app";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { _clearTokens } from "@repo/utils";
 import { useMobileNavigation } from "@repo/utils";
+import { useState } from "react";
 
 export default function SidebarComponent(){
     const user = useLMSContext((state) => state.user);
@@ -111,6 +112,15 @@ export default function SidebarComponent(){
                             }
                         </div>
                     </div>
+                    { 
+                    ["ADMIN"].includes(userRole) &&
+                        <div className="mt-4">
+                            <small className="text-blue-600">CLASSES</small>
+                            <div className="mt-2 flex flex-col gap-2">
+                                {user?.classes.map(({name, code}, index) => <ClassTab index={index} code={code} name={name} />)}
+                            </div>
+                        </div>
+                    }
                 </div>
                 <div className="flex flex-col gap-2 pt-2">
                     <div className="flex flex-col sm:flex-row gap-2">
@@ -141,6 +151,64 @@ export default function SidebarComponent(){
 }
 
 function routePathIsEqual(path: string){
-    const pathName = useRouterState().location.pathname
-    return path.substring(1) == "" ? pathName === path : pathName.substring(1).startsWith(path.substring(1));
+    return useRouterState().location.pathname == path;
+}
+
+function ClassTab({ index, name, code }: { index: number, name: string, code: string}){
+        
+    const classesTabs = [
+        {
+            title: "Modules",
+            path: "modules",
+            icon: BookOpenIcon,    
+        },
+        {
+            title: "Announcements",
+            path: "/announcements",
+            icon: MegaphoneIcon,
+        },
+        {
+            title: "Assignments",
+            path: "assignments",
+            icon: PaperClipIcon,    
+        },
+        {
+            title: "Quizzes",
+            path: "quizzes",
+            icon: PencilSquareIcon,    
+        },
+        // {
+        //     title: "Settings",
+        //     path: "settings",
+        //     icon: AdjustmentsVerticalIcon,
+        // },
+    ]
+                                        
+    const [tabIsOpen, setTabIsOpen] = useState(false)
+
+    return (
+        <div className="group duration-150" key={index}>
+            <Link to={`/classes/${code}`} 
+                className={`flex gap-4 items-center ${ routePathIsEqual(`/classes/${code}`) ? 'bg-blue-700 text-white hover:bg-blue-600' : 'bg-white hover:bg-blue-400/10 text-blue-600' } duration-150 pl-4 py-4 rounded shadow-sm`}>
+                <BookOpenIcon className="w-5 shrink-0" />
+                <p className="flex-1 text-ellipsis truncate">{name}</p>
+                <span className="w-7 pr-4 grid items-center aspect-square shrink-0 text-blue-700 hover:bg-300/40 duration-150" onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); setTabIsOpen(prev => !prev)}}>
+                    <ChevronDownIcon className={`${ tabIsOpen ? "rotate-180" : "rotate-0"} w-4 shrink-0`} />
+                </span>
+            </Link>
+            <div className={`${tabIsOpen ? "h-fit" : "h-0"} rounded-b shadow-sm overflow-hidden bg-white/50 flex flex-col duration-150`}>
+                { classesTabs.map(({ title: title, path, icon }, idx) => {
+                    const TabIcon = icon;
+
+                    return (
+                        <Link to={`/classes/${code}/${path}`} key={idx} className={`flex pl-4 py-2 ${ routePathIsEqual(`/classes/${code}/${path}`) ? 'bg-blue-700 text-white border-b-[1px] border-bg-blue-600 hover:bg-blue-600' : 'bg-white border-b-[1px] border-b-blue-400/10 hover:bg-blue-400/10 text-blue-600' } duration-150 items-center gap-4 truncate`}>
+                            <TabIcon className="w-4" />
+                            {title}
+                        </Link>
+                    )
+                })}
+            </div>
+        </div>
+    )
+
 }

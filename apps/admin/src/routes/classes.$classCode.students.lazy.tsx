@@ -1,30 +1,37 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { Button, DialogContainer, Input, SelectInput } from '@repo/ui'
-import { _getToken, makeAuthenticatedRequest, useDialog, useLoading, useToggleManager, validPhoneNumber } from '@repo/utils';
-import { FunnelIcon, ArrowPathIcon, PencilIcon } from '@heroicons/react/24/outline'
-import { useStudents } from '../hooks/students.hook';
+import { _getToken, abstractAuthenticatedRequest, makeAuthenticatedRequest, useDialog, useLoading, useToggleManager, validPhoneNumber } from '@repo/utils';
+import { FunnelIcon, ArrowPathIcon, PencilIcon, UserMinusIcon } from '@heroicons/react/24/outline'
+import { useClass, useStudents, useStudentsInClass } from '../hooks';
 import { useCompositeFilterFlag, useSpecificEntity } from '../hooks';
 import { IUserDoc } from '@repo/models';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner'
 import { Formik, Form } from 'formik'
 import * as yup from 'yup'
 import dayjs from 'dayjs';
 import { IClassDoc } from '@repo/models';
+import { useLMSContext } from '../app';
 
-export const Route = createLazyFileRoute('/students')({
-  component: Students
+export const Route = createLazyFileRoute('/classes/$classCode/students')({
+  component: ClassStudents
 })
 
 
+function ClassStudents(){
 
-
-function Students(){
+  const { user } = useLMSContext()
+  const { classCode } = Route.useParams()
 
   const initialToggles = {
       'update-is-loading': false,
       'update-dialog': false,
       'view-dialog': false,
+      'remove-dialog': false,
+      'remove-is-loading': false,
+
+      'add-dialog': false,
+      'add-is-loading': false,
       
       'filter-is-shown': false,
       'refresh': false,
@@ -36,10 +43,10 @@ function Students(){
 
   const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ toggleManager.get('refresh') ])
 
-  const { students, count: studentsCount, isLoading: studentsIsLoading } = useStudents(compositeFilterFlag);
+  const { thisClass, isLoading: classIsLoading } = useClass(compositeFilterFlag, classCode, false)
+  const { students, isLoading: studentsIsLoading } = useStudentsInClass(compositeFilterFlag, classCode, false);
 
-  const { entity: selectedStudent, setSelected, resetSelected } = useSpecificEntity<Omit<Partial<IUserDoc>, "classes"> & { classes: IClassDoc[] }>()
-  
+  const { entity: selectedStudent, setSelected, resetSelected } = useSpecificEntity<Omit<Partial<IUserDoc>, "classes"> & { classes?: IClassDoc[] }>()
   
   function UpdateDialog(){
     
@@ -237,17 +244,151 @@ function Students(){
 
   }
 
+  function AddStudentDialog(){
+        
+    const { entity: selectedStudent, setSelected: setSelectedStudent, resetSelected: resetSelectedStudent } = useSpecificEntity<IUserDoc | null>(); 
+
+    const { students, isLoading: studentsIsLoading } = useStudents(classIsLoading, {}, 1000, 0)
+
+
+    function handleAddStudent(){
+
+        if(!selectedStudent) {
+            toast.error("Kindly select a student")
+            return
+        }
+
+
+        abstractAuthenticatedRequest(
+            "patch",
+            `/api/v1/classes/${classCode}/add-student/${selectedStudent.code}?classIsId=false&studentIsId=false`,
+            {},
+            {},
+            {
+                onStart: ()=>{toggleManager.toggle('add-is-loading')},
+                onSuccess: (data) => {
+                    toast.success("Student added successfully");
+                    manuallyToggleCompositeFilterFlag();
+                    toggleManager.toggle('add-dialog');
+                    toggleManager.toggle('refresh')
+                },
+                onFailure: (err) => {toast.error(`${err.msg}`)},
+                finally: () => {toggleManager.reset('add-is-loading')}
+            }
+        )
+    }
+
+    const filteredStudents = students.filter(s => !s.classes.map(c => `${c._id}`).includes(`${thisClass?._id}`))
+
+    return (
+        <>
+            <DialogContainer
+            title='Add Student'
+            description={`Kindly select the student you want to add to class ${thisClass?.name}`}
+            isOpen={toggleManager.get('add-dialog')}
+            toggleOpen={()=>{ toggleManager.toggle('add-dialog') }}
+        >
+            <div className='flex flex-col gap-2'>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-h-48 overflow-y-auto">
+                    {
+                        studentsIsLoading && 
+                        <div className='col-span-1 sm:col-span-2 flex p-4 items-center justify-center'>
+                            <span className='w-4 h-4 rounded-full border-[1.5px] border-t-blue-600 animate-spin'></span>
+                        </div>
+                    }
+                    {
+                        !studentsIsLoading && filteredStudents.map((student, idx) => (<>
+                            <div
+                                key={idx} onClick={()=>{
+                                    // @ts-ignore
+                                    setSelectedStudent(student)
+                                }}
+                            className={`flex gap-2 items-center rounded p-2 hover:bg-blue-100/40 hover:border-blue-100 cursor-pointer duration-150 border-2 ${ 
+                                // @ts-ignore
+                                selectedStudent == student ? "border-blue-700/40" : "border-transparent"}`}  >
+                                <div className='rounded-full flex-shrink-0 aspect-square h-full bg-blue-100 text-blue-700 font-light grid place-items-center'>{student.firstName[0]+student.lastName[0]}</div>
+                                <div className='flex flex-col'>
+                                    <p>{student.firstName} {student.lastName}</p>
+                                    <small>{student.email}</small>
+                                </div>
+                            </div>
+                        </>
+                        ))
+                    }
+                </div>
+                <div className='flex w-full justify-end gap-4 mt-4'>
+                    <Button className='!h-[35px] px-2' 
+                        variant='neutral' 
+                        onClick={()=> { 
+                            toggleManager.reset('add-dialog'); 
+                            resetSelectedStudent()
+                        }}
+                    >Close</Button>
+                    <Button className='!h-[35px] px-2'  
+                        isLoading={toggleManager.get('add-is-loading')} 
+                        onClick={handleAddStudent}
+                    >Add Student</Button>
+                </div>
+            </div>
+        </DialogContainer>
+        </>
+    )
+  }
+
+  function RemoveDialog(){
+
+    if(!selectedStudent) return
+
+    function handleRemoveStudent(){
+    
+      abstractAuthenticatedRequest(
+        "patch",
+        `/api/v1/classes/${classCode}/remove-student/${selectedStudent?.code}?classIsId=false&studentIsId=false`,
+        {}, {},
+        {
+          onStart: ()=> { toggleManager.toggle('remove-is-loading')},
+          onSuccess: () => {toast.success("Student removed successfully"), toggleManager.reset('remove-dialog'); toggleManager.toggle('refresh')},
+          onFailure: (err) => { toast.error(`${err.msg}`)},
+          finally: () => { toggleManager.reset('remove-is-loading')}
+        }
+      )
+    }
+
+    return (
+      <>
+        <DialogContainer
+          title='Remove Student'
+          description={`Are you sure you want to remove the ${selectedStudent.firstName} ${selectedStudent.lastName} from this class?`}
+          isOpen={toggleManager.get('remove-dialog')}
+          toggleOpen={()=>{toggleManager.toggle('remove-dialog')}}
+        >
+            <div className='flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-4 mt-8'>
+                <Button variant='neutral' isDisabled={toggleManager.get('remove-is-loading')} onClick={()=> { toggleManager.toggle('remove-dialog'); resetSelected() }}>Close</Button>
+                <Button variant='danger' isLoading={toggleManager.get('remove-is-loading')} onClick={handleRemoveStudent}>Remove Student</Button>
+            </div>
+        </DialogContainer>
+      </>
+    )
+
+  }
 
 
   return (
     <>
-      {toggleManager.get("update-dialog") && <UpdateDialog />}
+      {toggleManager.get("update-dialog") && user?.role === "SUDO"  && <UpdateDialog />}
+      {toggleManager.get("add-dialog") && user?.role === "SUDO"  && <AddStudentDialog />}
+      {toggleManager.get("remove-dialog") && user?.role === "SUDO"  && <RemoveDialog />}
       {toggleManager.get('view-dialog') && <ViewDialog />}
       <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
         <div className='flex justify-between mt-2 gap-2 items-center'>
           <h3 className='text-blue-800'>Students</h3>     
           <div className='flex gap-3'>
               <div  className='w-full flex flex-wrap gap-3'>
+                  { user?.role == "SUDO" &&
+                    <Button
+                      onClick={()=>{toggleManager.toggle('add-dialog')}}
+                    >Add New Student</Button>
+                  }
                   <div className='flex flex-col gap-2 justify-end'>
                     <Button className='!h-[35px] px-2' variant='outline' onClick={() => {toggleManager.toggle('refresh') }}> <ArrowPathIcon className='w-4' /> </Button>
                   </div>
@@ -263,7 +404,7 @@ function Students(){
                   </div>
                   <div className='hidden sm:flex gap-4 items-center font-light'>
                       <span className='w-[150px] flex justify-end'>DATE CREATED</span>
-                      <span className='w-[70px] flex justify-end'>ACTIONS</span>
+                      <span className='w-[100px] flex justify-end'>ACTIONS</span>
                   </div>
                 </div>
                 {
@@ -292,15 +433,28 @@ function Students(){
                         <div className='hidden sm:flex gap-4 items-center font-light'>
                             <span className='w-[150px] flex justify-end'>{dayjs(student.updatedAt).format("HH:mm - DD/MM/YYYY")}</span>
                             <span className='w-[70px] flex justify-end'>
-                              <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { 
-                                  e.preventDefault(); 
-                                  e.stopPropagation();
-                                  // @ts-ignore
-                                  setSelected(student); 
-                                  toggleManager.toggle('update-dialog') }}
-                              >              
-                                <PencilIcon className='w-4 h-4' />
-                              </span>
+                              { user?.role == "SUDO" && 
+                                <>
+                                  <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { 
+                                      e.preventDefault(); 
+                                      e.stopPropagation();
+                                      // @ts-ignore
+                                      setSelected(student); 
+                                      toggleManager.toggle('update-dialog') }}
+                                  >              
+                                    <PencilIcon className='w-4 h-4' />
+                                  </span>
+                                  <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { 
+                                    e.preventDefault(); 
+                                    e.stopPropagation();
+                                    // @ts-ignore
+                                    setSelected(student); 
+                                    toggleManager.toggle('remove-dialog') }}
+                                  >              
+                                  <UserMinusIcon className='w-4 h-4' />
+                                </span>
+                              </>
+                            }
                             </span>
                         </div>
                     </div>
@@ -310,7 +464,7 @@ function Students(){
             </div>
         </div>
         <div className='flex justify-end text-blue-700 mt-2 pb-2'>
-            <p>Showing <span className='font-semibold'>{students.length}</span> of <span className='font-semibold'>{studentsCount}</span></p>
+            <p>Showing <span className='font-semibold'>{students.length}</span> of <span className='font-semibold'>{students.length}</span></p>
         </div>
       </div>
     </>

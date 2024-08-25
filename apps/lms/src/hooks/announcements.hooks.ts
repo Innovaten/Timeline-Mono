@@ -88,3 +88,29 @@ export function useAnnouncementsByClass(refreshFlag: boolean = true, specifier: 
     return { isLoading, announcements }
 
 }
+
+export function useAnnouncementsCount(classCode: string){
+    const [ isLoading, setPendingIsLoading ] = useState<boolean>(true);
+    const [ count, setCount ] = useState<number>(0);
+
+    useEffect(
+        () =>{
+            setPendingIsLoading(true);
+            makeAuthenticatedRequest(
+                "get",
+                `/api/v1/modules/${classCode}/count?filter=${JSON.stringify({})}`
+            )
+            .then( res => {
+                if(res.status == 200 && res.data.success){
+                    setCount(res.data.data);
+                } else {
+                    console.log(res.data.error.msg);
+                    toast.error(res.data.error.msg);
+                }
+                setPendingIsLoading(false);
+            })
+        }, []
+)
+
+    return { isLoading, count }
+}

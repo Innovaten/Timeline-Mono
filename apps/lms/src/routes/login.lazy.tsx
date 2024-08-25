@@ -106,29 +106,50 @@ function Login({ componentRef, pages }: LoginProps){
       )
       .then(res => {
             if(res.data.success){
-
-              const token = res.data.data.access_token;
-              _setToken(token);
-              
               const user = res.data.data.user;
-              _setUser(user)
-              setUser(user);
+              const token = res.data.data.access_token;
 
-              _setTokenExpiration(dayjs().add(3, 'hours').toISOString())
+              if(user.meta.isPasswordSet){
+                _setToken(token);
+                _setUser(user)
+                setUser(user);
 
-              router.navigate({ 
-                ...( searchParams.destination == '' ?  {to: '/' } : { to: searchParams.destination })
-                })
-              toggleLoading()
+                _setTokenExpiration(dayjs(user.meta.tokenGeneratedAt).add(3, 'hours').toISOString())
+
+                router.navigate({ 
+                    ...( searchParams.destination == '' ?  {to: '/' } : { to: searchParams.destination })
+                    })
+                return
+              }
+              // User has not set their password
+
+              // Automatically send OTP
+              makeUnauthenticatedRequest(
+                "get",
+                `/api/v1/auth/otp/send?email=${encodeURIComponent(user.email)}`
+            )
+            .then(res => {
+                if(res.data.success){
+                    sessionStorage.setItem('e', user.email)
+                    fadeParentAndReplacePage(pages['parent'], pages['login'], pages['forgot-verification'], 'flex')
+
+                } else {
+                    toast.error(`${res.data.error.msg ?? "We encountered an issue while sending you an OTP. Please try again later"}`);
+                }
+            })
+            .catch( err => {
+                    toast.error(`${err.message ? err.message : err}`)
+            })
           } else {
               toast.error(`${res.data.error.msg}`)
-              toggleLoading()
           }
       })
       .catch( err => {
           toast.error(`${err}`)
-          toggleLoading()
-      })
+        })
+    .finally(() => {
+        resetLoading()
+    })
   }
 
   function handleReset(){
@@ -175,7 +196,7 @@ function Login({ componentRef, pages }: LoginProps){
                       <Input id='p' name='password' type='password' iconType='password' label='Password' placeholder="********" hasValidation />
                       <div className='hidden sm:flex gap-1 justify-between w-full'>
                           <Link to='/register' className='text-blue-700 underline-offset-2 underline cursor-pointer' >Create an account</Link>
-                          <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['forgot'], 'flex') }}>Forgot your password?</p>
+                          <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['forgot'], 'flex') }}>Update Password</p>
                       </div>
                       <Button
                           variant='primary'
@@ -184,7 +205,7 @@ function Login({ componentRef, pages }: LoginProps){
                       >Login</Button>
                       <div className='sm:hidden flex items-center gap-1 justify-between w-full'>
                           <Link to='/register'  className='text-blue-700 underline-offset-2 underline cursor-pointer' >Register an account</Link>
-                          <p className='text-blue-700 underline-offset-2 text-right cursor-pointer underline' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['forgot'], 'flex') }}>Forgot your password?</p>
+                          <p className='text-blue-700 underline-offset-2 text-right cursor-pointer underline' onClick={() => { fadeParentAndReplacePage(pages['parent'], componentRef, pages['forgot'], 'flex') }}>Update Password</p>
                       </div>
                   </Form>
               </Formik>
@@ -206,9 +227,8 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
   const { isLoading, toggleLoading, resetLoading } = useLoading()
 
   function handleSubmit(values: { email: string }){
-      fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-verification'], 'flex')
-      
-      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send?email=${values.email}&via=email`)
+      toggleLoading()
+      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/send?email=${encodeURIComponent(values.email)}&via=email`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('e', values.email);
@@ -254,7 +274,7 @@ function ForgotPassword({ componentRef, pages }: ForgotProps){
               >
                   <Form className='flex flex-col gap-6'>
                       <div className=''>
-                          <h1 className='text-blue-950 mb-3'>Forgot Your Password?</h1>
+                          <h1 className='text-blue-950 mb-3'>Enter your email address</h1>
                           <p>We'll send you a One Time Password (OTP)</p>
                       </div>
                       <Input id='e' name='email' type='email' label='Email Address' iconType='email'  placeholder="kwabena@example.com" hasValidation />
@@ -301,14 +321,12 @@ function ForgotVerification({componentRef, pages}: ForgotVerificationProps){
       } 
 
       setOTPHasError(false)
-      fadeParentAndReplacePage(pages['parent'], pages['forgot-verification'], pages['forgot-new-password'], 'flex')
-      
 
-      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify?email=${email}&otp=${OTP}`)
+      makeUnauthenticatedRequest('get', `/api/v1/auth/otp/verify?email=${encodeURIComponent(email ?? "")}&otp=${OTP}`)
       .then( res => {
           if(res.data.success){
               sessionStorage.setItem('o', OTP);
-              fadeParentAndReplacePage(pages['parent'], pages['forgot'], pages['forgot-new-password'], 'flex')
+              fadeParentAndReplacePage(pages['parent'], pages['forgot-verification'], pages['forgot-new-password'], 'flex')
           } else {
               toast.error(`${res.data.error.msg}`)
           }
@@ -374,15 +392,14 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
 
   function handleSubmit(values: { newPassword: string, confirmPassword: string}){
       toggleLoading()
-      setTimeout(() => router.navigate({ to: '/', search: {destination: searchParams.destination, register: false }}), 1000)
 
       makeUnauthenticatedRequest(
-          'post', 
+          'patch', 
           '/api/v1/users/update-password',
           {
-              email: `${sessionStorage.getItem('e')}`,
+              email: `${sessionStorage.getItem('e') ?? ""}`,
               newPassword: values.newPassword,
-              ...( sessionStorage.getItem('o') ? {'otp-code':`${sessionStorage.getItem('o')}` } : {}),
+              ...( sessionStorage.getItem('o') ? {'otp':`${sessionStorage.getItem('o')}` } : {}),
           },
       )
       .then( res => {
@@ -444,8 +461,8 @@ function ForgotNewPassword({componentRef, pages}: ForgotNewPasswordProps){
               >
                   <Form className='flex flex-col gap-6'>
                       <h1 className='text-blue-950'>Update Your Password</h1>
-                      <Input id='p1' name='newPassword' type='password' label='New Password' iconType='password' placeholder="********" hasValidation />
-                      <Input id='p2' name='confirmPassword' type='password' label='Password' iconType='password' placeholder="********" hasValidation />
+                      <Input name='newPassword' type='password' label='New Password' iconType='password' placeholder="********" hasValidation />
+                      <Input name='confirmPassword' type='password' label='Confirm Password' iconType='password' placeholder="********" hasValidation />
                       <Button
                           variant='primary'
                           isLoading={isLoading}

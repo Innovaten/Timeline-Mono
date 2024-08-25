@@ -10,7 +10,7 @@ export function useAdministrators(
     offset: number = 0, 
 ){
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
-    const [ administrators, setAdministrators ] = useState<(Omit<IUserDoc , "classes"> & { classes?: IClassDoc})[] >([]);
+    const [ administrators, setAdministrators ] = useState<(Omit<IUserDoc , "classes"> & { classes?: IClassDoc[]})[] >([]);
     const [ count, setCount ] = useState<number>(0);
 
     useEffect(

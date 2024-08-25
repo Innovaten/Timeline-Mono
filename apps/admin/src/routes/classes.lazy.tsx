@@ -1,6 +1,6 @@
 import { Button, DialogContainer, Input } from '@repo/ui';
 import { createLazyFileRoute, Link, useRouterState, Outlet } from '@tanstack/react-router';
-import { PlusIcon, ArrowPathIcon, FunnelIcon, TrashIcon, EyeIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, ArrowPathIcon, FunnelIcon, TrashIcon, EyeIcon, PencilIcon, UserPlusIcon, UserMinusIcon } from '@heroicons/react/24/outline'
 import * as yup from 'yup'
 import { _getToken, abstractAuthenticatedRequest, makeAuthenticatedRequest, useToggleManager } from '@repo/utils';
 import { Formik, Form } from 'formik'
@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import { useAdministrators, useClasses, useCompositeFilterFlag, useSpecificEntity } from '../hooks';
 import { useClassesAssignedStatusFilter, useClassesModeOfClassFilter, useClassesStatusFilter } from '../hooks/classes.hook';
 import { IClassDoc } from '@repo/models';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { IUserDoc } from '@repo/models';
 import { useLMSContext } from '../app';
@@ -37,13 +37,15 @@ function Classes(){
         'assign-dialog': false,
         'update-dialog': false,
         'delete-dialog': false,
+        'remove-admin-dialog': false,
 
         'filter-is-shown': false,
 
         'create-is-loading': false,
         'assign-is-loading': false,
         'update-is-loading': false,
-        'delete-is-loading': false
+        'delete-is-loading': false,
+        'remove-admin-is-loading': false,
     }
 
     type TogglesType = typeof initialToggles
@@ -161,8 +163,11 @@ function Classes(){
     function AssignDialog(){
         
         const { entity: selectedAdmin, setSelected:setSelectedAdmin } = useSpecificEntity<IUserDoc | null>(); 
-        const { administrators, isLoading: administratorsIsLoading } = useAdministrators(true, { role: "ADMIN"}, 20, 0);
-   
+        const { administrators, isLoading: administratorsIsLoading } = useAdministrators(true, { role: "ADMIN"}, 100, 0)
+
+        const filteredAdmins = administrators.filter(a => !a.classes?.map(c => `${c._id}`).includes(`${selectedClass?._id}`))
+
+
         function handleAssignClass(){
 
             if(!selectedClass) {
@@ -211,10 +216,15 @@ function Classes(){
                             </div>
                         }
                         {
-                            !administratorsIsLoading && administrators.map((admin, idx) => (<>
+                            !administratorsIsLoading && filteredAdmins.map((admin, idx) => (<>
                                 <div
-                                    key={idx} onClick={()=>{setSelectedAdmin(admin)}}
-                                className={`flex gap-2 items-center rounded p-2 hover:bg-blue-100/40 hover:border-blue-100 cursor-pointer duration-150 border-2 ${ selectedAdmin == admin ? "border-blue-700/40" : "border-transparent"}`}  >
+                                    key={idx} onClick={()=>{
+                                        // @ts-ignore
+                                        setSelectedAdmin(admin)
+                                    }}
+                                className={`flex gap-2 items-center rounded p-2 hover:bg-blue-100/40 hover:border-blue-100 cursor-pointer duration-150 border-2 ${ 
+                                    // @ts-ignore
+                                    selectedAdmin == admin ? "border-blue-700/40" : "border-transparent"}`}  >
                                     <div className='rounded-full flex-shrink-0 aspect-square h-full bg-blue-100 text-blue-700 font-light grid place-items-center'>{admin.firstName[0]+admin.lastName[0]}</div>
                                     <div className='flex flex-col'>
                                         <p>{admin.firstName} {admin.lastName}</p>
@@ -408,12 +418,103 @@ function Classes(){
 
     }
 
+    function RemoveAdminDialog(){
+        
+        const { entity: selectedAdmin, setSelected: setSelectedAdmin, resetSelected: resetSelectedAdmin } = useSpecificEntity<IUserDoc | null>(); 
+        const { administrators, isLoading: administratorsIsLoading } = useAdministrators(true, { role: "ADMIN"}, 100, 0)
+    
+    
+        function handleRemoveAdmin(){
+    
+            if(!selectedAdmin) {
+                toast.error("Kindly select an admin")
+                return
+            }
+    
+    
+            abstractAuthenticatedRequest(
+                "patch",
+                `/api/v1/classes/${selectedClass?.code}/remove-administrator/${selectedAdmin.code}?classIsId=false&adminIsId=false`,
+                {},
+                {},
+                {
+                    onStart: ()=>{toggleManager.toggle('remove-admin-is-loading')},
+                    onSuccess: (data) => {
+                        toast.success("Admin unassigned successfully");
+                        manuallyToggleCompositeFilterFlag();
+                        toggleManager.toggle('remove-admin-dialog');
+                    },
+                    onFailure: (err) => {toast.error(`${err.msg}`)},
+                    finally: () => {toggleManager.reset('remove-admin-is-loading')}
+                }
+            )
+        }
+    
+        const filteredAdmins = administrators.filter(a => a.classes?.map(c => `${c._id}`).includes(`${selectedClass?._id}`))
+    
+        return (
+            <>
+                <DialogContainer
+                title='Unassign Administrator'
+                description={`Kindly select the admin you want to remove from class ${selectedClass?.name}`}
+                isOpen={toggleManager.get('remove-admin-dialog')}
+                toggleOpen={()=>{ toggleManager.toggle('remove-admin-dialog') }}
+            >
+                <div className='flex flex-col gap-2'>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-h-48 overflow-y-auto">
+                        {
+                            administratorsIsLoading && 
+                            <div className='col-span-1 sm:col-span-2 flex p-4 items-center justify-center'>
+                                <span className='w-4 h-4 rounded-full border-[1.5px] border-t-blue-600 animate-spin'></span>
+                            </div>
+                        }
+                        {
+                            !administratorsIsLoading && filteredAdmins.map((admin, idx) => (<>
+                                <div
+                                    key={idx} onClick={()=>{
+                                        // @ts-ignore
+                                        setSelectedAdmin(admin)
+                                    }}
+                                className={`flex gap-2 items-center rounded p-2 hover:bg-blue-100/40 hover:border-blue-100 cursor-pointer duration-150 border-2 ${ 
+                                    // @ts-ignore
+                                    selectedAdmin == admin ? "border-blue-700/40" : "border-transparent"}`}  >
+                                    <div className='rounded-full flex-shrink-0 aspect-square h-full bg-blue-100 text-blue-700 font-light grid place-items-center'>{admin.firstName[0]+admin.lastName[0]}</div>
+                                    <div className='flex flex-col'>
+                                        <p>{admin.firstName} {admin.lastName}</p>
+                                        <small>{admin.email}</small>
+                                    </div>
+                                </div>
+                            </>
+                            ))
+                        }
+                    </div>
+                    <div className='flex w-full justify-end gap-4 mt-4'>
+                        <Button className='!h-[35px] px-2' 
+                            variant='neutral' 
+                            onClick={()=> { 
+                                toggleManager.reset('remove-admin-dialog'); 
+                                resetSelectedAdmin()
+                            }}
+                            isDisabled={toggleManager.get('remove-admin-is-loading')}
+                        >Close</Button>
+                        <Button className='!h-[35px] px-2'  
+                            isLoading={toggleManager.get('remove-admin-is-loading')} 
+                            onClick={handleRemoveAdmin}
+                        >Remove Admin</Button>
+                    </div>
+                </div>
+            </DialogContainer>
+            </>
+        )
+      }
+
     return (
         <>
-            <CreateDialog />
-            <AssignDialog />
-            <UpdateDialog />
-            <DeleteDialog />
+            { toggleManager.get('create-dialog') && user?.role == "SUDO" && <CreateDialog />}
+            { toggleManager.get('assign-dialog') && user?.role == "SUDO" && <AssignDialog />}
+            { toggleManager.get('update-dialog') && user?.role == "SUDO" && <UpdateDialog />}
+            { toggleManager.get('delete-dialog') && user?.role == "SUDO" && <DeleteDialog />}
+            { toggleManager.get('remove-admin-dialog') && user?.role == "SUDO" && <RemoveAdminDialog />}
 
             <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full'>
                 <div className='mt-2 flex flex-col sm:flex-row h-fit sm:justify-between gap-2 sm:items-center'>
@@ -512,7 +613,7 @@ function Classes(){
                                   { user!.role == "SUDO" && <span className='w-[120px] hidden sm:flex justify-end'>NO. OF ADMINS</span> }
                                   <span className='w-[150px] hidden sm:flex justify-end'>DATE CREATED</span>
                                   
-                                  { user!.role == "SUDO"  && <span className='w-[120px] flex justify-end'>ACTIONS</span> }
+                                  { user!.role == "SUDO"  && <span className='w-[140px] flex justify-end'>ACTIONS</span> }
                                 </div>
                             </div>
                         {
@@ -541,12 +642,15 @@ function Classes(){
                                   <span className='w-[150px] hidden sm:flex justify-end'>{dayjs(tClass.createdAt).format("HH:mm - DD/MM/YYYY")}</span>
                                   { 
                                         user!.role == "SUDO" && 
-                                            <div className='w-[120px] flex justify-end gap-2'>
+                                            <div className='w-[140px] flex justify-end gap-2'>
                                                 <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e)=>{ e.preventDefault(); setSelectedClass(tClass), toggleManager.toggle('assign-dialog')}}>              
                                                     <UserPlusIcon className='w-4 h-4' />
                                                 </span>
                                                 <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e)=>{ e.preventDefault(); setSelectedClass(tClass), toggleManager.toggle('update-dialog')}}>              
                                                     <PencilIcon className='w-4 h-4' />
+                                                </span>
+                                                <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e)=>{ e.preventDefault(); setSelectedClass(tClass), toggleManager.toggle('remove-admin-dialog')}}>              
+                                                    <UserMinusIcon className='w-4 h-4' />
                                                 </span>
                                                 <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { e.preventDefault(); setSelectedClass(tClass); toggleManager.toggle('delete-dialog') }}>
                                                     <TrashIcon className='w-4 h-4' />

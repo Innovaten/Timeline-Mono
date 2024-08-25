@@ -174,7 +174,7 @@ export class UserService {
             otherNames: userData.otherNames,
             lastName: userData.lastName,
             email: userData.email,
-            phone: `+${validPhoneNumber(userData.phone)}`,
+            phone: `${validPhoneNumber(userData.phone)}`,
             gender: userData.gender,
             
             meta: {

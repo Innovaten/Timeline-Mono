@@ -35,7 +35,7 @@ function CompletedLessons(){
                 </div>
             }
 
-            { !isLoading && completedLessons &&
+            { !isLoading && completedLessons.length !== 0 &&
             <>
     
                 <div className='flex flex-col gap-2 flex-1'>

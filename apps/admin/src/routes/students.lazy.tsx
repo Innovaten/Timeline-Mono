@@ -290,7 +290,7 @@ function Students(){
                             <span className='flex-1 font-normal truncate'>{student.firstName + " " + student.lastName }</span>
                         </div>
                         <div className='hidden sm:flex gap-4 items-center font-light'>
-                            <span className='w-[150px] flex justify-end'>{dayjs(student.updatedAt).format("HH:mm - DD/MM/YYYY")}</span>
+                            <span className='w-[150px] flex justify-end'>{dayjs(student.createdAt).format("HH:mm - DD/MM/YYYY")}</span>
                             <span className='w-[70px] flex justify-end'>
                               <span className='grid place-items-center w-7 h-7 rounded-full bg-blue-50 hover:bg-blue-200 cursor-pointer duration-150' onClick={(e) => { 
                                   e.preventDefault(); 

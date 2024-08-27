@@ -307,9 +307,9 @@ function ClassStudents(){
                                 // @ts-ignore
                                 selectedStudent == student ? "border-blue-700/40" : "border-transparent"}`}  >
                                 <div className='rounded-full flex-shrink-0 aspect-square h-full bg-blue-100 text-blue-700 font-light grid place-items-center'>{student.firstName[0]+student.lastName[0]}</div>
-                                <div className='flex flex-col'>
-                                    <p>{student.firstName} {student.lastName}</p>
-                                    <small>{student.email}</small>
+                                <div className='flex flex-col truncate text-ellipsis'>
+                                    <p className='text-ellipsis'>{student.firstName} {student.lastName}</p>
+                                    <small className='text-ellipsis'>{student.email}</small>
                                 </div>
                             </div>
                         </>

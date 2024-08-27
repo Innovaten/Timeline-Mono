@@ -270,19 +270,15 @@ export class ClassesController {
         }
     }
 
+    @UseGuards(AuthGuard)
     @Delete(":_id")
     async deleteClass(
         @Param("_id") _id: string,
-        @Body() deleteClassDto: DeleteClassDto,
+        @Req() req: any,
     ) {
       
         try {
-            if(!deleteClassDto.authToken){
-                return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
-            }
-    
-            const actor = await this.jwt.validateToken(deleteClassDto.authToken);
-    
+            const actor = req.user;
             if(!actor){
                 return ServerErrorResponse(new Error("Unauthenticated Request"), 401)
             }
@@ -290,14 +286,14 @@ export class ClassesController {
             if (actor.role !== 'SUDO') {
                 return ServerErrorResponse(new Error("Unauthorized Request"), 401)
             }
-            const deletedClass = await this.service.deleteClass(_id, `${actor}`);
+            const deletedClass = await this.service.deleteClass(_id, actor);
             console.log("Deleted class", deletedClass._id);
             return ServerSuccessResponse(deletedClass);
 
-        } catch (err) {
+        } catch (err: any) {
             return ServerErrorResponse(
-                new Error(`${err}`), 
-                500
+                new Error(`${err.message ?  err.message : err}`), 
+                err.status ?? 500
             )
         }
     }

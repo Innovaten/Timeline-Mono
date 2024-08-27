@@ -30,7 +30,7 @@ function Classes(){
 
     const { filter: AssignedStatusFilter, filterOptions: AssignedStatusFilterOptions, changeFilter: AssignedStatusChangeFilter, filterChangedFlag: AssignedStatusFilterChangedFlag } = useClassesAssignedStatusFilter();
     const { filter: ModeOfClassFilter, filterOptions: ModeOfClassFilterOptions, changeFilter: ModeOfClassChangeFilter, filterChangedFlag: ModeOfClassFilterChangedFlag } = useClassesModeOfClassFilter();
-    const { filter: StatusFilter, filterOptions: StatusFilterOptions, changeFilter: StatusChangeFilter, filterChangedFlag: StatusFilterChangedFlag } = useClassesStatusFilter();
+    // const { filter: StatusFilter, filterOptions: StatusFilterOptions, changeFilter: StatusChangeFilter, filterChangedFlag: StatusFilterChangedFlag } = useClassesStatusFilter();
     
     const initialToggles = {
         'create-dialog': false,
@@ -52,12 +52,12 @@ function Classes(){
     type ToggleKeys = keyof TogglesType
     const toggleManager = useToggleManager<ToggleKeys>(initialToggles);
 
-    const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ AssignedStatusFilterChangedFlag, StatusFilterChangedFlag, ModeOfClassFilterChangedFlag])
+    const { compositeFilterFlag, manuallyToggleCompositeFilterFlag } = useCompositeFilterFlag([ AssignedStatusFilterChangedFlag, /*StatusFilterChangedFlag,*/ ModeOfClassFilterChangedFlag])
 
     const { isLoading: classesIsLoading, classes, count: classesCount } = useClasses(compositeFilterFlag, {
       ...AssignedStatusFilter,
       ...ModeOfClassFilter,
-      ...StatusFilter,
+    //   ...StatusFilter,
     });
 
     
@@ -216,7 +216,7 @@ function Classes(){
                             </div>
                         }
                         {
-                            !administratorsIsLoading && filteredAdmins.map((admin, idx) => (<>
+                            !administratorsIsLoading && filteredAdmins.length > 0 && filteredAdmins.map((admin, idx) => (<>
                                 <div
                                     key={idx} onClick={()=>{
                                         // @ts-ignore
@@ -233,6 +233,10 @@ function Classes(){
                                 </div>
                             </>
                             ))
+                        }
+                        {
+                            !administratorsIsLoading && filteredAdmins.length == 0 && 
+                            <div className='w-full col-span-1 sm:col-span-2 my-4 text-blue-700 text-center'>No Administrators available</div>
                         }
                     </div>
                     <div className='flex w-full justify-end gap-4 mt-4'>
@@ -370,10 +374,10 @@ function Classes(){
             ).then( res => {
                 if(res.status == 200 && res.data.success){
                     manuallyToggleCompositeFilterFlag();
-                    toggleManager.reset('delete-dialog')
-                    toast.success("Class deleted successfully")                
+                    toggleManager.reset('delete-dialog');
+                    toast.success("Class deleted successfully");
                 } else {
-                    toast.error(`${res.data.err.msg}`)
+                    toast.error(`${res.data.error.msg}`)
                 }
             })
             .catch(err => {
@@ -469,7 +473,7 @@ function Classes(){
                             </div>
                         }
                         {
-                            !administratorsIsLoading && filteredAdmins.map((admin, idx) => (<>
+                            !administratorsIsLoading && filteredAdmins.map((admin, idx) => (
                                 <div
                                     key={idx} onClick={()=>{
                                         // @ts-ignore
@@ -484,8 +488,11 @@ function Classes(){
                                         <small>{admin.email}</small>
                                     </div>
                                 </div>
-                            </>
                             ))
+                        }
+                        {
+                            !administratorsIsLoading && filteredAdmins.length == 0 && 
+                            <div className='w-full col-span-1 sm:col-span-2 my-4 text-blue-700 text-center'>No Assigned Administrators</div>
                         }
                     </div>
                     <div className='flex w-full justify-end gap-4 mt-4'>
@@ -534,7 +541,7 @@ function Classes(){
                             { 
                                 toggleManager.get('filter-is-shown') && 
                                 <>
-                                    <div className='flex flex-row items-center gap-2 '>
+                                    {/* <div className='flex flex-row items-center gap-2 '>
                                         <small className='text-blue-700'>Status</small>
                                         <select
                                             className='text-base text-blue-600 border-[1.5px] focus:outline-blue-300 focus:ring-0  rounded-md border-slate-300 shadow-sm h-[35px] px-2'
@@ -551,7 +558,7 @@ function Classes(){
                                                 })
                                             }
                                         </select> 
-                                    </div>
+                                    </div> */}
                                     <div className='flex flex-row items-center gap-2 '>
                                         <small className='text-blue-700'>Mode of Class</small>
                                         <select

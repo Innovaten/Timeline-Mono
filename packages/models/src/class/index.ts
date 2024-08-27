@@ -57,7 +57,6 @@ export const ClassSchema = new Schema<IClassDoc>({
     },
     announcementSet: {
         type: SchemaTypes.ObjectId,
-        required: true,
         ref: "AnnouncementSets"
     },
     /*

@@ -42,7 +42,7 @@ function Module() {
           </div>
         )}
 
-        {!isLoading && module && (
+        {!isLoading && !!module && (
           <div className="flex flex-col gap-2 flex-1 gap-y-16">
             <div className="mt-2">
               <h3 className="text-blue-800">{module.title}</h3>

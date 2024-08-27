@@ -11,7 +11,9 @@ export class ClassesService {
    
     async getClass(filter: Record<string, any> = {}){
 
-        const result = await ClassModel.findOne(filter).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[], assignmentSet: { assignments: IAssignment}}>([
+        const finalFilter = { ...filter, "meta.isDeleted": false}
+
+        const result = await ClassModel.findOne(finalFilter).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[], assignmentSet: { assignments: IAssignment}}>([
             {
                 path: "createdBy administrators",
             },
@@ -45,7 +47,7 @@ export class ClassesService {
     }
 
     async getClasses(limit?: number, offset?: number, filter: Record<string, any> = {}){
-        const results = await ClassModel.find(filter)
+        const results = await ClassModel.find({ ...filter, "meta.isDeleted": false })
         .limit(limit ?? 10)
         .skip(offset ?? 0)
         .sort({ createdAt: -1})
@@ -55,6 +57,7 @@ export class ClassesService {
     async getCount(filter?: Record<string, any>){
         return ClassModel.countDocuments({
             ...filter,
+            "meta.isDeleted": false,
         })
     }
 
@@ -94,6 +97,10 @@ export class ClassesService {
             quizzes: [],
             announcementSet: newAnnouncementSet._id,
             assignmentSet: newAssignmentSet._id,
+
+            meta: {
+                isDeleted: false,
+            },
 
             createdBy: new Types.ObjectId(creator),
             updatedBy: new Types.ObjectId(creator),
@@ -256,16 +263,20 @@ export class ClassesService {
         return classDoc
     }
 
-    async deleteClass( classId: string, actor: string){
+    async deleteClass( classId: string, actor: IUserDoc){
         const classDoc = await ClassModel.findById(classId)
 
         if (!classDoc) {
             throw new Error("Specified class not found")
         }
 
+        if(classDoc.meta.isDeleted){
+            throw new BadRequestException("Class has already been deleted")
+        }
+
         classDoc.meta.isDeleted = true;
         classDoc.updatedAt = new Date();
-        classDoc.updatedBy = new Types.ObjectId(actor);
+        classDoc.updatedBy = new Types.ObjectId(`${actor._id}`);
 
         await classDoc.save();
 
@@ -325,16 +336,18 @@ export class ClassesService {
     async getStudentsInClass(specifier: string, isId: boolean, user: IUserDoc){
 
         const filter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
-        const relatedClass = await ClassModel.findOne(filter).populate<{ students: IUserDoc[] }>("students").lean()
+        const relatedClass = await ClassModel.findOne(filter).lean()
 
         if(!relatedClass){
             throw new NotFoundException("Specified class could not be found")
         }
 
+        const students = await UserModel.find({ _id: { $in: relatedClass?.students }, "meta.isDeleted": false }).populate("classes")
+        
         if(user.role != "SUDO" && !relatedClass.administrators.map(a => a.toString()).includes(`${user._id}`)){
             throw new ForbiddenException("You are not authorized to make this request")
         }
-        return relatedClass.students;
+        return students;
     }
 
     // This is the function that gets all the modules asscociated with a specific class (the classId needs to be passes as a parameter)

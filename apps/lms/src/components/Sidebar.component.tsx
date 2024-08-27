@@ -103,9 +103,9 @@ export default function SidebarComponent(){
                                     const MenuIcon = icon;
 
                                     return (
-                                        <Link to={path} key={idx} className={`flex gap-4 items-center ${ routePathIsEqual(path) ? 'bg-blue-700 text-white hover:bg-blue-600' : 'bg-white hover:bg-blue-400/10 text-blue-600' }  duration-150 pl-4 py-4 rounded shadow-sm truncate`}>
+                                        <Link to={path} key={idx} className={`flex gap-4 items-center ${ routePathIsEqual(path) ? 'bg-blue-700 text-white hover:bg-blue-600' : 'bg-white hover:bg-blue-400/10 text-blue-600' }  duration-150 pl-4 py-4 rounded shadow-sm truncate text-ellipsis`}>
                                             <MenuIcon className="w-5" />
-                                            <p>{label}</p>
+                                            <p className="">{label}</p>
                                         </Link>
                                     )
                                 })
@@ -120,7 +120,7 @@ export default function SidebarComponent(){
                     </div>
                 </div>
                 <div className="flex flex-col gap-2 mt-8 sm:mt-0">
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex flex-col xl:flex-row gap-2">
                         <Link search={{ destination: ""}} onClick={()=>{_clearTokens()}} to="/login" className="w-full flex gap-2 items-center  bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
                             <PowerIcon className="w-5 sm:w-4" />
                             <p>LOGOUT</p>
@@ -131,7 +131,7 @@ export default function SidebarComponent(){
                         </Link>
                     </div>
                     <Link to='/' className="flex gap-4 items-center bg-white pl-4 py-4 rounded shadow-sm text-blue-600">
-                        <div className="w-10 aspect-square rounded-full border-[1px] border-blue-600 grid place-items-center">
+                        <div className="w-10 aspect-square rounded-full border-[1px] border-blue-600 grid place-items-center truncate text-ellipsis">
                             { ( user?.firstName[0] || "N") + (user?.lastName[0] || "A" ) }
                         </div>
                         <div className="truncate">
@@ -168,11 +168,11 @@ function ClassTab({ index, name, code }: { index: number, name: string, code: st
             path: "assignments",
             icon: PaperClipIcon,    
         },
-        {
-            title: "Quizzes",
-            path: "quizzes",
-            icon: PencilSquareIcon,    
-        },
+        // {
+        //     title: "Quizzes",
+        //     path: "quizzes",
+        //     icon: PencilSquareIcon,    
+        // },
         // {
         //     title: "Settings",
         //     path: "settings",

@@ -114,53 +114,41 @@ function Login({ componentRef, multiPage }: PageProps){
             values,
         )
         .then(res => {
-                if(res.data.success){
-                        const token = res.data.data.access_token;
-                        const loginUser = res.data.data.user;
-                        
+                if(!res.data.success){
+                    toast.error(`${res.data.error.msg}`)
+                    return
+                }
 
-                        // Automatically send OTP
-                        makeUnauthenticatedRequest(
-                            "get",
-                            `/api/v1/auth/otp/send?email=${encodeURIComponent(loginUser.email)}`
-                        )
-                        .then(res => {
-                            if(res.data.success){
-
-                                if(loginUser.meta.isPasswordSet){
-                                    multiPage.goTo('twoFA')
-                                    setToken(token);
-                                    setUser(loginUser);
-                                    return
-                                }
-                                // User has not set their password
-                                sessionStorage.setItem('e', loginUser.email)
-                                multiPage.goTo('forgot-verification')
-
-                            } else {
-                                if(res.data.error.msg){
-                                    toast.error(`${res.data.error.msg}`);
-                                } else {
-                                    toast.error("We encountered an issue while sending you an OTP. Please try again later");
-                                }
-                            }
-                        })
-                        .catch( err => {
-                                toast.error(`${err}`)
-                        })
-                } else {
-                        toast.error(`${res.data.error.msg}`)
+                const token = res.data.data.access_token;
+                const loginUser = res.data.data.user;
+                
+                // Automatically send OTP
+                makeUnauthenticatedRequest(
+                    "get",
+                    `/api/v1/auth/otp/send?email=${encodeURIComponent(loginUser.email)}`
+                )
+                .then(res => {
+                    if(!res.data.success){
+                        toast.error(`${res.data.error.msg ?? "We encountered an issue while sending you an OTP. Please try again later"}`);
+                        return
                     }
+
+                    if(loginUser.meta.isPasswordSet){
+                        multiPage.goTo('twoFA')
+                        setToken(token);
+                        setUser(loginUser);
+                        return
+                    }
+                    // User has not set their password
+                    sessionStorage.setItem('e', loginUser.email)
+                    multiPage.goTo('forgot-verification')
                 })
+            })
         .catch( err => {
-            if(err.message){
-                toast.error(`${err.message}`)  
-            } else {
-                toast.error(`${err}`)  
-            }
+            toast.error(`${err.message ?? err}`)  
         })
         .finally(()=> {
-            setTimeout(toggleLoading, 500)
+            toggleLoading()
         })
 	}
 
@@ -169,7 +157,6 @@ function Login({ componentRef, multiPage }: PageProps){
   }
 
 
-  
   const loginInitialValues = {
       email: "",
       password: ""
@@ -244,27 +231,23 @@ function TwoFactorAuthentication({ componentRef }: PageProps){
             `/api/v1/auth/otp/verify?email=${encodeURIComponent(user?.email ?? "")}&otp=${values.otp}`
         )
         .then(res => {
-              if(res.status == 200 && res.data.success){
-                _setUser(user);
-                _setToken(token!);
-                _setTokenExpiration(dayjs(user?.meta.tokenGeneratedAt).add(3, 'hours').toISOString())
-
-                context.user = user;
-                
-                toast.success("Verification successful!")
-                router.navigate({ 
-                  to: "/"
-                })
-            } else {
+              if(!(res.status == 200 && res.data.success)){
                 toast.error(`${res.data.error.msg}`)
-            }
+                return
+              }
+            _setUser(user);
+            _setToken(token!);
+            _setTokenExpiration(dayjs(user?.meta.tokenGeneratedAt).add(3, 'hours').toISOString())
+
+            context.user = user;
+            
+            toast.success("Verification successful!")
+            router.navigate({ 
+                to: "/"
+            })
         })
         .catch( err => {
-						if(err.message){
-							toast.error(`${err.message}`)
-						} else {
-							toast.error(`${err}`)
-						}
+            toast.error(`${err.message ?? err}`)
         })
         .finally(()=> {
             toggleLoading()

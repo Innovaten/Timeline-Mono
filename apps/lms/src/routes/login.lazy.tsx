@@ -30,7 +30,7 @@ function LoginPage(){
       login: loginRef,
       forgot: forgotRef,
       'forgot-verification': forgotVerificationRef,
-      'forgot-new-password':forgotNewPasswordRef,
+      'forgot-new-password': forgotNewPasswordRef,
   }
 
   const multiPage = MultiPage(parentRef, pages)

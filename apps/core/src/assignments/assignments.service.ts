@@ -59,7 +59,7 @@ export class AssignmentsService {
         const stringAccessList =  result.accessList.map( _id => _id.toString())
         
         if(!stringAccessList.includes(`${user._id}`)){
-            throw new ForbiddenException()
+            throw new ForbiddenException("You are not permitted to access this assignment")
         }
 
         const relatedSubmission = await AssignmentSubmissionModel.findOne({ assignment: result._id.toString(), submittedBy: `${user._id}` }).populate("gradedBy resources").lean()

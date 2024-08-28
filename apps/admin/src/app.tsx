@@ -22,7 +22,7 @@ const router = createRouter({
   defaultNotFoundComponent: () => {
     return (
       <>
-        <div className="grid place-items-center fixed w-screen h-screen bg-white">
+        <div className="top-0 left-0 grid place-items-center fixed w-screen h-screen bg-white">
           <div className='w-fit h-fit'>
               <div
                   className='w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin' 
@@ -35,7 +35,7 @@ const router = createRouter({
   defaultErrorComponent: () => {
     return (
       <>
-        <div className="grid place-items-center fixed w-screen h-screen bg-white">
+        <div className="top-0 left-0 grid place-items-center fixed w-screen h-screen bg-white">
           <div className='w-fit h-fit'>
               <div
                   className='w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin' 

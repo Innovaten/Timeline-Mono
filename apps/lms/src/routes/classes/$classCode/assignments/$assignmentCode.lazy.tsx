@@ -183,7 +183,7 @@ function Assignments(){
                                                       { resource.type == "Other" &&
                                                           <PaperClipIcon className='w-4 shrink-0' />
                                                       }
-                                                      <p className='font-light truncate'>{resource.title}</p>
+                                                      <p className='font-light truncate'>{decodeURIComponent(resource.title)}</p>
                                                   </a>
                                               )
                                           })    
@@ -224,7 +224,7 @@ function Assignments(){
                                                       { resource.type == "Other" &&
                                                           <PaperClipIcon className='w-4 shrink-0' />
                                                       }
-                                                      <p className='font-light truncate'>{resource.title}</p>
+                                                      <p className='font-light truncate'>{decodeURIComponent(resource.title)}</p>
                                                   </a>
                                               )
                                           })    

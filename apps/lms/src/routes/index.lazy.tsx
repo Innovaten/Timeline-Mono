@@ -113,7 +113,7 @@ function IndexPage() {
                       [].map((resource: any, idx) => {
                         return (
                           <Link key={idx}  className = 'w-full py-2 px-3 bg-blue-50 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-600/10'>
-                            <h5 className='flex-1 font-normal truncate'>{resource.title}</h5>
+                            <h5 className='flex-1 font-normal truncate'>{decodeURIComponent(resource.title)}</h5>
                             <div className='flex gap-4 items-center font-light'>
                               <span>{resource.timelineClass}</span>
                               <span>{resource.date}</span>

@@ -12,20 +12,6 @@ export function fadeParent(
 }
 
 
-// Deprecated
-export function fadeParentAndReplacePage(
-  parentRef: RefObject<HTMLDivElement | HTMLSpanElement>,
-  currentRef: RefObject<HTMLDivElement | HTMLSpanElement>,
-  nextRef: RefObject<HTMLDivElement | HTMLSpanElement>,
-  displayValue?: string
-) {
-  fadeParent(parentRef);
-  setTimeout(() => {
-    currentRef!.current!.style.display = "none";
-    nextRef!.current!.style.display = typeof displayValue == 'undefined' ? "block" : displayValue;
-  }, 250);
-}
-
 export function MultiPage(
   parentRef: RefObject<HTMLDivElement | HTMLSpanElement>,
   pages: Record<string, RefObject<HTMLDivElement | HTMLSpanElement>>  

@@ -195,7 +195,7 @@ function Lessons({}) {
                         key={idx}
                       >
                         <small className="truncate font-extralight">
-                          {resource.title}
+                          {decodeURIComponent(resource.title)}
                         </small>
                         <XMarkIcon
                           className="w-3 flex-shrink-0 text-blue-700"

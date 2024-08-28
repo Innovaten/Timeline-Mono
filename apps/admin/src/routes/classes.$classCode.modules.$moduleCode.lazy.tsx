@@ -104,7 +104,7 @@ function Module() {
                                 <PaperClipIcon className="w-4 shrink-0" />
                               )}
                               <p className="font-light truncate">
-                                {resource.title}
+                                {decodeURIComponent(resource.title)}
                               </p>
                             </a>
                           );

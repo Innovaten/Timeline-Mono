@@ -285,7 +285,7 @@ export class AssignmentsService {
     
         if(
           user.role == Roles.ADMIN &&
-          submission.class?.administrators.map(a => `${a}`).includes(`${user._id}`)
+          submission.class?.administrators ? submission.class?.administrators?.map(a => `${a}`).includes(`${user._id}`) : false
         ) {
           return { submission, assignment}
         }

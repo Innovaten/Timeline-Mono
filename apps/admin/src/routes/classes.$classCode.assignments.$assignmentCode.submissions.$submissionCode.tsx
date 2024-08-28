@@ -182,7 +182,7 @@ function Assignments(){
                               <div className='flex-1'>
                                   <span className='mt-4 text-blue-700 font-light'>Resources</span>
                                   <div className='mt-2 grid grid-cols-1 text-blue-700 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-2'>
-                                      { assignment.resources.map((resource, idx) => {
+                                      {!!assignment.resources && assignment.resources?.map((resource, idx) => {
                                               return (
                                                   <a className='flex max-w-[200px] gap-2 p-2 rounded-sm bg-blue-300/10 border-[1.5px] border-blue-600/10 ' target='_blank' href={resource.link} key={idx}>
                                                       { resource.type == "Image" &&
@@ -197,7 +197,7 @@ function Assignments(){
                                                       { resource.type == "Other" &&
                                                           <PaperClipIcon className='w-4 shrink-0' />
                                                       }
-                                                      <p className='font-light truncate'>{resource.title}</p>
+                                                      <p className='font-light truncate'>{decodeURIComponent(resource.title)}</p>
                                                   </a>
                                               )
                                           })    
@@ -214,7 +214,7 @@ function Assignments(){
                               <div className='flex-1'>
                                   <span className='mt-4 text-blue-700 font-light'>Submission Documents</span>
                                   <div className='mt-2 grid grid-cols-1 text-blue-700 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-2'>
-                                      { submission.resources.map((resource, idx) => {
+                                      { !!submission.resources && submission.resources?.map((resource, idx) => {
                                               return (
                                                   <a className='flex max-w-[200px] gap-2 p-2 rounded-sm bg-blue-300/10 border-[1.5px] border-blue-600/10 ' target='_blank' href={resource.link} key={idx}>
                                                       { resource.type == "Image" &&
@@ -229,7 +229,7 @@ function Assignments(){
                                                       { resource.type == "Other" &&
                                                           <PaperClipIcon className='w-4 shrink-0' />
                                                       }
-                                                      <p className='font-light truncate'>{resource.title}</p>
+                                                      <p className='font-light truncate'>{decodeURIComponent(resource.title)}</p>
                                                   </a>
                                               )
                                           })    

@@ -54,13 +54,13 @@ export class AssetsService implements OnModuleInit {
             resource.updatedAt = new Date()
     
             await resource.save();
-            console.log(`Uploaded ${title} to ${resource.link}`)
+            console.log(`Uploaded ${decodeURIComponent(title)} to ${resource.link}`)
 
             return resource;
 
         } catch (err: any) {
             console.log(err);
-            return `ERROR: Could not upload ${title}. Details: ${err.message ? err.message : err}`
+            return `ERROR: Could not upload ${decodeURIComponent(title)}. Details: ${err.message ? err.message : err}`
         }
 
     }

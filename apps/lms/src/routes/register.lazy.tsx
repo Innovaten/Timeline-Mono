@@ -4,13 +4,13 @@ import { Input, Button } from '@repo/ui'
 import { Form, Formik } from 'formik'
 import * as Yup from 'yup'
 import YupPassword from 'yup-password'
-import { _setToken, fadeParentAndReplacePage, makeUnauthenticatedRequest, useLoading } from '@repo/utils'
+import { _setToken, makeUnauthenticatedRequest, useLoading } from '@repo/utils'
 import React, { RefObject, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { IRegistrationDoc } from '@repo/models';
 import { constants } from '../config';
-
-import { SelectInput } from '../../../../packages/ui/src/components/forms';
+import { SelectInput } from '@repo/ui';
+import { MultiPage } from '@repo/utils';
 YupPassword(Yup);
 
 export const Route = createLazyFileRoute('/register')({
@@ -57,13 +57,14 @@ function RegisterPage(){
   const summaryConfirmationRef = useRef<HTMLDivElement>(null)
 
   const registrationPages: Record<string, RefObject<HTMLDivElement>> = {
-    'parent': parentRef,
-    'personal-details': personalDetailsRef,
-    'contact-details': contactDetailsRef,
-    'course-details': courseDetailsRef,
-    'summary-details': summaryDetailsRef,
-    'registration-complete': summaryConfirmationRef,
+    'personal': personalDetailsRef,
+    'contact': contactDetailsRef,
+    'course': courseDetailsRef,
+    'summary': summaryDetailsRef,
+    'success': summaryConfirmationRef,
   }
+
+  const multiPage = MultiPage(parentRef, registrationPages)
 
   return (
     <>
@@ -77,11 +78,11 @@ function RegisterPage(){
                   <div ref={parentRef}  className='w-full sm:w-1/2  p-8'>
                       { !isAdmission &&
                         <>
-                            <PersonalDetailsForm componentRef={personalDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
-                            <ContactDetailsForm componentRef={contactDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
-                            <CourseDetailsForm componentRef={courseDetailsRef} registrationPages={registrationPages} setNewUser={setNewUser} />
-                            <SummaryDetailsForm componentRef={summaryDetailsRef} registrationPages={registrationPages} newUser={newUser} setNewUser={setNewUser} />
-                            <SummaryConfirmationForm componentRef={summaryConfirmationRef} newUser={newUser} />
+                            { multiPage.currentPage == registrationPages["personal"] && <PersonalDetailsForm componentRef={registrationPages["personal"]} multiPage={multiPage} setNewUser={setNewUser} />}
+                            { multiPage.currentPage == registrationPages["contact"]  && <ContactDetailsForm componentRef={registrationPages["contact"]} multiPage={multiPage} setNewUser={setNewUser} />}
+                            { multiPage.currentPage == registrationPages["course"]   && <CourseDetailsForm componentRef={registrationPages["course"]} multiPage={multiPage} setNewUser={setNewUser} />}
+                            { multiPage.currentPage == registrationPages["summary"]  && <SummaryDetailsForm componentRef={registrationPages["summary"]} multiPage={multiPage} newUser={newUser} setNewUser={setNewUser} />}
+                            { multiPage.currentPage == registrationPages["success"]  && <SummaryConfirmationForm componentRef={registrationPages["success"]} newUser={newUser} />}
                         </>
                         }
 
@@ -104,12 +105,12 @@ function RegisterPage(){
 
 type PersonalDetailsProps = {
     componentRef: RefObject<HTMLDivElement>,
-    registrationPages: Record<string, RefObject<HTMLDivElement>>
+    multiPage: ReturnType<typeof MultiPage>,
     setNewUser: React.Dispatch<React.SetStateAction<RegistrationObjectType>>
 }
 
 
-function PersonalDetailsForm({ componentRef, registrationPages, setNewUser}: PersonalDetailsProps){
+function PersonalDetailsForm({ componentRef, multiPage, setNewUser}: PersonalDetailsProps){
   
     function handleSubmit(values: { 
       firstName: string,
@@ -127,7 +128,7 @@ function PersonalDetailsForm({ componentRef, registrationPages, setNewUser}: Per
                 gender: values.gender as "Male" | "Female",
             })
         })
-        fadeParentAndReplacePage(registrationPages.parent, componentRef, registrationPages['contact-details'], 'flex')
+        multiPage.goToNext()
     }
   
   
@@ -203,11 +204,11 @@ function PersonalDetailsForm({ componentRef, registrationPages, setNewUser}: Per
 
 type ContactDetailsProps = {
     componentRef: RefObject<HTMLDivElement>,
-    registrationPages: Record<string, RefObject<HTMLDivElement>>
+    multiPage: ReturnType<typeof MultiPage>,
     setNewUser: React.Dispatch<React.SetStateAction<RegistrationObjectType>>
 }
 
-function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: ContactDetailsProps){
+function ContactDetailsForm({ componentRef, multiPage, setNewUser}: ContactDetailsProps){
   
     function handleSubmit(values: { 
         email: string,
@@ -221,7 +222,7 @@ function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: Cont
                 phone: values.phone
             })
         })
-        fadeParentAndReplacePage(registrationPages.parent, componentRef, registrationPages['course-details'], 'flex')
+        multiPage.goToNext()
     }
   
 
@@ -244,7 +245,7 @@ function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: Cont
   
     return (
         <>
-            <div ref={componentRef}  className='hidden flex-col gap-4 sm:justify-between'>
+            <div ref={componentRef}  className='flex flex-col gap-4 sm:justify-between'>
                 <Formik
                 initialValues={registrationInitialValues}
                 validationSchema={registrationValidationSchema}
@@ -261,7 +262,7 @@ function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: Cont
                             type='submit'
                         >Continue</Button>
                         <div className='m-auto flex gap-1 justify-between'>
-                            <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { fadeParentAndReplacePage(registrationPages['parent'], componentRef, registrationPages['personal-details'], 'flex') }}>Back</p>
+                            <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={multiPage.goToPrevious}>Back</p>
                         </div>
                     </Form>
                 </Formik>
@@ -272,12 +273,12 @@ function ContactDetailsForm({ componentRef, registrationPages, setNewUser}: Cont
 
 type CourseDetailsProps = {
     componentRef: RefObject<HTMLDivElement>,
-    registrationPages: Record<string, RefObject<HTMLDivElement>>
+    multiPage: ReturnType<typeof MultiPage>,
     setNewUser: React.Dispatch<React.SetStateAction<RegistrationObjectType>>
 }
 
 
-function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: CourseDetailsProps){
+function CourseDetailsForm({ componentRef, multiPage, setNewUser}: CourseDetailsProps){
         
     const initialClassesValuesKeys = Object.keys(constants.classes)
     const initialClassesValues: Record<string, boolean> = {}
@@ -288,14 +289,21 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
     function handleSubmit(values: { 
       modeOfClass: string,
     }){ 
+
+        const chosenClasses = Object.keys(classes).filter(c => classes[c] == true);
+
+        if(chosenClasses.length < 1){
+            return
+        }
+
         setNewUser((prev) => {
             return ({
                 ...prev,
                 modeOfClass: values.modeOfClass,
-                classes: Object.keys(classes).filter(c => classes[c] == true)
+                classes: chosenClasses,
             })
         })
-        fadeParentAndReplacePage(registrationPages.parent, componentRef, registrationPages['summary-details'], 'flex')
+        multiPage.goToNext()
     }
     
     const registrationInitialValues = {
@@ -308,7 +316,7 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
   
     return (
         <>
-            <div ref={componentRef}  className='hidden flex-col gap-4 sm:justify-between'>
+            <div ref={componentRef}  className='flex flex-col gap-4 sm:justify-between'>
                 <Formik
                 initialValues={registrationInitialValues}
                 validationSchema={registrationValidationSchema}
@@ -365,7 +373,7 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
                             type='submit'
                         >Continue</Button>
                         <div className='m-auto flex gap-1 justify-between'>
-                            <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { fadeParentAndReplacePage(registrationPages['parent'], componentRef, registrationPages['contact-details'], 'flex') }}>Back</p>
+                            <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={multiPage.goToPrevious}>Back</p>
                         </div>
                     </Form>
                 </Formik>
@@ -377,13 +385,13 @@ function CourseDetailsForm({ componentRef, registrationPages, setNewUser}: Cours
 
 type SummaryDetailsProps = {
     componentRef: RefObject<HTMLDivElement>,
-    registrationPages: Record<string, RefObject<HTMLDivElement>>
+    multiPage: ReturnType<typeof MultiPage>,
     newUser: RegistrationObjectType,
     setNewUser: React.Dispatch<React.SetStateAction<RegistrationObjectType>>
 }
 
 
-function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUser }: SummaryDetailsProps){
+function SummaryDetailsForm({ componentRef, multiPage, newUser, setNewUser }: SummaryDetailsProps){
     
     const { isLoading, toggleLoading, resetLoading } = useLoading()
 
@@ -407,7 +415,7 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUs
                     code: res.data.data.code,
                 })
               })
-              fadeParentAndReplacePage(registrationPages.parent, componentRef, registrationPages['registration-complete'], 'grid')
+              multiPage.goToNext()
             } else {
                 toast.error(res.data.error.msg)
                 toggleLoading()
@@ -421,35 +429,49 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUs
     
     return (
         <>
-            <div ref={componentRef}  className='hidden flex-col gap-6 sm:justify-between'>        
+            <div ref={componentRef}  className='flex flex-col gap-6 sm:justify-between'>        
                 <div>
                     <h1 className='text-blue-950 mb-2'>Registration Summary</h1>
                     <p>Please confirm your registration details.</p>
                 </div>
-                <div className='flex flex-col gap-2'>
-                    <div className='flex gap-2'>
-                        <p className='text-lg inline font-medium'>Full Name:</p>
-                        <p className='text-lg text-blue-600 inline'>{newUser.firstName}{newUser.otherNames == "" ? " " : " " + newUser.otherNames + " "}{newUser.lastName}</p>
-                    </div>
-                    <div className='flex gap-2'>
-                        <p className='text-lg inline font-medium'>Gender:</p>
-                        <p className='text-lg text-blue-600 inline'>{newUser.gender}</p>
-                    </div>
-                    <div className='flex gap-2'>
-                        <p className='text-lg inline font-medium'>Email Address:</p>
-                        <p className='text-lg text-blue-600 inline'>{newUser.email}</p>
-                    </div>
-                    <div className='flex gap-2'>
-                        <p className='text-lg inline font-medium'>Phone Number:</p>
-                        <p className='text-lg text-blue-600 inline'>{newUser.phone}</p>
-                    </div>
-                    <div className='flex gap-2'>
-                        <p className='text-lg inline font-medium'>Mode of Class:</p>
-                        <p className='text-lg text-blue-600 inline'>{newUser.modeOfClass}</p>
-                    </div>
-                    <div className='flex gap-2'>
-                        <p className='text-lg inline font-medium'>Courses:</p>
-                        <p className='text-lg text-blue-600 inline'>{newUser.classes.join(', ')}</p>
+                <div className='w-full flex-1'>
+                    <div className='bg-white text-blue-800 w-full overflow-auto grid grid-cols-1 sm:grid-cols-2 gap-4 gap-y-6'>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light " >FULL NAME</span>
+                            <p className="text-md" >
+                            {newUser.firstName}
+                            {newUser.otherNames == "" ? " " : " " + newUser.otherNames + " "}
+                            {newUser.lastName}
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light " >GENDER</span>
+                            <span className="text-md" >{newUser.gender}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">EMAIL ADDRESS</span>
+                            <span className="text-md">{newUser.email}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">PHONE NUMBER</span>
+                            <span className="text-md" >{newUser.phone}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">MODE OF CLASS</span>
+                            <span className="text-md" >{newUser.modeOfClass ?? "N/A"}</span>
+                        </div>
+                        <div className="flex flex-col gap-1" >
+                            <span className="text-xs font-light ">CLASSES</span>
+                            <span className="flex gap-2 flex-wrap">
+                            {newUser.classes.map((course, idx) => {
+                                return (
+                                <span key={idx} className="text-md" >
+                                    {course}
+                                </span>
+                                );
+                            })}
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <Button
@@ -460,7 +482,7 @@ function SummaryDetailsForm({ componentRef, registrationPages, newUser, setNewUs
                     className='mt-2'
                 >Continue</Button>
                 <div className='m-auto flex gap-1 justify-between'>
-                    <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={() => { fadeParentAndReplacePage(registrationPages['parent'], componentRef, registrationPages['course-details'], 'flex') }}>Back</p>
+                    <p className='text-blue-700 underline-offset-2 text-right underline cursor-pointer' onClick={multiPage.goToPrevious}>Back</p>
                 </div>
             </div>
         </>
@@ -476,13 +498,13 @@ function SummaryConfirmationForm({ componentRef, newUser}: SummaryConfirmationPr
     
     return (
         <>
-            <div ref={componentRef}  className='hidden w-full h-full place-items-center my-auto'>        
+            <div ref={componentRef}  className='grid w-full h-full place-items-center my-auto'>        
                 <div className='my-1 md:my-3'>
-                    <h1 className='text-blue-950 mb-2'>You've registered, {newUser.firstName}!</h1>
-                    <p className='mt-4 text-lg'>Your registration application has been submitted successfully.
+                    <h2 className='text-blue-950 mb-2'>You've registered, {newUser.firstName}!</h2>
+                    <p className='mt-4 text-md'>Your registration application has been submitted successfully.<br />
                         We'll reach out to you via email with next steps once your application has been accepted.
                     </p>
-                    <p className='my-3 text-lg font-semibold'>Registration code: {newUser.code}</p>
+                    <p className='my-3 text-md font-semibold'>Registration code: {newUser.code}</p>
                 </div>
                 
             </div>

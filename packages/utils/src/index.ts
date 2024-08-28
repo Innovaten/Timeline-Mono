@@ -3,7 +3,7 @@ import { cn } from "./cn";
 
 import { useLoading, useDialog, useMobileNavigation, useCountdown, useFileUploader, useToggleManager } from "./hooks";
 
-import { fadeParent, fadeParentAndReplacePage, MultiPage, copyToClipboard } from "./frontend-shenanigans";
+import { fadeParent, MultiPage, copyToClipboard } from "./frontend-shenanigans";
 import { makeUnauthenticatedRequest, makeAuthenticatedRequest, abstractAuthenticatedRequest, abstractUnauthenticatedRequest } from "./axios";
 import { validPhoneNumber } from "./phone";
 
@@ -29,7 +29,6 @@ export {
 
   //Frontend Shenanigans
   fadeParent,
-  fadeParentAndReplacePage,
   MultiPage,
   copyToClipboard,
 

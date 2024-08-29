@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { IUser, UserModel } from '@repo/models';
 import { Types } from 'mongoose';
-import { createRandomUser } from '../../test/mocks';
+import { UserFactory } from '../../test/mocks';
 import { JwtService } from '../common/services/jwt.service';
 import { UserService } from '../common/services/user.service';
 
@@ -11,10 +11,10 @@ describe('AuthService', () => {
   let validUser: IUser & { _id: Types.ObjectId } 
 
   beforeAll( async () => {
-    validUser = createRandomUser({ 
+    validUser = UserFactory(1, { 
       email: "user1@example.com",
       password: "AVerySecurePassword" 
-    })
+    })[0]
     await UserModel.insertMany(validUser);
   })
   

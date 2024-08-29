@@ -2,30 +2,36 @@ import { faker } from "@faker-js/faker"
 import { IAssignmentSet } from "@repo/models"
 import { Types } from "mongoose"
 
-type CreateRandomAssignmentSetProps = {
+type AssignmentSetFactoryProps = {
   classId?: Types.ObjectId,
   classCode?: string,
   assignments?: Types.ObjectId[],
   updator?: Types.ObjectId,
 }
 
-export function createRandomAssignmentSet({
+export function AssigmentSetFactory(length: number, {
     classId,
     classCode,
     assignments,
     updator,
-  }: CreateRandomAssignmentSetProps
-): IAssignmentSet & { _id: Types.ObjectId } {
+  }: AssignmentSetFactoryProps
+): (IAssignmentSet & { _id: Types.ObjectId })[] {
 
-  return {
-    _id: new Types.ObjectId(),
-    code: faker.number.int().toString(),
-    class: classId ?? new Types.ObjectId(),
-    classCode: classCode ?? faker.number.int().toString(),
-    assignments: assignments ?? [],
-    updatedBy: updator ?? new Types.ObjectId(),
+  const assignmentSets: (IAssignmentSet & { _id: Types.ObjectId })[] = []
 
-    createdAt: faker.date.past(),
-    updatedAt: faker.date.recent(),
+  for(let i = 0; i < length; i++){
+    assignmentSets.push({
+      _id: new Types.ObjectId(),
+      code: faker.number.int().toString(),
+      class: classId ?? new Types.ObjectId(),
+      classCode: classCode ?? faker.number.int().toString(),
+      assignments: assignments ?? [],
+      updatedBy: updator ?? new Types.ObjectId(),
+
+      createdAt: faker.date.past(),
+      updatedAt: faker.date.recent(),
+    })
   }
+
+  return assignmentSets;
 }

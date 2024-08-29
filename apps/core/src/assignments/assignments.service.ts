@@ -73,7 +73,7 @@ export class AssignmentsService {
         isId: boolean,
         user: IUserDoc,
         limit: number = 10,
-        offset: number = 10,
+        offset: number = 0,
         filter: Record<string, any> = {},
     ): Promise<IAssignmentSubmissionDoc[]>{
 
@@ -97,6 +97,8 @@ export class AssignmentsService {
             assignment: relatedAssignment._id,
             "meta.isDeleted": false,
         }
+
+        console.log(finalFilter);
 
         const assignmentSubmissions = await AssignmentSubmissionModel
             .find(finalFilter)
@@ -126,11 +128,11 @@ export class AssignmentsService {
         const assignment = await AssignmentModel.findById(id).populate<{ class: IClassDoc, assignmentSet: IAssignmentSetDoc }>("assignmentSet class");
 
         if(!assignment){
-            throw new NotFoundException()
+            throw new NotFoundException("Specified assignment could not be found")
         }
 
         if(user.role !== "SUDO" && ( user.role == "ADMIN" && !assignment.class.administrators.map(id => id.toString()).includes(`${user._id}`) ) ){
-            throw new ForbiddenException()
+            throw new ForbiddenException("You are not authorized to perform this action")
         }
 
         const { authToken, ...actualUpdates } = updateData;
@@ -163,13 +165,13 @@ export class AssignmentsService {
         .populate<{ class: IClassDoc }>("class")
 
         if(!result){
-            throw new NotFoundException();
+            throw new NotFoundException("Specified assignment could not be found");
         }
 
         if(
             user.role !== "SUDO" && 
             !result.class.administrators.map(id => id.toString()).includes(`${user._id}`) ){
-           throw new ForbiddenException()
+           throw new ForbiddenException("You are not authorized to perform this action")
         }
 
         result.meta.isDraft = false;
@@ -191,7 +193,7 @@ export class AssignmentsService {
         }
 
         if(user.role !== "SUDO" && ( user.role == "ADMIN" && !assignment.class.administrators.map(id => id.toString()).includes(`${user._id}`) ) ){
-            throw new ForbiddenException()
+            throw new ForbiddenException("You are not authorized to perform this action")
         }
 
         const relatedAssignmentSet = await AssignmentSetModel.findById(assignment.assignmentSet._id);
@@ -229,7 +231,7 @@ export class AssignmentsService {
         }
 
         const newSubmission = new AssignmentSubmissionModel({
-            code: await generateCode( await AssignmentModel.countDocuments(), "ASSUB", 10),
+            code: await generateCode( await AssignmentSubmissionModel.countDocuments({ code: { $regex: /ASSUB/ }}), "ASSUB", 10),
             
             class: relatedAssignment.class,
             classCode: relatedAssignment.classCode,
@@ -308,19 +310,14 @@ export class AssignmentsService {
         const submissionFilter = isId ? { _id: new Types.ObjectId(submissionSpecifier)} : { code: submissionSpecifier}
 
         const submission = await AssignmentSubmissionModel.findOne(submissionFilter).populate<{ class?: IClassDoc}>('class')
-
-        if(!submission){
-        throw new NotFoundException("Specified assignment submission could not be found")
-        }
-
         const assignment = await AssignmentModel.findOne(assignmentFilter);
-    
-        if(!assignment){
-        throw new NotFoundException("Related assignment could not be found");
-        }
 
-        if(submission.assignment.toString() != assignment._id.toString()) {
-            throw new BadRequestException("Specified assignment or submission is mismatched")
+        if(
+            !submission || 
+            !assignment ||
+            (submission.assignment.toString() != assignment._id.toString())
+        ){
+            throw new BadRequestException("Specified assignment submission or submission could not be found")
         }
 
         if(

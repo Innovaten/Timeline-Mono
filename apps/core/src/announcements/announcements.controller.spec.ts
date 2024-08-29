@@ -6,7 +6,7 @@ import { ClassesService } from '../classes/classes.service';
 import { jest } from '@jest/globals'
 import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncement, IAnnouncementSet, IClass, IUser, UserModel } from '@repo/models';
 import { Types } from 'mongoose';
-import { createRandomAnnouncements, createRandomAnnouncementSet, createRandomClasses, createRandomUser } from '../../test/mocks';
+import { AnnouncementSetFactory, AnnouncementFactory, UserFactory, ClassFactory } from '../../test/mocks';
 import { CreateAnnouncementDto, UpdateAnnouncementDto } from './announcements.dto';
 import { faker } from '@faker-js/faker';
 
@@ -20,13 +20,13 @@ describe('AnnouncementsController', () => {
   let announcementSet: (IAnnouncementSet & {_id: Types.ObjectId })
 
   beforeAll(async () => {
-    announcementSet = createRandomAnnouncementSet({})
-    classes = createRandomClasses(3, { announcementSet: announcementSet._id})
-    announcements = createRandomAnnouncements(10, { classId: classes[0]._id})
-    draftAnnouncements = createRandomAnnouncements(3, { classId: classes[0]._id, isDraft: true})
+    announcementSet = AnnouncementSetFactory(1, {})[0]
+    classes = ClassFactory(3, { announcementSet: announcementSet._id})
+    announcements = AnnouncementFactory(10, { classId: classes[0]._id})
+    draftAnnouncements = AnnouncementFactory(3, { classId: classes[0]._id, isDraft: true})
     
-    sudoUser = createRandomUser({ role: "SUDO" });
-    adminUser = createRandomUser({ role: "ADMIN"});
+    sudoUser = UserFactory(1, { role: "SUDO" })[0];
+    adminUser = UserFactory(1, { role: "ADMIN"})[0];
     announcementSet.class = classes[0]._id
 
     await AnnouncementSetModel.insertMany(announcementSet)

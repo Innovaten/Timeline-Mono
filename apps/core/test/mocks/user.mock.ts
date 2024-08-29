@@ -1,10 +1,8 @@
 import { Types } from "mongoose";
-import { IUser } from "../../../../packages/models/src/user/index.types";
-import { modeOfClassType } from "@repo/models";
+import { modeOfClassType, IUser } from "@repo/models";
 import { faker } from "@faker-js/faker";
 
-
-type CreateUserProps = {
+type UserFactoryProps = {
   role?: "SUDO" | "ADMIN" | "STUDENT",
   gender?: "Male" | "Female",
   classes?: Types.ObjectId[],
@@ -18,57 +16,10 @@ type CreateUserProps = {
   phone?: string,
 }
 
-export function createRandomUser({
+export function UserFactory(length: number, {
   role,
-  gender,
-  classes,
-  modeOfClass,
-  completedLessons,
-  isDeleted,
-  isSuspended,
-  password,
-  creator,
   email,
   phone,
-  }: CreateUserProps
-): IUser & { _id: Types.ObjectId } {
-
-  return {
-    _id: new Types.ObjectId(),
-    code: faker.number.int().toString(),
-    role: role ?? "SUDO",
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName(),
-    otherNames: "",
-    gender: gender ?? "Male",
-
-    email: email ?? faker.internet.email(),
-    phone: phone ?? faker.phone.number(),
-
-    classes: classes ?? [],
-    modeOfClass: modeOfClass ?? "In-Person",
-    
-    completedLessons: completedLessons ?? new Types.ObjectId(),
-    meta: {
-      isDeleted: isDeleted ?? false,
-      isSuspended: isSuspended ?? false,
-      isPasswordSet: false,
-      lastLoggedIn: new Date(),
-    },
-
-    auth: {
-      password:  password ?? faker.internet.password(),
-    },
-    locker: {},
-    createdBy: creator ?? new Types.ObjectId(),
-
-    createdAt: faker.date.past(),
-    updatedAt: faker.date.recent(),
-  }
-}
-
-export function createRandomUsers(length: number, {
-  role,
   gender,
   classes,
   modeOfClass,
@@ -77,25 +28,44 @@ export function createRandomUsers(length: number, {
   isSuspended,
   password,
   creator,
-  }: CreateUserProps
+  }: UserFactoryProps
 ): (IUser & { _id: Types.ObjectId })[] {
 
   const users: (IUser & { _id: Types.ObjectId })[] = []
 
   for(let i = 0; i < length; i++){
-    users.push(
-      createRandomUser({
-        role,
-        gender,
-        classes,
-        modeOfClass,
-        completedLessons,
-        isDeleted,
-        isSuspended,
-        password,
-        creator,
-      })
-    )
+    users.push({
+      _id: new Types.ObjectId(),
+      code: faker.number.int().toString(),
+      role: role ?? "SUDO",
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      otherNames: "",
+      gender: gender ?? "Male",
+  
+      email: email ?? faker.internet.email(),
+      phone: phone ?? faker.phone.number(),
+  
+      classes: classes ?? [],
+      modeOfClass: modeOfClass ?? "In-Person",
+      
+      completedLessons: completedLessons ?? new Types.ObjectId(),
+      meta: {
+        isDeleted: isDeleted ?? false,
+        isSuspended: isSuspended ?? false,
+        isPasswordSet: false,
+        lastLoggedIn: new Date(),
+      },
+  
+      auth: {
+        password:  password ?? faker.internet.password(),
+      },
+      locker: {},
+      createdBy: creator ?? new Types.ObjectId(),
+  
+      createdAt: faker.date.past(),
+      updatedAt: faker.date.recent(),
+    })
   }
 
   return users;

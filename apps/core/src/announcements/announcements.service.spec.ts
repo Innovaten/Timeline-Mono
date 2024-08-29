@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnnouncementsService } from './announcements.service';
-import { createRandomAnnouncement, createRandomAnnouncements, createRandomAnnouncementSet, createRandomClasses, createRandomUser } from '../../test/mocks'
+import { AnnouncementSetFactory, AnnouncementFactory, UserFactory, ClassFactory } from '../../test/mocks'
 import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncement, IAnnouncementSet, IClass, UserModel, IUser } from '@repo/models';
 import { Types } from 'mongoose';
 import { CreateAnnouncementDto, UpdateAnnouncementDto } from './announcements.dto';
@@ -15,12 +15,12 @@ describe('AnnouncementsService', () => {
   let announcementSet: (IAnnouncementSet & {_id: Types.ObjectId })
 
   beforeAll(async () => {
-    announcementSet = createRandomAnnouncementSet({})
-    classes = createRandomClasses(3, { announcementSet: announcementSet._id})
-    docs = createRandomAnnouncements(10, { classId: classes[0]._id})
-    draftAnnouncements = createRandomAnnouncements(3, { classId: classes[0]._id, isDraft: true})
+    [announcementSet] = AnnouncementSetFactory(1,{ })
+    classes = ClassFactory(3, { announcementSet: announcementSet._id})
+    docs = AnnouncementFactory(10, { classId: classes[0]._id})
+    draftAnnouncements = AnnouncementFactory(3, { classId: classes[0]._id, isDraft: true})
     
-    sudoUser = createRandomUser({ role: "SUDO" });
+    sudoUser = UserFactory(1, { role: "SUDO" })[0];
 
     announcementSet.class = classes[0]._id
 

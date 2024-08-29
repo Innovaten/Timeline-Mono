@@ -3,29 +3,33 @@ import { IAnnouncementSet } from "@repo/models"
 import { Types } from "mongoose"
 
 
-type CreateRandomAnnouncementSet = {
+type AnnouncementSetFactoryProps = {
   classId?: Types.ObjectId,
   announcements?: Types.ObjectId[],
   updator?: Types.ObjectId,
 }
 
-export function createRandomAnnouncementSet({
+export function AnnouncementSetFactory(length: number, {
     classId,
     announcements,
     updator,
-  }: CreateRandomAnnouncementSet 
-): IAnnouncementSet & { _id: Types.ObjectId } {
+  }: AnnouncementSetFactoryProps
+): (IAnnouncementSet & { _id: Types.ObjectId })[] {
 
-  return {
-    _id: new Types.ObjectId(),
-    code: faker.number.int().toString(),
-    class: classId ?? new Types.ObjectId(),
-    announcements: announcements ?? [],
-    updatedBy: updator ?? new Types.ObjectId(),
+  const announcementSets: (IAnnouncementSet & { _id: Types.ObjectId })[] = []
 
-    createdAt: faker.date.past(),
-    updatedAt: faker.date.recent(),
+  for(let i = 0; i < length; i++){
+    announcementSets.push({
+      _id: new Types.ObjectId(),
+      code: faker.number.int().toString(),
+      class: classId ?? new Types.ObjectId(),
+      announcements: announcements ?? [],
+      updatedBy: updator ?? new Types.ObjectId(),
+  
+      createdAt: faker.date.past(),
+      updatedAt: faker.date.recent(),
+    })
   }
 
-
+  return announcementSets;
 }

@@ -5,7 +5,6 @@ export interface ICompletedLesson {
     lessons: Types.ObjectId[]
     createdAt: Date
     updatedAt: Date
-    lessonSet: Types.ObjectId[]
 }
 
 export interface ICompletedLessonDoc extends Document, ICompletedLesson {}

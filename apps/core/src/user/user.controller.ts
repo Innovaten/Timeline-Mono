@@ -477,7 +477,6 @@ export class UsersController {
     @Post(':userId/completed-lessons/:lessonId')
     async markLessonAsCompleted(
         @Param('lessonId') lessonId: string,
-        @Body('lessonSetId') lessonSetId: string,
         @Request() req: any
     ) {
         try {
@@ -489,7 +488,6 @@ export class UsersController {
             const completedLesson = await this.user.markAsCompleteLessons(
                 user._id,
                 new Types.ObjectId(lessonId),
-                new Types.ObjectId(lessonSetId)
             );
 
             return ServerSuccessResponse(completedLesson);

@@ -11,10 +11,6 @@ export const CompletedModulesSchema = new Schema<ICompletedModule> ({
         type: [{ type: SchemaTypes.ObjectId, ref: 'Lessons' }],
         required: true,
     },
-    lessonSet: {
-        type: [{ type: SchemaTypes.ObjectId, ref: 'LessonSet' }],
-        required: true,
-    },
     updatedAt: {
         type: SchemaTypes.Date,
         default: new Date()

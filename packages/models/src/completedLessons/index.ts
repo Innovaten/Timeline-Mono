@@ -11,10 +11,6 @@ export const CompletedLessonSchema = new Schema<ICompletedLesson> ({
         type: [{ type: SchemaTypes.ObjectId, ref: 'Lessons' }],
         required: true,
     },
-    lessonSet: {
-        type: [{ type: SchemaTypes.ObjectId, ref: 'LessonSet' }],
-        required: true,
-    },
     updatedAt: {
         type: SchemaTypes.Date,
         default: new Date()

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, ForbiddenException } from "@nestjs/common";
+import { BadRequestException, Injectable, ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { compare } from "bcrypt";
 import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc, IModuleDoc, LessonModel, LessonSetModel, IClassDoc } from "@repo/models";
 
@@ -320,8 +320,8 @@ export class UserService {
         return accessibleAssignments;
     }
 
-    async markAsCompleteLessons(userId: Types.ObjectId, lessonId: Types.ObjectId, lessonSetId: Types.ObjectId): Promise<ICompletedLessonDoc> {
-        const completedLesson = await CompletedLessonsModel.findOne({ user: userId, lessonSet: lessonSetId });
+    async markAsCompleteLessons(userId: Types.ObjectId, lessonId: Types.ObjectId): Promise<ICompletedLessonDoc> {
+        const completedLesson = await CompletedLessonsModel.findOne({ user: userId });
 
         const currentTimestamp = new Date();
 
@@ -346,7 +346,6 @@ export class UserService {
             const newCompletedLesson = new CompletedLessonsModel({
                 user: userId,
                 lessons: [lessonId],
-                lessonSet: [lessonSetId],
                 createdAt: currentTimestamp,
                 updatedAt: currentTimestamp,
             });
@@ -365,13 +364,13 @@ export class UserService {
 
         const completedLessonsDoc = await CompletedLessonsModel.findOne({ user: userId }).exec();
         if (!completedLessonsDoc) {
-            throw new ForbiddenException('No completed lessons found for this user');
+            throw new UnauthorizedException('No completed lessons found for this user');
         }
     
         let allLessonsCompleted = await this.areAllLessonsCompleted(moduleDoc.lessonSet, completedLessonsDoc);
 
         if (!allLessonsCompleted) {
-            throw new ForbiddenException('Not all lessons in the module are completed');
+            throw new UnauthorizedException('Not all lessons in the module are completed');
         }
 
         const completedModuleDoc = await CompletedModulesModel.findOne({ user: userId }).exec();
@@ -387,7 +386,9 @@ export class UserService {
               throw new ForbiddenException('Cannot change status too quickly');
             }
 
-            completedModuleDoc.modules.splice(moduleIndex, 1);
+            else{
+                completedModuleDoc.modules.splice(moduleIndex, 1);
+            }
           } else {
 
             completedModuleDoc.modules.push(moduleId);
@@ -400,7 +401,6 @@ export class UserService {
           const newCompletedModule = new CompletedModulesModel({
             user: userId,
             modules: [moduleId],
-            lessonSet: moduleDoc.lessonSet,
             createdAt: now,
             updatedAt: now,
           });
@@ -411,16 +411,16 @@ export class UserService {
         return completedModuleDoc;
       }
 
-      private async areAllLessonsCompleted(lessonSetId: Types.ObjectId, completedLessonsDoc: any): Promise<boolean> {
+      private async areAllLessonsCompleted(lessonSetId: Types.ObjectId, completedLessonsDoc: ICompletedLessonDoc): Promise<boolean> {
         const lessonSet = await LessonSetModel.findById(lessonSetId).populate('lessons').exec();
     
         if (!lessonSet) {
           throw new Error('Lesson set not found');
         }
     
-        return lessonSet.lessons.every((lessonId: Types.ObjectId) =>
-          completedLessonsDoc.lessons.some((completedLessonId: Types.ObjectId) => completedLessonId.equals(lessonId))
-        );
+        const completedLessonsIds = completedLessonsDoc.lessons
+        const modulesLessonsIds = lessonSet.lessons.map(lesson => lesson._id);
+        return modulesLessonsIds.every(id => completedLessonsIds.includes(id));
       }
 
       async getCompletedLessons(userId: Types.ObjectId): Promise<ILessonDoc[] | null> {

@@ -65,7 +65,7 @@ export class AssetsController {
     }
   }
 
-  //   @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @Get("count")
   async getAssetsCount(@Req() req: any) {
     try {
@@ -78,6 +78,7 @@ export class AssetsController {
     }
   }
 
+  @UseGuards(AuthGuard)
   @Get("count/:id")
   async getAssetsCountById(@Req() req: any) {
     try {

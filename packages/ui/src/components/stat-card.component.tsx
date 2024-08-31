@@ -14,7 +14,7 @@ export function StatCard({label, value, icon, className }: StatCardType){
   
     return (
       <>
-        <div className={` ${className} flex gap-2 sm:gap-3 bg-blue-50 p-2 sm:p-4 w-[calc(50%-10px)] sm:w-full rounded items-center shadow-sm`}>
+        <div className={` ${className} flex gap-2 sm:gap-3 bg-blue-50 p-2 sm:p-4 w-full rounded items-center shadow-sm`}>
           <div className='w-[40px] sm:w-16 aspect-square bg-white rounded-full grid place-items-center'>
             <Icon className='w-4 sm:w-8 text-blue-600'/>
           </div>

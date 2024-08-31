@@ -434,5 +434,18 @@ export class UserService {
         const modules = await ModuleModel.find({_id: {$in: completedModules?.modules}}).populate("createdBy updatedBy")
         return modules;
       }
+
+      async getGradebook(userId: Types.ObjectId) {
+        const userClassesWithQuizzes = await ClassModel.find({students: userId}, {quizzes: 1}).populate("quizzes").lean()
+        const allQuizzes = userClassesWithQuizzes.reduce<Types.ObjectId[]>((acc, cls) => acc.concat(cls.quizzes || []), []);
+
+        const userAssignments = await AssignmentModel.find({accessList: userId});
+        const allAssignments = userAssignments.reduce<Types.ObjectId[]>((acc, cls) => acc.concat(cls._id || []), []);
+
+        return {
+            quizzes: allQuizzes,
+            assignments: allAssignments,
+        };
+      }
 }
 

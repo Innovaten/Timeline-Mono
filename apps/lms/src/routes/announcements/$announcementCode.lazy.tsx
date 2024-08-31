@@ -43,8 +43,10 @@ function Announcement({ }){;
                             }
                         </span>
                     </div>
-                    <div className='mt-4 flex-1 overflow-y-auto text-blue-800' dangerouslySetInnerHTML={{ __html: announcement.content }}>
-                    </div>
+                    <div
+                        className="mt-4 flex-1 overflow-y-auto text-blue-700"
+                        dangerouslySetInnerHTML={{ __html: announcement.content }}
+                    />
                 </div>
             }
 

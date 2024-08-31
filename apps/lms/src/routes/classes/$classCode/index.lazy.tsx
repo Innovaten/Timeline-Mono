@@ -98,7 +98,7 @@ function ClassDetails(){
             </div>
           </div>
           <div className='mt-4'>
-            <div className='mt-4 flex text-blue-700 gap-2 sm:gap-5 w-full flex-wrap sm:flex-nowrap justify-evenly'>
+            <div className='mt-4 flex text-blue-700 gap-2 sm:gap-5 w-full flex-wrap md:flex-nowrap justify-evenly'>
               {
                 stats.map(({ label, icon, value}, idx) => (
                   <Link to={`/classes/${classCode}/${(label.replaceAll(" ","").toLowerCase())}`} className='w-full border-[1.5px] cursor-pointer border-transparent hover:border-blue-700/40'>

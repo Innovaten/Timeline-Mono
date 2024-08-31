@@ -514,5 +514,22 @@ export class UsersController {
     }
     }
 
+
+    @UseGuards(AuthGuard)
+    @Get("gradebook")
+    async fetchUserGradebook(
+    @Request() req: any
+    ) {
+    try{
+        const user = req['user']
+        if (!user) {
+            return ServerErrorResponse(new Error('Unauthenticated'), 401);
+        }
+        const gradebookDoc = await this.user.getGradebook(user._id)
+        return ServerSuccessResponse(gradebookDoc);
+    } catch (err) {
+        return ServerErrorResponse(new Error(`${err}`), 500);
+    }
+    }
   
 }

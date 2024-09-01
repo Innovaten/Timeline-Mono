@@ -435,7 +435,7 @@ export class UserService {
         return modules;
       }
 
-      async getGradebook(userId: Types.ObjectId, classCode: Types.ObjectId) {
+      async getGradebook(userId: Types.ObjectId, classCode: string) {
         //const userClassesWithQuizzes = await ClassModel.find({code: classCode, students: userId}, {quizzes: 1},).populate("quizzes").lean();
 
         const userAssignments = await AssignmentSubmissionModel.find({classCode: classCode, submittedBy: userId}).lean();

@@ -518,7 +518,7 @@ export class UsersController {
     @UseGuards(AuthGuard)
     @Get(':userId/gradebook/:classCode')
     async fetchUserGradebook(
-    @Param("classCode") classCode: Types.ObjectId,
+    @Param("classCode") classCode: string,
     @Request() req: any
     ) {
     try{

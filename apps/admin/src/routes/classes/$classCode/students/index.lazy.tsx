@@ -1,4 +1,4 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import { Button, DialogContainer, Input, SelectInput } from '@repo/ui'
 import { _getToken, abstractAuthenticatedRequest, makeAuthenticatedRequest, useDialog, useLoading, useToggleManager, validPhoneNumber } from '@repo/utils';
 import { FunnelIcon, ArrowPathIcon, PencilIcon, UserMinusIcon } from '@heroicons/react/24/outline'
@@ -12,6 +12,7 @@ import * as yup from 'yup'
 import dayjs from 'dayjs';
 import { IClassDoc } from '@repo/models';
 import { useLMSContext } from '../../../../app';
+import { useNavigate } from '@tanstack/react-router';
 
 export const Route = createLazyFileRoute('/classes/$classCode/students/')({
   component: ClassStudents
@@ -22,6 +23,7 @@ function ClassStudents(){
 
   const { user } = useLMSContext()
   const { classCode } = Route.useParams()
+  const navigate = useNavigate({ from: '/classes/$classCode/students' })
 
   const initialToggles = {
       'update-is-loading': false,
@@ -236,6 +238,19 @@ function ClassStudents(){
                             onClick={() => {toggleManager.reset('view-dialog')}}
                         >
                         Close
+                        </Button>
+                        
+                        <Button
+                            variant="outline" 
+                            onClick={() => {toggleManager.reset('view-dialog'); navigate({to:`/classes/${classCode}/students/${selectedStudent.code}/completed-modules` })}}
+                        >
+                        View Completed Modules
+                        </Button>
+                        <Button
+                            variant="primary" 
+                            onClick={() => {toggleManager.reset('view-dialog'); navigate({to:`/classes/${classCode}/students/${selectedStudent.code}/gradebook` })}}
+                        >
+                        View Gradebook
                         </Button>
                     </div>
                 </div>

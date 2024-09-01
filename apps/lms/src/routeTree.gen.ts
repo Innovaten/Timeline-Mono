@@ -54,6 +54,9 @@ const ClassesClassCodeAnnouncementsAnnouncementCodeLazyImport = createFileRoute(
 const ClassesClassCodeModulesModuleCodeIndexLazyImport = createFileRoute(
   '/classes/$classCode/modules/$moduleCode/',
 )()
+const ClassesClassCodeModulesModuleCodeLessonsLazyImport = createFileRoute(
+  '/classes/$classCode/modules/$moduleCode/lessons',
+)()
 const ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyImport =
   createFileRoute(
     '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode',
@@ -206,10 +209,20 @@ const ClassesClassCodeModulesModuleCodeIndexLazyRoute =
     ),
   )
 
+const ClassesClassCodeModulesModuleCodeLessonsLazyRoute =
+  ClassesClassCodeModulesModuleCodeLessonsLazyImport.update({
+    path: '/classes/$classCode/modules/$moduleCode/lessons',
+    getParentRoute: () => rootRoute,
+  } as any).lazy(() =>
+    import('./routes/classes/$classCode/modules/$moduleCode/lessons.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 const ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyRoute =
   ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyImport.update({
-    path: '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode',
-    getParentRoute: () => rootRoute,
+    path: '/$lessonCode',
+    getParentRoute: () => ClassesClassCodeModulesModuleCodeLessonsLazyRoute,
   } as any).lazy(() =>
     import(
       './routes/classes/$classCode/modules/$moduleCode/lessons.$lessonCode.lazy'
@@ -339,6 +352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassCodeModulesIndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/classes/$classCode/modules/$moduleCode/lessons': {
+      id: '/classes/$classCode/modules/$moduleCode/lessons'
+      path: '/classes/$classCode/modules/$moduleCode/lessons'
+      fullPath: '/classes/$classCode/modules/$moduleCode/lessons'
+      preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeLessonsLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/classes/$classCode/modules/$moduleCode/': {
       id: '/classes/$classCode/modules/$moduleCode/'
       path: '/classes/$classCode/modules/$moduleCode'
@@ -348,10 +368,10 @@ declare module '@tanstack/react-router' {
     }
     '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode': {
       id: '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode'
-      path: '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode'
+      path: '/$lessonCode'
       fullPath: '/classes/$classCode/modules/$moduleCode/lessons/$lessonCode'
       preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof ClassesClassCodeModulesModuleCodeLessonsLazyImport
     }
   }
 }
@@ -376,8 +396,11 @@ export const routeTree = rootRoute.addChildren({
   ClassesClassCodeCompletedLessonsIndexLazyRoute,
   ClassesClassCodeCompletedModulesIndexLazyRoute,
   ClassesClassCodeModulesIndexLazyRoute,
+  ClassesClassCodeModulesModuleCodeLessonsLazyRoute:
+    ClassesClassCodeModulesModuleCodeLessonsLazyRoute.addChildren({
+      ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyRoute,
+    }),
   ClassesClassCodeModulesModuleCodeIndexLazyRoute,
-  ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyRoute,
 })
 
 /* prettier-ignore-end */
@@ -405,8 +428,8 @@ export const routeTree = rootRoute.addChildren({
         "/classes/$classCode/completed-lessons/",
         "/classes/$classCode/completed-modules/",
         "/classes/$classCode/modules/",
-        "/classes/$classCode/modules/$moduleCode/",
-        "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode"
+        "/classes/$classCode/modules/$moduleCode/lessons",
+        "/classes/$classCode/modules/$moduleCode/"
       ]
     },
     "/": {
@@ -460,11 +483,18 @@ export const routeTree = rootRoute.addChildren({
     "/classes/$classCode/modules/": {
       "filePath": "classes/$classCode/modules/index.lazy.tsx"
     },
+    "/classes/$classCode/modules/$moduleCode/lessons": {
+      "filePath": "classes/$classCode/modules/$moduleCode/lessons.lazy.tsx",
+      "children": [
+        "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode"
+      ]
+    },
     "/classes/$classCode/modules/$moduleCode/": {
       "filePath": "classes/$classCode/modules/$moduleCode/index.lazy.tsx"
     },
     "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode": {
-      "filePath": "classes/$classCode/modules/$moduleCode/lessons.$lessonCode.lazy.tsx"
+      "filePath": "classes/$classCode/modules/$moduleCode/lessons.$lessonCode.lazy.tsx",
+      "parent": "/classes/$classCode/modules/$moduleCode/lessons"
     }
   }
 }

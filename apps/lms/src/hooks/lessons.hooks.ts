@@ -69,7 +69,7 @@ export function useLesson(refreshFlag: boolean = true, specifier: string){
 }
 
 
-export function useCompletedLessons(refreshFlag: boolean = true, userId: string){
+export function useCompletedLessons(refreshFlag: boolean = true, specifier: string, isId: boolean = true){
     
     const [ completedLessons, setCompletedLessons ] = useState<(ILessonDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
     const { isLoading, toggleLoading, resetLoading } = useLoading()
@@ -79,7 +79,7 @@ export function useCompletedLessons(refreshFlag: boolean = true, userId: string)
     useEffect( () => {
         abstractAuthenticatedRequest(
             "get",
-            `/api/v1/users/${userId}/completed-lessons`,
+            `/api/v1/users/${specifier}/completed-lessons?isId=${isId}`,
             {},
             {},
             {

@@ -516,8 +516,9 @@ export class UsersController {
 
 
     @UseGuards(AuthGuard)
-    @Get("gradebook")
+    @Get(':userId/gradebook/:classCode')
     async fetchUserGradebook(
+    @Param("classCode") classCode: Types.ObjectId,
     @Request() req: any
     ) {
     try{
@@ -525,7 +526,7 @@ export class UsersController {
         if (!user) {
             return ServerErrorResponse(new Error('Unauthenticated'), 401);
         }
-        const gradebookDoc = await this.user.getGradebook(user._id)
+        const gradebookDoc = await this.user.getGradebook(user._id, classCode)
         return ServerSuccessResponse(gradebookDoc);
     } catch (err) {
         return ServerErrorResponse(new Error(`${err}`), 500);

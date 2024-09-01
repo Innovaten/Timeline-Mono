@@ -21,8 +21,9 @@ export function useGrades(refreshFlag: boolean = true, specifier: string, isId: 
             `/api/v1${route}`,
         ).then(res => {
             if(res.status == 200 && res.data.success){
-                setAssignmentGrades(res.data.data.grades);
+                setAssignmentGrades(res.data.data.assignments);
                 //setCount(res.data.data.length);
+                //setQuizGrades(res.data.data.quizzes)
             } else {
                 toast.error(`${res.data.error?.msg}`);
             }

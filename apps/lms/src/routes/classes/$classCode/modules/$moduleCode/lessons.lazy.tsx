@@ -59,11 +59,6 @@ import {
                     </span>
                   </div>
                 </div>
-                {lessonsIsLoading && (
-                  <div className="w-full h-full m-auto mt-4">
-                    <div className="w-5 aspect-square m-auto rounded-full border-[1px] border-t-blue-500 animate-spin"></div>
-                  </div>
-                )}
                 {!lessonsIsLoading &&
                   lessons.map((lesson, idx) => {
                     return (

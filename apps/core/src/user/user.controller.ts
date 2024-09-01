@@ -425,21 +425,6 @@ export class UsersController {
         } 
     }
     
-    //@UseGuards(AuthGuard)
-    // @Get(':specifier/completed-lessons')
-    // async getUsersCompletedLessons( 
-    //     @Param('specifier') specifier: string,
-    //     @Query('isId') isId: string = "true",
-    // ) {
-    //     try {
-    //         const IsId = isId == "true";
-    //         const completedLessons = await this.user.getUsersCompletedLessons(specifier, IsId)
-    //         return ServerSuccessResponse(completedLessons);
-
-    //     } catch(err) {
-    //         return ServerErrorResponse(new Error(`${err}`), 500);
-    //     } 
-    // }
   //@UseGuards(AuthGuard)
     @Get(':specifier/completed-lessons')
     async getCompletedLessons(
@@ -448,16 +433,8 @@ export class UsersController {
         @Req() req: any
     ) {
         try {
-        const IsId = isId === "true";
-        if(!IsId){
-           const student = (await UserModel.findOne({code:specifier})) as IUserDoc
-           if(!student){
-            return ServerErrorResponse(new Error('No student found'), 404);
-        }
-            specifier = `${student._id}`
-        }
-        
-        const completedLessons = await this.user.getCompletedLessons(new Types.ObjectId(specifier));
+        const IsId = isId === "true"; 
+        const completedLessons = await this.user.getCompletedLessons(specifier, IsId);
 
         if (!completedLessons) {
             return ServerErrorResponse(new Error('No completed lessons found'), 404);
@@ -478,15 +455,9 @@ export class UsersController {
     ) {
         try {
         const IsId = isId === "true";
-        if(!IsId){
-            const student = (await UserModel.findOne({code:specifier})) as IUserDoc
-            if(!student){
-             return ServerErrorResponse(new Error('No student found'), 404);
-         }
-             specifier = `${student._id}`
-         }     
-        const completedModules = await this.user.getCompletedModules(new Types.ObjectId(specifier));
-
+         
+        const completedModules = await this.user.getCompletedModules(specifier,  IsId);
+         
         if (!completedModules) {
             return ServerErrorResponse(new Error('No completed modules found'), 404);
         }
@@ -537,25 +508,4 @@ export class UsersController {
     }
     }
 
-    // @Get(':specifier/assignments')
-    // async getUserAssignments( 
-    //     @Param('specifier') specifier: string,
-    //     @Query('isId') isId: string = "true",
-    //     @Req() req: any
-    // ) {
-    //     try {
-
-    //         const IsId = isId === "true";
-    //         const user = req.user as IUserDoc;
-
-    //         const assignments = await this.user.getUserAssignments(user)
-    //         return ServerSuccessResponse(assignments);
-
-    //     } catch(err) {
-    //         return ServerErrorResponse(new Error(`${err}`), 500);
-    //     } 
-    // }
-
-
-  
 }

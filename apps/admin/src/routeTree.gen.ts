@@ -332,17 +332,6 @@ const ClassesClassCodeModulesModuleCodeLessonsLessonCodeUpdateLazyRoute =
     ).then((d) => d.Route),
   )
 
-// const ClassesClassCodeModulesModuleCodeLessonsCreateLazyRoute =
-//   ClassesClassCodeModulesModuleCodeLessonsCreateLazyImport.update({
-//     path: '/create',
-//     getParentRoute: () =>
-//       ClassesClassCodeModulesModuleCodeLessonsLazyRoute,
-//   } as any).lazy(() =>
-//     import(
-//       './routes/classes/$classCode/modules/$moduleCode/lessons.create.lazy'
-//     ).then((d) => d.Route),
-//   )
-
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {

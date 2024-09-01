@@ -423,14 +423,28 @@ export class UserService {
         return modulesLessonsIds.every(id => completedLessonsIds.includes(id));
       }
 
-      async getCompletedLessons(userId: Types.ObjectId): Promise<ILessonDoc[] | null> {
-        const completedLessons = await CompletedLessonsModel.findOne({ user: userId }).exec();
+      async getCompletedLessons(specifier: string, IsId: boolean): Promise<ILessonDoc[] | null> {
+        if(!IsId){
+            const student = (await UserModel.findOne({code:specifier})) as IUserDoc
+            if(!student){
+            throw new Error('No student found');
+         }
+             specifier = `${student._id}`
+         }
+        const completedLessons = await CompletedLessonsModel.findOne({ user: new Types.ObjectId(specifier) }).exec();
         const lessons = await LessonModel.find({_id: {$in: completedLessons?.lessons}}).populate("createdBy updatedBy")
         return lessons;
       }
 
-      async getCompletedModules(userId: Types.ObjectId): Promise<IModuleDoc[] | null> {
-        const completedModules = await CompletedModulesModel.findOne({ user: userId }).exec();
+      async getCompletedModules(specifier: string, IsId: boolean): Promise<IModuleDoc[] | null> {
+        if(!IsId){
+            const student = (await UserModel.findOne({code:specifier})) as IUserDoc
+            if(!student){
+            throw new Error('No student found');
+         }
+             specifier = `${student._id}`
+         }
+        const completedModules = await CompletedModulesModel.findOne({ user: new Types.ObjectId(specifier) }).exec();
         const modules = await ModuleModel.find({_id: {$in: completedModules?.modules}}).populate("createdBy updatedBy")
         return modules;
       }

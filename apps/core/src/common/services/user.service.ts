@@ -435,16 +435,14 @@ export class UserService {
         return modules;
       }
 
-      async getGradebook(userId: Types.ObjectId) {
-        const userClassesWithQuizzes = await ClassModel.find({students: userId}, {quizzes: 1}).populate("quizzes").lean()
-        const allQuizzes = userClassesWithQuizzes.reduce<Types.ObjectId[]>((acc, cls) => acc.concat(cls.quizzes || []), []);
+      async getGradebook(userId: Types.ObjectId, classCode: Types.ObjectId) {
+        //const userClassesWithQuizzes = await ClassModel.find({code: classCode, students: userId}, {quizzes: 1},).populate("quizzes").lean();
 
-        const userAssignments = await AssignmentModel.find({accessList: userId});
-        const allAssignments = userAssignments.reduce<Types.ObjectId[]>((acc, cls) => acc.concat(cls._id || []), []);
-
+        const userAssignments = await AssignmentSubmissionModel.find({classCode: classCode, submittedBy: userId}).lean();
+        
         return {
-            quizzes: allQuizzes,
-            assignments: allAssignments,
+            quizzes: [],
+            assignments: userAssignments,
         };
       }
 }

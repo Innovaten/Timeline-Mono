@@ -435,10 +435,24 @@ export class UserService {
         return modules;
       }
 
-      async getGradebook(userId: Types.ObjectId, classCode: string) {
-        //const userClassesWithQuizzes = await ClassModel.find({code: classCode, students: userId}, {quizzes: 1},).populate("quizzes").lean();
+      async getGradebook(specifier: string, IsId: boolean, classCode: string) {
+        if(!IsId) {
+            const student = (await UserModel.findOne({code: specifier})) as IUserDoc
 
-        const userAssignments = await AssignmentSubmissionModel.find({classCode: classCode, submittedBy: userId}).lean();
+            if(!student) {
+                throw new Error("No student found");
+
+            }
+
+            specifier = `${student._id}`
+        }
+
+        //yet to implement quizzes
+        const userAssignments = await AssignmentSubmissionModel.find({classCode: classCode, submittedBy: new Types.ObjectId(specifier)}).exec();
+
+        if(userAssignments.length === 0) {
+            throw new ForbiddenException("No gradebook items available at the moment")
+        }
         
         return {
             quizzes: [],

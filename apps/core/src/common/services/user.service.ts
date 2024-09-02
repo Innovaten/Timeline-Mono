@@ -436,6 +436,7 @@ export class UserService {
       }
 
       async getGradebook(specifier: string, IsId: boolean, classCode: string) {
+
         if(!IsId) {
             const student = (await UserModel.findOne({code: specifier})) as IUserDoc
 
@@ -446,9 +447,13 @@ export class UserService {
 
             specifier = `${student._id}`
         }
-
+        
+        const filter = {
+            classCode: classCode,
+            submittedBy: new Types.ObjectId(specifier)
+        }
         //yet to implement quizzes
-        const userAssignments = await AssignmentSubmissionModel.find({classCode: classCode, submittedBy: new Types.ObjectId(specifier)}).exec();
+        const userAssignments = await AssignmentSubmissionModel.find(filter).exec();
 
         return {
             quizzes: [],

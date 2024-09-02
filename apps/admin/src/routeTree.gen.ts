@@ -13,6 +13,8 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as ClassesClassCodeStudentsStudentCodeCompletedModulesImport } from './routes/classes/$classCode/students/$studentCode.completed-modules'
+import { Route as ClassesClassCodeStudentsStudentCodeCompletedLessonsImport } from './routes/classes/$classCode/students/$studentCode.completed-lessons'
 
 // Create Virtual Routes
 
@@ -55,6 +57,9 @@ const ClassesClassCodeModulesModuleCodeIndexLazyImport = createFileRoute(
 )()
 const ClassesClassCodeAssignmentsAssignmentCodeIndexLazyImport =
   createFileRoute('/classes/$classCode/assignments/$assignmentCode/')()
+const ClassesClassCodeStudentsStudentCodeGradebookLazyImport = createFileRoute(
+  '/classes/$classCode/students/$studentCode/gradebook',
+)()
 const ClassesClassCodeModulesModuleCodeUpdateLazyImport = createFileRoute(
   '/classes/$classCode/modules/$moduleCode/update',
 )()
@@ -237,6 +242,16 @@ const ClassesClassCodeAssignmentsAssignmentCodeIndexLazyRoute =
     ).then((d) => d.Route),
   )
 
+const ClassesClassCodeStudentsStudentCodeGradebookLazyRoute =
+  ClassesClassCodeStudentsStudentCodeGradebookLazyImport.update({
+    path: '/classes/$classCode/students/$studentCode/gradebook',
+    getParentRoute: () => rootRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/classes/$classCode/students/$studentCode.gradebook.lazy'
+    ).then((d) => d.Route),
+  )
+
 const ClassesClassCodeModulesModuleCodeUpdateLazyRoute =
   ClassesClassCodeModulesModuleCodeUpdateLazyImport.update({
     path: '/classes/$classCode/modules/$moduleCode/update',
@@ -288,6 +303,18 @@ const ClassesClassCodeAnnouncementsAnnouncementCodeUpdateLazyRoute =
     ).then((d) => d.Route),
   )
 
+const ClassesClassCodeStudentsStudentCodeCompletedModulesRoute =
+  ClassesClassCodeStudentsStudentCodeCompletedModulesImport.update({
+    path: '/classes/$classCode/students/$studentCode/completed-modules',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const ClassesClassCodeStudentsStudentCodeCompletedLessonsRoute =
+  ClassesClassCodeStudentsStudentCodeCompletedLessonsImport.update({
+    path: '/classes/$classCode/students/$studentCode/completed-lessons',
+    getParentRoute: () => rootRoute,
+  } as any)
+
 const ClassesClassCodeModulesModuleCodeLessonsCreateLazyRoute =
   ClassesClassCodeModulesModuleCodeLessonsCreateLazyImport.update({
     path: '/create',
@@ -331,17 +358,6 @@ const ClassesClassCodeModulesModuleCodeLessonsLessonCodeUpdateLazyRoute =
       './routes/classes/$classCode/modules/$moduleCode/lessons.$lessonCode.update.lazy'
     ).then((d) => d.Route),
   )
-
-// const ClassesClassCodeModulesModuleCodeLessonsCreateLazyRoute =
-//   ClassesClassCodeModulesModuleCodeLessonsCreateLazyImport.update({
-//     path: '/create',
-//     getParentRoute: () =>
-//       ClassesClassCodeModulesModuleCodeLessonsLazyRoute,
-//   } as any).lazy(() =>
-//     import(
-//       './routes/classes/$classCode/modules/$moduleCode/lessons.create.lazy'
-//     ).then((d) => d.Route),
-//   )
 
 // Populate the FileRoutesByPath interface
 
@@ -473,6 +489,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassCodeStudentsIndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/classes/$classCode/students/$studentCode/completed-lessons': {
+      id: '/classes/$classCode/students/$studentCode/completed-lessons'
+      path: '/classes/$classCode/students/$studentCode/completed-lessons'
+      fullPath: '/classes/$classCode/students/$studentCode/completed-lessons'
+      preLoaderRoute: typeof ClassesClassCodeStudentsStudentCodeCompletedLessonsImport
+      parentRoute: typeof rootRoute
+    }
+    '/classes/$classCode/students/$studentCode/completed-modules': {
+      id: '/classes/$classCode/students/$studentCode/completed-modules'
+      path: '/classes/$classCode/students/$studentCode/completed-modules'
+      fullPath: '/classes/$classCode/students/$studentCode/completed-modules'
+      preLoaderRoute: typeof ClassesClassCodeStudentsStudentCodeCompletedModulesImport
+      parentRoute: typeof rootRoute
+    }
     '/classes/$classCode/announcements/$announcementCode/update': {
       id: '/classes/$classCode/announcements/$announcementCode/update'
       path: '/update'
@@ -506,6 +536,13 @@ declare module '@tanstack/react-router' {
       path: '/classes/$classCode/modules/$moduleCode/update'
       fullPath: '/classes/$classCode/modules/$moduleCode/update'
       preLoaderRoute: typeof ClassesClassCodeModulesModuleCodeUpdateLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/classes/$classCode/students/$studentCode/gradebook': {
+      id: '/classes/$classCode/students/$studentCode/gradebook'
+      path: '/classes/$classCode/students/$studentCode/gradebook'
+      fullPath: '/classes/$classCode/students/$studentCode/gradebook'
+      preLoaderRoute: typeof ClassesClassCodeStudentsStudentCodeGradebookLazyImport
       parentRoute: typeof rootRoute
     }
     '/classes/$classCode/assignments/$assignmentCode/': {
@@ -577,6 +614,8 @@ export const routeTree = rootRoute.addChildren({
   ClassesClassCodeAssignmentsIndexLazyRoute,
   ClassesClassCodeModulesIndexLazyRoute,
   ClassesClassCodeStudentsIndexLazyRoute,
+  ClassesClassCodeStudentsStudentCodeCompletedLessonsRoute,
+  ClassesClassCodeStudentsStudentCodeCompletedModulesRoute,
   ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute:
     ClassesClassCodeAssignmentsAssignmentCodeSubmissionsLazyRoute.addChildren({
       ClassesClassCodeAssignmentsAssignmentCodeSubmissionsSubmissionCodeLazyRoute,
@@ -591,6 +630,7 @@ export const routeTree = rootRoute.addChildren({
       ClassesClassCodeModulesModuleCodeLessonsCreateLazyRoute,
     }),
   ClassesClassCodeModulesModuleCodeUpdateLazyRoute,
+  ClassesClassCodeStudentsStudentCodeGradebookLazyRoute,
   ClassesClassCodeAssignmentsAssignmentCodeIndexLazyRoute,
   ClassesClassCodeModulesModuleCodeIndexLazyRoute,
 })
@@ -621,10 +661,13 @@ export const routeTree = rootRoute.addChildren({
         "/classes/$classCode/assignments/",
         "/classes/$classCode/modules/",
         "/classes/$classCode/students/",
+        "/classes/$classCode/students/$studentCode/completed-lessons",
+        "/classes/$classCode/students/$studentCode/completed-modules",
         "/classes/$classCode/assignments/$assignmentCode/submissions",
         "/classes/$classCode/assignments/$assignmentCode/update",
         "/classes/$classCode/modules/$moduleCode/lessons",
         "/classes/$classCode/modules/$moduleCode/update",
+        "/classes/$classCode/students/$studentCode/gradebook",
         "/classes/$classCode/assignments/$assignmentCode/",
         "/classes/$classCode/modules/$moduleCode/"
       ]
@@ -686,6 +729,12 @@ export const routeTree = rootRoute.addChildren({
     "/classes/$classCode/students/": {
       "filePath": "classes/$classCode/students/index.lazy.tsx"
     },
+    "/classes/$classCode/students/$studentCode/completed-lessons": {
+      "filePath": "classes/$classCode/students/$studentCode.completed-lessons.tsx"
+    },
+    "/classes/$classCode/students/$studentCode/completed-modules": {
+      "filePath": "classes/$classCode/students/$studentCode.completed-modules.tsx"
+    },
     "/classes/$classCode/announcements/$announcementCode/update": {
       "filePath": "classes/$classCode/announcements/$announcementCode.update.lazy.tsx",
       "parent": "/classes/$classCode/announcements/$announcementCode"
@@ -708,6 +757,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/classes/$classCode/modules/$moduleCode/update": {
       "filePath": "classes/$classCode/modules/$moduleCode/update.lazy.tsx"
+    },
+    "/classes/$classCode/students/$studentCode/gradebook": {
+      "filePath": "classes/$classCode/students/$studentCode.gradebook.lazy.tsx"
     },
     "/classes/$classCode/assignments/$assignmentCode/": {
       "filePath": "classes/$classCode/assignments/$assignmentCode/index.lazy.tsx"

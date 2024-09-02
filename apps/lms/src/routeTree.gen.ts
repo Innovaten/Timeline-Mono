@@ -33,6 +33,9 @@ const RegisterAcceptIdLazyImport = createFileRoute('/register/accept/$id')()
 const ClassesClassCodeModulesIndexLazyImport = createFileRoute(
   '/classes/$classCode/modules/',
 )()
+const ClassesClassCodeGradebookIndexLazyImport = createFileRoute(
+  '/classes/$classCode/gradebook/',
+)()
 const ClassesClassCodeCompletedModulesIndexLazyImport = createFileRoute(
   '/classes/$classCode/completed-modules/',
 )()
@@ -132,6 +135,16 @@ const ClassesClassCodeModulesIndexLazyRoute =
     getParentRoute: () => rootRoute,
   } as any).lazy(() =>
     import('./routes/classes/$classCode/modules/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const ClassesClassCodeGradebookIndexLazyRoute =
+  ClassesClassCodeGradebookIndexLazyImport.update({
+    path: '/classes/$classCode/gradebook/',
+    getParentRoute: () => rootRoute,
+  } as any).lazy(() =>
+    import('./routes/classes/$classCode/gradebook/index.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -332,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassCodeCompletedModulesIndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/classes/$classCode/gradebook/': {
+      id: '/classes/$classCode/gradebook/'
+      path: '/classes/$classCode/gradebook'
+      fullPath: '/classes/$classCode/gradebook'
+      preLoaderRoute: typeof ClassesClassCodeGradebookIndexLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/classes/$classCode/modules/': {
       id: '/classes/$classCode/modules/'
       path: '/classes/$classCode/modules'
@@ -375,6 +395,7 @@ export const routeTree = rootRoute.addChildren({
   ClassesClassCodeAssignmentsIndexLazyRoute,
   ClassesClassCodeCompletedLessonsIndexLazyRoute,
   ClassesClassCodeCompletedModulesIndexLazyRoute,
+  ClassesClassCodeGradebookIndexLazyRoute,
   ClassesClassCodeModulesIndexLazyRoute,
   ClassesClassCodeModulesModuleCodeIndexLazyRoute,
   ClassesClassCodeModulesModuleCodeLessonsLessonCodeLazyRoute,
@@ -404,6 +425,7 @@ export const routeTree = rootRoute.addChildren({
         "/classes/$classCode/assignments/",
         "/classes/$classCode/completed-lessons/",
         "/classes/$classCode/completed-modules/",
+        "/classes/$classCode/gradebook/",
         "/classes/$classCode/modules/",
         "/classes/$classCode/modules/$moduleCode/",
         "/classes/$classCode/modules/$moduleCode/lessons/$lessonCode"
@@ -456,6 +478,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/classes/$classCode/completed-modules/": {
       "filePath": "classes/$classCode/completed-modules/index.lazy.tsx"
+    },
+    "/classes/$classCode/gradebook/": {
+      "filePath": "classes/$classCode/gradebook/index.lazy.tsx"
     },
     "/classes/$classCode/modules/": {
       "filePath": "classes/$classCode/modules/index.lazy.tsx"

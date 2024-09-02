@@ -450,10 +450,6 @@ export class UserService {
         //yet to implement quizzes
         const userAssignments = await AssignmentSubmissionModel.find({classCode: classCode, submittedBy: new Types.ObjectId(specifier)}).exec();
 
-        if(userAssignments.length === 0) {
-            return false; //for proper response on controller
-        }
-        
         return {
             quizzes: [],
             assignments: userAssignments,

@@ -481,7 +481,7 @@ export class UsersController {
                 return ServerErrorResponse(new Error('Unauthenticated'), 401);
             }
 
-            const completedLesson = await this.user.markAsCompleteLessons(
+            const completedLesson = await this.user.markAsCompleteLesson(
                 user._id,
                 new Types.ObjectId(lessonId),
             );

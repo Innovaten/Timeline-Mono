@@ -59,8 +59,7 @@ import {
                     </span>
                   </div>
                 </div>
-                {!lessonsIsLoading &&
-                  lessons.map((lesson, idx) => {
+                {lessons.map((lesson, idx) => {
                     return (
                       <Link
                         to={`/classes/${classCode}/modules/${moduleCode}/lessons/${lesson.code}`}

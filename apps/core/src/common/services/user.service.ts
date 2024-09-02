@@ -451,7 +451,7 @@ export class UserService {
         const userAssignments = await AssignmentSubmissionModel.find({classCode: classCode, submittedBy: new Types.ObjectId(specifier)}).exec();
 
         if(userAssignments.length === 0) {
-            throw new ForbiddenException("No gradebook items available at the moment")
+            return false; //for proper response on controller
         }
         
         return {

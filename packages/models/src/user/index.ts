@@ -57,8 +57,15 @@ export const UserSchema = new Schema<IUserDoc>({
   },
 
   completedLessons: {
-    type: SchemaTypes.ObjectId,
+    type: SchemaTypes.ObjectId,  
     ref: "CompletedLessons",
+    required: false,
+  },
+
+  completedModules : {
+    type: SchemaTypes.ObjectId,  
+    ref: "CompletedModules",
+    required: false,
   },
 
   meta: {

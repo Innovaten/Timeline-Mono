@@ -71,7 +71,7 @@ function Lessons({ }){
         </DialogContainer>
         <div className='flex flex-col w-full h-[calc(100vh-6rem)] sm:h-full flex-1'>
           <div className='mt-2 flex h-fit justify-between items-center'>
-              <h3 className='text-blue-800'>Class Lessons</h3>
+              <h3 className='text-blue-800'>Module Lessons</h3>
               <div className='flex gap-2 sm:gap-4'>
                 <Link to={`/classes/${classCode}/modules/${moduleCode}/lessons/create`}>
                     <Button className='flex px-2 !h-[35px]' > <PlusIcon className='inline w-4 mr-1' /> Create <span className='hidden sm:inline' >&nbsp;a Lesson</span></Button>

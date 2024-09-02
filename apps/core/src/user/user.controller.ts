@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Query, Post, Request, UseGuards, Patch, Param, Delete, Req } from '@nestjs/common';
 import { UserService } from '../common/services/user.service';
 import { ServerErrorResponse, ServerSuccessResponse } from '../common/entities/responses.entity';
-import { IUserDoc } from '@repo/models';
+import { IUserDoc, UserModel } from '@repo/models';
 import { AuthGuard } from '../common/guards/jwt.guard';
 import { CreateUserDto, UpdatePasswordDto, UpdateUserDto } from './user.dto';
 import { JwtService } from '../common/services/jwt.service';
@@ -425,26 +425,16 @@ export class UsersController {
         } 
     }
     
-    //@UseGuards(AuthGuard)
-    // @Get(':specifier/completed-lessons')
-    // async getUsersCompletedLessons( 
-    //     @Param('specifier') specifier: string,
-    //     @Query('isId') isId: string = "true",
-    // ) {
-    //     try {
-    //         const IsId = isId == "true";
-    //         const completedLessons = await this.user.getUsersCompletedLessons(specifier, IsId)
-    //         return ServerSuccessResponse(completedLessons);
-
-    //     } catch(err) {
-    //         return ServerErrorResponse(new Error(`${err}`), 500);
-    //     } 
-    // }
   //@UseGuards(AuthGuard)
-    @Get(':userId/completed-lessons')
-    async getCompletedLessons(@Param('userId') userId: string) {
+    @Get(':specifier/completed-lessons')
+    async getCompletedLessons(
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+        @Req() req: any
+    ) {
         try {
-        const completedLessons = await this.user.getCompletedLessons(new Types.ObjectId(userId));
+        const IsId = isId === "true"; 
+        const completedLessons = await this.user.getCompletedLessons(specifier, IsId);
 
         if (!completedLessons) {
             return ServerErrorResponse(new Error('No completed lessons found'), 404);
@@ -457,11 +447,17 @@ export class UsersController {
     }
 
    // @UseGuards(AuthGuard)
-    @Get(':userId/completed-modules')
-    async getCompletedModules(@Param('userId') userId: string) {
+    @Get(':specifier/completed-modules')
+    async getCompletedModules(
+        @Param('specifier') specifier: string,
+        @Query('isId') isId: string = "true",
+        @Req() req: any
+    ) {
         try {
-        const completedModules = await this.user.getCompletedModules(new Types.ObjectId(userId));
-
+        const IsId = isId === "true";
+         
+        const completedModules = await this.user.getCompletedModules(specifier,  IsId);
+         
         if (!completedModules) {
             return ServerErrorResponse(new Error('No completed modules found'), 404);
         }
@@ -485,7 +481,7 @@ export class UsersController {
                 return ServerErrorResponse(new Error('Unauthenticated'), 401);
             }
 
-            const completedLesson = await this.user.markAsCompleteLessons(
+            const completedLesson = await this.user.markAsCompleteLesson(
                 user._id,
                 new Types.ObjectId(lessonId),
             );
@@ -512,5 +508,4 @@ export class UsersController {
     }
     }
 
-  
 }

@@ -9,7 +9,7 @@ import { LexicalEditor } from 'lexical'
 import { _getToken, useLoading, useFileUploader, abstractAuthenticatedRequest} from '@repo/utils';
 import { toast } from 'sonner';
 
-export const Route = createLazyFileRoute('/classes/$classCode/modules/$moduleCode/lessons/$lessonCode/create')({
+export const Route = createLazyFileRoute('/classes/$classCode/modules/$moduleCode/lessons/create')({
   component: CreateLesson
 })
 

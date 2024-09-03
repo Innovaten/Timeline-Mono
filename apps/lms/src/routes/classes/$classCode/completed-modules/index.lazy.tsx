@@ -81,7 +81,7 @@ function CompletedModules(){
             }
 
             {
-                completedModules.length == 0 &&
+                !isLoading &&completedModules.length == 0 &&
                 <div className='mt-2 flex gap-2'>
                     <h3 className='text-blue-800'>No Completed Modules</h3>
                 </div>

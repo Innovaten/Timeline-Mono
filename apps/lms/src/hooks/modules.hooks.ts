@@ -95,7 +95,7 @@ export function classModuleCount(classCode: string){
     return { isLoading, count }
 }
 
-export function useCompletedModules(refreshFlag: boolean = true, userId: string){
+export function useCompletedModules(refreshFlag: boolean = true, specifier: string, isId : boolean = true){
     
     const [ completedModules, setCompletedModules ] = useState<(IModuleDoc & { createdBy: IUserDoc, updatedBy: IUserDoc })[]>([]);
     const { isLoading, toggleLoading, resetLoading } = useLoading()
@@ -103,7 +103,7 @@ export function useCompletedModules(refreshFlag: boolean = true, userId: string)
     useEffect( () => {
         abstractAuthenticatedRequest(
             "get",
-            `/api/v1/users/${userId}/completed-modules`,
+            `/api/v1/users/${specifier}/completed-modules?isId=${isId}`,
             {},
             {},
             {

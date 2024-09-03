@@ -22,7 +22,7 @@ function CompletedLessons(){
   } 
 
 
-  const { isLoading, completedLessons } = useCompletedLessons(true, user? user._id:"")
+  const { isLoading, completedLessons } = useCompletedLessons(true, user?._id ?? "")
   
   return (
     <>
@@ -79,7 +79,7 @@ function CompletedLessons(){
 </>
             }
             {
-                completedLessons.length == 0 &&
+                !isLoading && completedLessons.length == 0 &&
                 <div className='mt-2 flex gap-2'>
                     <h3 className='text-blue-800'>No Completed Lessons</h3>
                 </div>

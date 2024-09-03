@@ -8,11 +8,7 @@ export const CompletedModulesSchema = new Schema<ICompletedModule> ({
         required: true,
     },
     modules: {
-        type: [{ type: SchemaTypes.ObjectId, ref: 'Lessons' }],
-        required: true,
-    },
-    lessonSet: {
-        type: [{ type: SchemaTypes.ObjectId, ref: 'LessonSet' }],
+        type: [{ type: SchemaTypes.ObjectId, ref: 'Modules' }],
         required: true,
     },
     updatedAt: {

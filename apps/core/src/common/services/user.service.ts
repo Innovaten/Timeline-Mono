@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, ForbiddenException } from "@nestjs/common";
+import { BadRequestException, Injectable, ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { compare } from "bcrypt";
 import { CompletedLessonsModel, ICompletedLessonDoc, ClassModel, ILessonDoc, UserModel, IUserDoc, IAssignmentDoc, AssignmentModel, AssignmentSubmissionModel, AssignmentSubmissionStatusType, ModuleModel, CompletedLessonSchema, CompletedModulesModel, ICompletedModuleDoc, IModuleDoc, LessonModel, LessonSetModel, IClassDoc } from "@repo/models";
 
@@ -320,8 +320,12 @@ export class UserService {
         return accessibleAssignments;
     }
 
-    async markAsCompleteLessons(userId: Types.ObjectId, lessonId: Types.ObjectId, lessonSetId: Types.ObjectId): Promise<ICompletedLessonDoc> {
-        const completedLesson = await CompletedLessonsModel.findOne({ user: userId, lessonSet: lessonSetId });
+    async markAsCompleteLesson(userId: Types.ObjectId, lessonId: Types.ObjectId): Promise<ICompletedLessonDoc> {
+        const completedLesson = await CompletedLessonsModel.findOne({ user: userId });
+        const student =  await UserModel.findOne({_id: userId})
+        if(!student){
+            throw new Error("No student was found")
+        }
 
         const currentTimestamp = new Date();
 
@@ -346,32 +350,37 @@ export class UserService {
             const newCompletedLesson = new CompletedLessonsModel({
                 user: userId,
                 lessons: [lessonId],
-                lessonSet: [lessonSetId],
                 createdAt: currentTimestamp,
                 updatedAt: currentTimestamp,
             });
 
             await newCompletedLesson.save();
+            student.completedLessons = newCompletedLesson._id
+            await student.save();
             return newCompletedLesson;
         }
     }    
     
     async markAsCompleteModule(userId: Types.ObjectId, moduleId: Types.ObjectId): Promise<ICompletedModuleDoc | null> {
         const moduleDoc = await ModuleModel.findById(moduleId).exec();
-        
+        const student =  await UserModel.findOne({_id: userId})
+        if(!student){
+            throw new Error("No student was found")
+        }
+
         if (!moduleDoc) {
           throw new Error('Module not found');
         }
 
         const completedLessonsDoc = await CompletedLessonsModel.findOne({ user: userId }).exec();
         if (!completedLessonsDoc) {
-            throw new ForbiddenException('No completed lessons found for this user');
+            throw new UnauthorizedException('No completed lessons under this module');
         }
     
         let allLessonsCompleted = await this.areAllLessonsCompleted(moduleDoc.lessonSet, completedLessonsDoc);
 
         if (!allLessonsCompleted) {
-            throw new ForbiddenException('Not all lessons in the module are completed');
+            throw new UnauthorizedException('Not all lessons in the module are completed');
         }
 
         const completedModuleDoc = await CompletedModulesModel.findOne({ user: userId }).exec();
@@ -387,7 +396,9 @@ export class UserService {
               throw new ForbiddenException('Cannot change status too quickly');
             }
 
-            completedModuleDoc.modules.splice(moduleIndex, 1);
+            else{
+                completedModuleDoc.modules.splice(moduleIndex, 1);
+            }
           } else {
 
             completedModuleDoc.modules.push(moduleId);
@@ -400,38 +411,60 @@ export class UserService {
           const newCompletedModule = new CompletedModulesModel({
             user: userId,
             modules: [moduleId],
-            lessonSet: moduleDoc.lessonSet,
             createdAt: now,
             updatedAt: now,
           });
     
-          await newCompletedModule.save();
+         await newCompletedModule.save();
+         student.completedModules = newCompletedModule._id
+         await student.save();
         }
     
         return completedModuleDoc;
       }
 
-      private async areAllLessonsCompleted(lessonSetId: Types.ObjectId, completedLessonsDoc: any): Promise<boolean> {
+      private async areAllLessonsCompleted(lessonSetId: Types.ObjectId, completedLessonsDoc: ICompletedLessonDoc): Promise<boolean> {
         const lessonSet = await LessonSetModel.findById(lessonSetId).populate('lessons').exec();
     
         if (!lessonSet) {
           throw new Error('Lesson set not found');
         }
     
-        return lessonSet.lessons.every((lessonId: Types.ObjectId) =>
-          completedLessonsDoc.lessons.some((completedLessonId: Types.ObjectId) => completedLessonId.equals(lessonId))
-        );
+        const completedLessonsIds = completedLessonsDoc.lessons
+        const modulesLessonsIds = lessonSet.lessons.map(lesson => lesson._id);
+        return modulesLessonsIds.every(id => completedLessonsIds.includes(id));
       }
 
-      async getCompletedLessons(userId: Types.ObjectId): Promise<ILessonDoc[] | null> {
-        const completedLessons = await CompletedLessonsModel.findOne({ user: userId }).exec();
-        const lessons = await LessonModel.find({_id: {$in: completedLessons?.lessons}}).populate("createdBy updatedBy")
+      async getCompletedLessons(specifier: string, IsId: boolean): Promise<ILessonDoc[] | null> {
+        const query = IsId ? { _id: specifier } : { code: specifier };
+        let student: any
+        student = await UserModel.findOne(query).populate({path: 'completedLessons',populate: { path: 'lessons', populate: { path: 'createdBy'}}});
+    
+        if (!student) {
+            throw new Error('No student found');
+        }
+        
+        if (!student.completedModules) {
+            throw new Error("No completed lessons for student");
+        }
+        const lessons = student.completedLessons.lessons;
         return lessons;
       }
 
-      async getCompletedModules(userId: Types.ObjectId): Promise<IModuleDoc[] | null> {
-        const completedModules = await CompletedModulesModel.findOne({ user: userId }).exec();
-        const modules = await ModuleModel.find({_id: {$in: completedModules?.modules}}).populate("createdBy updatedBy")
+      async getCompletedModules(specifier: string, IsId: boolean): Promise<IModuleDoc[] | null> {
+        const query = IsId ? { _id: specifier } : { code: specifier };
+        let student: any
+        student = await UserModel.findOne(query).populate({path: 'completedModules',populate: { path: 'modules', populate: { path: 'createdBy'}}});
+    
+        if (!student) {
+            throw new Error('No student found');
+        }
+
+        if (!student.completedModules) {
+            throw new Error("No completed modules for student");
+        }
+    
+        const modules = student.completedModules.modules;
         return modules;
       }
 

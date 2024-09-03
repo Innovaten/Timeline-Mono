@@ -142,7 +142,7 @@ function Module() {
                 lessons.map((lesson, idx) => {
                   return (
                     <Link
-                      to={`/classes/${classCode}/modules/${moduleCode}/${lesson.code}`}
+                      to={`/classes/${classCode}/modules/${moduleCode}/lessons/${lesson.code}`}
                       key={idx}
                       className="cursor-pointer w-full text-blue-700 py-2 px-1 sm:px-3 bg-white border-b-[0.5px] border-b-blue-700/40 flex justify-between items-center gap-2 rounded-sm hover:bg-blue-200/10"
                     >

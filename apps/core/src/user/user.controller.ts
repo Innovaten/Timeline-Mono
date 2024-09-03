@@ -508,4 +508,35 @@ export class UsersController {
     }
     }
 
+    @UseGuards(AuthGuard)
+    @Get(':specifier/gradebook/:classCode')
+    async fetchUserGradebook(
+    @Param("specifier") specifier: string,
+    @Param("classCode") classCode: string,
+    @Query('isId') isId: string = "true",
+    @Req() req: any
+    ) {
+    try{
+        const user = req['user']
+        if (!user) {
+            return ServerErrorResponse(
+                new Error('Unauthenticated'),
+                 401
+                );
+        }
+
+        const IsId = isId === "true";
+
+        const gradebookDoc = await this.user.getGradebook(specifier, IsId, classCode);
+        if(!gradebookDoc) {
+            return ServerErrorResponse( 
+                new Error("No gradebook items available"),
+                404
+        )
+        }
+        return ServerSuccessResponse(gradebookDoc);
+    } catch (err) {
+        return ServerErrorResponse(new Error(`${err}`), 500);
+    }
+    }
 }

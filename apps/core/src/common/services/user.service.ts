@@ -466,6 +466,32 @@ export class UserService {
     
         const modules = student.completedModules.modules;
         return modules;
-    }
+      }
+
+      async getGradebook(specifier: string, IsId: boolean, classCode: string) {
+
+        if(!IsId) {
+            const student = (await UserModel.findOne({code: specifier})) as IUserDoc
+
+            if(!student) {
+                throw new Error("No student found");
+
+            }
+
+            specifier = `${student._id}`
+        }
+        
+        const filter = {
+            classCode: classCode,
+            submittedBy: new Types.ObjectId(specifier)
+        }
+        //yet to implement quizzes
+        const userAssignments = await AssignmentSubmissionModel.find(filter).exec();
+
+        return {
+            quizzes: [],
+            assignments: userAssignments,
+        };
+      }
 }
 

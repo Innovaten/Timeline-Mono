@@ -18,7 +18,11 @@
       "S3_ACCESS_KEY",
       "S3_SECRET_ACCESS_KEY",
       "RESEND_API_KEY",
-      "RESEND_DOMAIN"
+      "RESEND_DOMAIN",
+      "REDIS_HOST",
+      "REDIS_PORT",
+      "REDIS_PASSWORD",
+      "REDIS_USERNAME"
     ],
   "tasks": {
     "build": {

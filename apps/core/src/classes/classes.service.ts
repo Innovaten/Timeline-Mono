@@ -6,10 +6,17 @@ import { generateCode } from "../utils";
 import { CreateAssigmentDto } from "../assignments/assignments.dto";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Roles } from "../common/enums/roles.enum";
+import { flushExistingKeysThatMatch, redis, setCache } from "../utils/cache";
 
 export class ClassesService {
    
     async getClass(filter: Record<string, any> = {}){
+
+        const cacheKey = `classes-f:${JSON.stringify(filter)}`
+
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`) as IClassDoc
+        }
 
         const finalFilter = { ...filter, "meta.isDeleted": false}
 
@@ -26,39 +33,70 @@ export class ClassesService {
                 populate: "assignments",
             }
         ]);
+
+        await setCache(cacheKey, result)
         return result;
     }
 
     async getClassById(_id: string){
-        const result = await ClassModel.findById(_id).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[], assignmentSet: { assignments: IAssignment}}>([
-        {
-            path: "createdBy administrators",
-        },
-        {
-            path: "announcementSet",
-            populate: "announcements"
-        },
-        {
-            path: "assignmentSet",
-            populate: "assignments",
+
+        const cacheKey = `class-${_id}`
+
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
         }
-    ]);
+
+        const result = await ClassModel.findById(_id).populate<{ announcementSet: IAnnouncementSetDoc, createdBy: IUserDoc, administrators: IUserDoc[], assignmentSet: { assignments: IAssignment}}>([
+            {
+                path: "createdBy administrators",
+            },
+            {
+                path: "announcementSet",
+                populate: "announcements"
+            },
+            {
+                path: "assignmentSet",
+                populate: "assignments",
+            }
+        ]);
+
+        await setCache(cacheKey, result)
+
         return result;
     }
 
-    async getClasses(limit?: number, offset?: number, filter: Record<string, any> = {}){
+    async getClasses(limit: number = 10, offset: number = 0, filter: Record<string, any> = {}){
+
+        const cacheKey = `classes-l:${limit}-o:${offset}-f:${JSON.stringify(filter)}`
+
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`) as IClassDoc[]
+        }
+
         const results = await ClassModel.find({ ...filter, "meta.isDeleted": false })
         .limit(limit ?? 10)
         .skip(offset ?? 0)
         .sort({ createdAt: -1})
+
+        await setCache(cacheKey, results)
         return results;
     }
 
     async getCount(filter?: Record<string, any>){
-        return ClassModel.countDocuments({
+
+        const cacheKey = `classes-count-${JSON.stringify(filter)}`
+
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
+
+        const count = await ClassModel.countDocuments({
             ...filter,
             "meta.isDeleted": false,
         })
+
+        await setCache(cacheKey, count)
+        return count;
     }
 
     async createClass(classData: CreateClassDto, creator: string): Promise<IClassDoc>{
@@ -114,7 +152,9 @@ export class ClassesService {
         await newAssignmentSet.save()
         await newAnnouncementSet.save()
         await newClass.save()
-        
+
+        flushExistingKeysThatMatch('classes*')
+
         return newClass;
     }
 
@@ -128,6 +168,11 @@ export class ClassesService {
             updatedBy: new Types.ObjectId(updator),
             updatedAt: new Date()
         }, { new: true });
+
+        if(tClass){
+            flushExistingKeysThatMatch(`class-${_id}`)
+            flushExistingKeysThatMatch(`classes-f:${JSON.stringify({ code: tClass.code })}`)
+        }
 
         return tClass;
     }
@@ -157,6 +202,13 @@ export class ClassesService {
 
         await classDoc.save()
         await adminDoc.save()
+
+        const cacheKey = `class-${classDoc._id}`
+        if(await redis.exists(cacheKey)){
+            redis.del(cacheKey)
+        }
+        flushExistingKeysThatMatch(`class-${classDoc._id}`)
+        flushExistingKeysThatMatch(`classes-f:${JSON.stringify({ code: classDoc.code })}`)
 
         return classDoc
     }
@@ -192,12 +244,17 @@ export class ClassesService {
         await classDoc.save()
         await adminDoc.save()
 
+        const cacheKey = `class-${classDoc._id}`
+        if(await redis.exists(cacheKey)){
+            redis.del(cacheKey)
+        }
+        flushExistingKeysThatMatch(`class-${classDoc._id}`)
+        flushExistingKeysThatMatch(`classes-f:${JSON.stringify({ code: classDoc.code })}`)
+
         return classDoc
     }
 
     async addStudent(classSpecifier: string, classIsId: boolean, studentSpecifier: string, studentIsId: boolean, updator: IUserDoc) {
-       
-        console.log(classIsId, studentIsId)
 
         const classFilter = classIsId ? {_id: new Types.ObjectId(classSpecifier)} : { code: classSpecifier}
         const studentFilter = studentIsId ? {_id: new Types.ObjectId(studentSpecifier)} : { code: studentSpecifier}
@@ -226,6 +283,13 @@ export class ClassesService {
 
         await classDoc.save()
         await studentDoc.save()
+
+        const cacheKey = `class-${classDoc._id}`
+        if(await redis.exists(cacheKey)){
+            redis.del(cacheKey)
+        }
+        flushExistingKeysThatMatch(`class-${classDoc._id}`)
+        flushExistingKeysThatMatch(`classes-f:${JSON.stringify({ code: classDoc.code })}`)
 
         return classDoc
     }
@@ -260,6 +324,13 @@ export class ClassesService {
         await classDoc.save()
         await studentDoc.save()
 
+        const cacheKey = `class-${classDoc._id}`
+        if(await redis.exists(cacheKey)){
+            redis.del(cacheKey)
+        }
+        flushExistingKeysThatMatch(`classes*`)
+        flushExistingKeysThatMatch(`classes-f:${JSON.stringify({ code: classDoc.code })}`)
+
         return classDoc
     }
 
@@ -280,16 +351,36 @@ export class ClassesService {
 
         await classDoc.save();
 
+        const cacheKey = `class-${classDoc._id}`
+        if(await redis.exists(cacheKey)){
+            redis.del(cacheKey)
+        }
+
+        flushExistingKeysThatMatch(`classes*`)
+        flushExistingKeysThatMatch(`classes-f:${JSON.stringify({ code: classDoc.code })}`)
+
         return classDoc;
 
     }
 
     async getClassesCount(filter: Record<string, any>){
-        const count = await ClassModel.countDocuments({ ...filter });
+        const cacheKey = `classes-count-f:${JSON.stringify(filter)}`
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
+
+        const count = await ClassModel.countDocuments({ ...filter, "meta.isDeleted": false });
+
+        await setCache(cacheKey, count)
         return count;
     }
 
     async getAnnouncementsByClass(classId: string): Promise<IAnnouncementDoc[]> {
+
+        const cacheKey = `class-announcements-class:${classId}`
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
 
         const classDoc = await ClassModel.findById(classId);
 
@@ -303,6 +394,8 @@ export class ClassesService {
         })
         .sort({ createdAt: -1})
         .populate("createdBy updatedBy");
+
+        await setCache(cacheKey, announcements)
 
         return announcements;
     }
@@ -341,12 +434,20 @@ export class ClassesService {
         if(!relatedClass){
             throw new NotFoundException("Specified class could not be found")
         }
-
-        const students = await UserModel.find({ _id: { $in: relatedClass?.students }, "meta.isDeleted": false }).populate("classes")
         
         if(user.role != "SUDO" && !relatedClass.administrators.map(a => a.toString()).includes(`${user._id}`)){
             throw new ForbiddenException("You are not authorized to make this request")
         }
+
+        const cacheKey = `class-students-class:${specifier}`
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
+
+        const students = await UserModel.find({ _id: { $in: relatedClass?.students }, "meta.isDeleted": false }).populate("classes")
+        
+        await setCache(cacheKey, students)
+
         return students;
     }
 
@@ -361,7 +462,16 @@ export class ClassesService {
             throw new Error("Unauthorized")
         }
 
+        const cacheKey = `class-modules-class:${classId}`
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
+
+
         const modules = await ModuleModel.find({ _id: { $in: classDoc.modules } })
+
+        await setCache(cacheKey, modules)
+
         return modules
     }
 
@@ -426,6 +536,8 @@ export class ClassesService {
         await newAssignment.save()
         await relatedClass.save()
         await relatedAssignmentSet.save()
+
+        flushExistingKeysThatMatch('assignments*')
 
         return newAssignment;
     }
@@ -512,7 +624,10 @@ export class ClassesService {
         isId: boolean, 
         user: IUserDoc
     ){
-        
+        const cacheKey = `class-assignments-class:${specifier}-f:${JSON.stringify(filter)}`
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
         const classFilter = isId ? { _id: new Types.ObjectId(specifier)} : { code: specifier }
         const relatedClass = await ClassModel.findOne(classFilter).lean()
 
@@ -529,6 +644,8 @@ export class ClassesService {
         // TODO: More robust filtering by user
 
         const count = await AssignmentModel.countDocuments(finalFilter)
+
+        await setCache(cacheKey, count)
 
         return count
     }

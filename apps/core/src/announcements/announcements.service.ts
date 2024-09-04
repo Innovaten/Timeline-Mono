@@ -2,13 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { AnnouncementModel, AnnouncementSetModel, ClassModel, IAnnouncementDoc, IUserDoc, UserModel } from '@repo/models';
 import { CreateAnnouncementDto, UpdateAnnouncementDto } from './announcements.dto';
 import { generateCode } from '../utils';
-import { Types, startSession } from 'mongoose';
-import { forEach } from 'lodash';
+import { Types } from 'mongoose';
+import { flushExistingKeysThatMatch, redis, setCache } from '../utils/cache';
 
 @Injectable()
 export class AnnouncementsService {
 
-    async listAnnouncements(limit?: number, offset?: number, filter: Record<string, any> = {}, ): Promise<any>{
+    async listAnnouncements(limit: number = 0, offset: number = 0, filter: Record<string, any> = {}, ): Promise<any>{
+
+        const cacheKey = `announcements-l:${limit}-o:${offset}-f:${JSON.stringify({ ...filter })}`
+
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
+
         const results = await AnnouncementModel.find({ 
             ...filter,
             "meta.isDeleted": false,
@@ -17,16 +24,39 @@ export class AnnouncementsService {
         .skip(offset ?? 0)
         .sort({ updatedAt: -1})
         .populate<{ createdBy: IUserDoc, updatedBy: IUserDoc }>("createdBy updatedBy")
+
+        await setCache(cacheKey, results)
         return results;
     }
 
     async getAnnouncementsCount(filter: Record<string, any> = {}) {
-        const count = await AnnouncementModel.countDocuments({ ...filter, "meta.isDeleted": false });
+
+        const cacheKey = `announcements-count-f:${JSON.stringify(filter)}`
+
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
+
+        const finalFilter = { ...filter, "meta.isDeleted": false }
+
+        const count = await AnnouncementModel.countDocuments(finalFilter);
+
+
+        await setCache(cacheKey, count);
         return count;
     }
 
     async getAnnouncement(filter: Record<string, any>): Promise<IAnnouncementDoc|null>{
+
+        const cacheKey = `announcement-f:${JSON.stringify(filter)}`
+
+        if(await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
+
         const result = await AnnouncementModel.findOne(filter).populate("createdBy updatedBy");
+
+        await setCache(cacheKey, result);
         return result;
     }
 
@@ -90,6 +120,8 @@ export class AnnouncementsService {
 
         await newAnnouncementToEveryOne.save()
 
+        flushExistingKeysThatMatch('announcements-*')
+
         return newAnnouncementToEveryOne;
 
     }
@@ -114,6 +146,8 @@ export class AnnouncementsService {
         if(!updatedAnnouncement){
             throw new Error("Specified Announcement could not be found");
         }
+
+        flushExistingKeysThatMatch('announcement*')
 
         return updatedAnnouncement;
         
@@ -140,14 +174,15 @@ export class AnnouncementsService {
             throw new Error("Specified Announcement could not be found");
         }
 
+        flushExistingKeysThatMatch('announcement*')
         return announcement;
 
     }
 
     async getAnnouncementsByUser(
         userId: string,
-        limit?: number, 
-        offset?: number, 
+        limit: number = 0, 
+        offset: number = 0, 
         filter: Record<string, any> = {}, 
     ): Promise<IAnnouncementDoc[]> {
 
@@ -162,6 +197,11 @@ export class AnnouncementsService {
         if(!classes){
             throw new Error("Specified user is not related with any class")
         }   
+        const cacheKey = `announcements-l:${limit}-o:${offset}-f:${filter}-user:${userId}`
+
+        if( await redis.exists(cacheKey)){
+            return JSON.parse(`${await redis.get(cacheKey)}`)
+        }
 
         const announcementSetIds = classes.map(c => c.announcementSet)
         const announcementSets = await AnnouncementSetModel.find({ _id: { $in: announcementSetIds }});
@@ -175,7 +215,9 @@ export class AnnouncementsService {
             ]
         })
 
-        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds },  ...filter, "meta.isDeleted": false }).limit(limit ?? 10).skip(offset ?? 0).sort({ createdAt: -1 }).populate("createdBy updatedBy");
+        const announcements = await AnnouncementModel.find({ _id: { $in: announcementIds },  ...filter, "meta.isDeleted": false }).limit(limit).skip(offset).sort({ createdAt: -1 }).populate("createdBy updatedBy");
+
+        setCache(cacheKey, announcements)
 
         return announcements;
 
@@ -205,6 +247,8 @@ export class AnnouncementsService {
         announcement.updatedBy = new Types.ObjectId(updator);
 
         announcement.save()
+
+        flushExistingKeysThatMatch('announcement*')
         
         return announcement;
     }

@@ -27,8 +27,11 @@ export const CoreConfig = {
             process.env.KAFKA_BROKER ?? ""
         ]
     },
-    mnotify: {
-        api_key: process.env.MNOTIFY_API_KEY ?? "",
-    },
+    redis: {
+        host: process.env.REDIS_HOST ?? '127.0.0.1',
+        port: parseInt(process.env.REDIS_PORT ?? '6379'),
+        password: process.env.REDIS_PASSWORD ?? "",
+        username: process.env.REDIS_USERNAME ?? 'default'
+    }
 }
 

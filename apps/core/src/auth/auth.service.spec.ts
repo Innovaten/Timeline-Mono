@@ -5,6 +5,7 @@ import { Types } from 'mongoose';
 import { UserFactory } from '../../test/mocks';
 import { JwtService } from '../common/services/jwt.service';
 import { UserService } from '../common/services/user.service';
+import { KafkaService } from '../common/services/kafka.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -20,7 +21,7 @@ describe('AuthService', () => {
   
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService, JwtService, UserService],
+      providers: [AuthService, JwtService, UserService, KafkaService],
     }).compile();
 
     service = module.get<AuthService>(AuthService);

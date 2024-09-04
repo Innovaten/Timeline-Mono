@@ -486,7 +486,7 @@ export class UserService {
             submittedBy: new Types.ObjectId(specifier)
         }
         //yet to implement quizzes
-        const userAssignments = await AssignmentSubmissionModel.find(filter).exec();
+        const userAssignments = await AssignmentSubmissionModel.find(filter).populate("assignment submittedBy").lean();
 
         return {
             quizzes: [],

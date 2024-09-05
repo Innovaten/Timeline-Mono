@@ -87,10 +87,6 @@ function RegisterPage(){
                         }
 
                       { isAdmission && <Outlet />}
-                      <div className='absolute flex sm:hidden bottom-5 flex-col items-center w-[calc(100vw-4rem)] m-auto text-blue-600'>
-                          <p className='text-center'>&copy; {new Date().getFullYear()} Timeline Trust. All Rights Reserved.</p>
-                          <p>Powered By <a>Innovaten</a></p>
-                      </div>
                   </div>
                 </div>
                 <div className=' hidden sm:flex bottom-10 flex-col items-center gap-2 w-full m-auto mt-6 mb-4 text-blue-600'>

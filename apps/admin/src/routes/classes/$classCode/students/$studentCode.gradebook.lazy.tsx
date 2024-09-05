@@ -35,19 +35,9 @@ export const Route = createLazyFileRoute('/classes/$classCode/students/$studentC
                 <div>
                   <h3 className="text-blue-800 mb-3">Student Gradebook:{" "}
                    {
-                    assignmentGrades.length > 0 && quizGrades.length == 0 && (
-                    assignmentGrades[0].submittedBy.firstName + " " + assignmentGrades[0].submittedBy.lastName
-                   )
-                   }
-                   {
-                    assignmentGrades.length == 0 && quizGrades.length > 0 && (
-                    quizGrades[0].submittedBy.firstName + " " + quizGrades[0].submittedBy.lastName
-                    )
-                   }
-                   {
-                    assignmentGrades.length > 0 && quizGrades.length > 0 && (
-                    assignmentGrades[0].submittedBy.firstName + " " + assignmentGrades[0].submittedBy.lastName
-                   )
+                    (assignmentGrades.length > 0 && assignmentGrades[0].submittedBy.firstName + " " + assignmentGrades[0].submittedBy.lastName) ??
+                    (quizGrades.length > 0 && quizGrades[0].submittedBy.firstName + " " + quizGrades[0].submittedBy.lastName) ?? 
+                    ""
                    }
                     {" " + studentCode}</h3>
                   {assignmentGrades && assignmentGrades.length > 0 && (

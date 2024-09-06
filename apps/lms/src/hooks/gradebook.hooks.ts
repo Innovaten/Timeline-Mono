@@ -8,9 +8,8 @@ export function useGrades(refreshFlag: boolean = true, specifier: string, isId: 
 
     const [ assignmentGrades, setAssignmentGrades ] = useState<(IAssignmentSubmissionDoc & { submittedBy: IUserDoc, assignment: IAssignmentDoc })[]>([]);
     // const [ quizGrades, setQuizGrades ] = useState<(IQuizSubmissionDoc & { submittedBy: IUserDoc, quiz: IQuizDoc })[]>([]);
-    const [ quizGrades, setQuizGrades ] = useState([])
+    const [ quizGrades, setQuizGrades ] =  useState<(IAssignmentSubmissionDoc & { submittedBy: IUserDoc, assignment: IAssignmentDoc })[]>([]);
     const [ isLoading, setIsLoading ] = useState<boolean>(true);
-    // const [ count, setCount ] = useState<number>(0);
 
 
     const route = `/users/${specifier}/gradebook/${classCode}?isId=${isId}`
@@ -22,8 +21,7 @@ export function useGrades(refreshFlag: boolean = true, specifier: string, isId: 
         ).then(res => {
             if(res.status == 200 && res.data.success){
                 setAssignmentGrades(res.data.data.assignments);
-                //setCount(res.data.data.length);
-                //setQuizGrades(res.data.data.quizzes)
+                setQuizGrades(res.data.data.quizzes)
             } else {
                 toast.error(`${res.data.error?.msg}`);
             }
